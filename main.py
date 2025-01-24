@@ -200,7 +200,7 @@ async def on_command_error(ctx, error):
 	elif isinstance(error, commands.CommandNotFound):
 		pass
 	elif isinstance(error, commands.MissingRequiredArgument):
-		msg = f"Missing required arguments. Format: `{error.args}`"
+		msg = f"Missing required arguments: `{error.args}`"
 		await ctx.send(msg, ephemeral=True)
 	else:
 		embed = discord.Embed(title="Error!", description="{}".format(error), color=discord.Color.red())
