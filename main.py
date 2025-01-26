@@ -51,7 +51,7 @@ def get_prefix(Client, message):
 
 # Bot
 
-bot = commands.AutoShardedBot(shard_count=1, command_prefix=get_prefix, intents=intents, status=discord.Status.idle, activity=discord.CustomActivity(name=">help | spectrabot.pages.dev"))
+bot = commands.AutoShardedBot(shard_count=1, command_prefix=get_prefix, intents=intents, status=discord.Status.idle, activity=discord.CustomActivity(name=">help | spectrabot.pages.dev"), owner_ids=[856196104385986560, 998434044335374336])
 
 bot.remove_command("help")
 
