@@ -174,6 +174,8 @@ async def on_ready():
 	global startTime
 	startTime = datetime.datetime.utcnow()
 
+	update_stats.start()
+
 @bot.event
 async def on_command_error(ctx, error):
 	if isinstance(error, commands.CommandNotFound):
