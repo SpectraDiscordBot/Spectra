@@ -286,15 +286,15 @@ async def on_member_join(member):
 
 @bot.event
 async def on_guild_remove(guild):
-    guild_id = guild.id
-    
-    for collection_name in db.list_collection_names():
-        collection = db[collection_name]
-        
-        result = collection.delete_many({"guild_id": guild_id})
-        print(f"Deleted {result.deleted_count} documents from collection '{collection_name}' for guild {guild_id}.")
-    
-    print(f"All data for guild {guild_id} has been removed from the database.")
+	guild_id = guild.id
+	
+	for collection_name in db.list_collection_names():
+		collection = db[collection_name]
+		
+		result = collection.delete_many({"guild_id": guild_id})
+		print(f"Deleted {result.deleted_count} documents from collection '{collection_name}' for guild {guild_id}.")
+	
+	print(f"All data for guild {guild_id} has been removed from the database.")
 
 @bot.event
 async def on_message(message):
@@ -623,6 +623,13 @@ async def vote(ctx: commands.Context):
 @commands.cooldown(1, 15, commands.BucketType.user)
 async def ping(ctx: commands.Context):
 	await ctx.send(f"Pong! {round(bot.latency * 1000)}ms")
+
+@bot.hybrid_command(name="invite", description="Invite Spectra to your server!")
+@commands.cooldown(1, 5, commands.BucketType.user)
+async def invite(ctx: commands.Context):
+	embed = discord.Embed(title="Invite Spectra to your server!", description="[Click Me To Invite!](https://discord.com/oauth2/authorize?client_id=1279512390756470836&permissions=939912256&integration_type=0&scope=bot+applications.commands)", color=discord.Colour.blue())
+	embed.set_footer(text="Invite Spectra For Free!")
+	await ctx.send(embed=embed)
 
 @bot.command()
 @commands.is_owner()
