@@ -1,5 +1,4 @@
 discord.py
-dblpy
 pymongo
 python-dotenv
 humanfriendly
