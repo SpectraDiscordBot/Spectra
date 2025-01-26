@@ -1,6 +1,5 @@
 import discord
 import os
-import dbl
 from discord.ext import commands
 from discord import app_commands
 from dotenv import load_dotenv
@@ -92,6 +91,4 @@ class ManageRoles(commands.Cog):
 
 
 async def setup(bot):
-    global topgg_api
-    topgg_api = dbl.DBLClient(bot, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEyNzk1MTIzOTA3NTY0NzA4MzYiLCJib3QiOnRydWUsImlhdCI6MTcyOTgwNzg1NH0.c5E-e7mVvlkg2cTO1rwADSco3QHWy6_QpVk9amuzgBg')
     await bot.add_cog(ManageRoles(bot))

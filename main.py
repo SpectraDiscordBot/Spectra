@@ -4,7 +4,6 @@ import asyncio
 import discord
 import datetime
 import os
-import dbl
 from discord.ext import commands
 from discord import Button, app_commands
 from discord.ui import View
@@ -54,22 +53,6 @@ def get_prefix(Client, message):
 bot = commands.AutoShardedBot(shard_count=1, command_prefix=get_prefix, intents=intents, status=discord.Status.idle, activity=discord.CustomActivity(name=">help | spectrabot.pages.dev"), owner_ids=[856196104385986560, 998434044335374336])
 
 bot.remove_command("help")
-
-# TopGG
-
-class TopGGVoteAPI:
-	def __init__(self, bot):
-		self.token = os.environ.get('TOP_GG')
-		self.bot = bot
-		self.dbl_client = None
-
-	async def setup(self):
-		self.dbl_client = dbl.DBLClient(self.bot, self.token)
-
-	async def has_voted(self, user_id):
-		return await self.dbl_client.get_user_vote(user_id)
-
-topgg_api = TopGGVoteAPI(bot)
 
 # Classes
 
@@ -185,7 +168,6 @@ async def on_ready():
 	try: await bot.user.edit(avatar=image)
 	except: pass
 	await bot.tree.sync()
-	await topgg_api.setup()
 
 	global startTime
 	startTime = datetime.datetime.utcnow()
