@@ -3,8 +3,8 @@
 import asyncio
 import discord
 import datetime
+import aiohttp
 import os
-import topgg
 from discord.ext import commands
 from discord import Button, app_commands
 from discord.ui import View
@@ -375,16 +375,25 @@ async def on_message(message):
 
 	await bot.process_commands(message)
 
-dbl_token = os.environ.get("TOP_GG") # set this to your bot's Top.gg token
-bot.topggpy = topgg.DBLClient(bot, dbl_token)
-
 @tasks.loop(minutes=30)
 async def update_stats():
+    url = "https://top.gg/api/bots/856196104385986560/stats"
+    headers = {
+        "Authorization": os.environ.get("TOP_GG")
+    }
+    payload = {
+        "server_count": len(bot.guilds)
+    }
+
     try:
-        await bot.topggpy.post_guild_count()
-        print(f'Posted server count ({bot.topggpy.guild_count})')
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, json=payload, headers=headers) as response:
+                if response.status == 200:
+                    print(f"Posted server count ({payload['server_count']}) successfully.")
+                else:
+                    print(f"Failed to post server count. Status: {response.status} - {await response.text()}")
     except Exception as e:
-        print('Failed to post server count\n{}: {}'.format(type(e).__name__, e))
+        print(f"Failed to post server count\n{type(e).__name__}: {e}")
 
 @bot.event
 async def on_interaction(interaction: discord.Interaction):
