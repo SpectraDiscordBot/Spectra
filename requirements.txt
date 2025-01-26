@@ -4,4 +4,3 @@ python-dotenv
 humanfriendly
 emoji
 google-api-python-client
-topggpy
