@@ -12,14 +12,6 @@ client = MongoClient(os.environ.get('MONGO_URI'))
 db = client['Spectra']
 autorole_collection = db['AutoRole']
 welcome_messages_collection = db['WelcomeMessages']
-topgg_api = None
-
-async def voteLocked(interaction: discord.Interaction):
-    embed = discord.Embed(title="Woah!", description="You need to vote to use this command!", color=discord.Color.red())
-    embed.add_field(name="Vote", value="[Click here to vote!](https://top.gg/bot/1279512390756470836/vote)")
-    embed.set_footer(text="Spectra", icon_url="https://i.ibb.co/cKqBfp1/spectra.gif")
-    embed.set_thumbnail(url="https://media.discordapp.net/attachments/914579638792114190/1280203446825517239/error-icon-25239.png?ex=66d739de&is=66d5e85e&hm=83a98b27d14a3a19f4795d3fec58d1cd7306f6a940c45e49cd2dfef6edcdc96e&=&format=webp&quality=lossless&width=640&height=640SS")
-    await interaction.response.send_message(embed=embed, ephemeral=True)
 
 class ManageRoles(commands.Cog):
     def __init__(self, bot):
@@ -30,9 +22,6 @@ class ManageRoles(commands.Cog):
     @commands.cooldown(1, 5, commands.BucketType.user)
     @app_commands.describe(name="The name of the role.", color="The color of the role.", mentionable="Whether the role is mentionable or not.")
     async def create(self, ctx: commands.Context, name: str, color: str, mentionable: bool = False):
-        if not await topgg_api.get_user_vote(ctx.author.id):
-            await voteLocked(ctx)
-            return
         try:
             try:
                 color = discord.Color(int(color.replace("#", ""), 16))
@@ -52,9 +41,6 @@ class ManageRoles(commands.Cog):
     @commands.has_permissions(manage_roles=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def delete(self, ctx: commands.Context, role: discord.Role):
-        if not await topgg_api.get_user_vote(ctx.author.id):
-            await voteLocked(ctx)
-            return
         try:
             await role.delete(reason=f"Deleted by {ctx.author.name}")
             await ctx.send(f"<:Checkmark:1326642406086410317> Deleted role {role.name}.")
@@ -85,9 +71,6 @@ class ManageRoles(commands.Cog):
     @commands.has_permissions(manage_roles=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def edit(self, ctx: commands.Context, role: discord.Role, name: str = None, color: str = None, mentionable: bool = None):
-        if not await topgg_api.get_user_vote(ctx.author.id):
-            await voteLocked(ctx)
-            return
         try:
             if name is not None:
                 await role.edit(name=name, reason=f"Edited by {ctx.author.name}")
