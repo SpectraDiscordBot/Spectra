@@ -53,7 +53,7 @@ def get_prefix(Client, message):
 
 # Bot
 
-bot = commands.AutoShardedBot(shard_count=1, command_prefix=get_prefix, intents=intents, status=discord.Status.idle, activity=discord.CustomActivity(name=">help | spectrabot.pages.dev"), owner_ids=[856196104385986560, 998434044335374336])
+bot = commands.AutoShardedBot(command_prefix=get_prefix, intents=intents, status=discord.Status.idle, activity=discord.CustomActivity(name=">help | spectrabot.pages.dev"), owner_ids=[856196104385986560, 998434044335374336])
 
 bot.remove_command("help")
 
@@ -181,7 +181,7 @@ async def on_ready():
 	if not webhook_manager.is_running:
 		await webhook_manager.start(6000)
 		print("Webhook Manager Started.")
-		
+
 	print(f"{bot.user} Is Ready.")
 	await bot.load_extension("autorole.commands")
 	await bot.load_extension("welcomemessage.commands")
