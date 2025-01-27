@@ -174,12 +174,14 @@ async def on_ready():
 	assert bot.user is not None
 	dblclient.default_bot_id = bot.user.id
 	if not autoposter.is_running:
-		# don't await unless you want to wait for the autopost loop to get finished
 		autoposter.start()
+		print("AutoPoster Started.")
 
 	# we can also start the webhook here
 	if not webhook_manager.is_running:
 		await webhook_manager.start(6000)
+		print("Webhook Manager Started.")
+		
 	print(f"{bot.user} Is Ready.")
 	await bot.load_extension("autorole.commands")
 	await bot.load_extension("welcomemessage.commands")
@@ -203,8 +205,6 @@ async def on_ready():
 
 	global startTime
 	startTime = datetime.datetime.utcnow()
-
-	update_stats.start()
 
 @bot.event
 async def on_dbl_vote(vote_data):
@@ -415,26 +415,6 @@ async def on_message(message):
 		pass
 
 	await bot.process_commands(message)
-
-@tasks.loop(minutes=30)
-async def update_stats():
-	url = "https://top.gg/api/bots/856196104385986560/stats"
-	headers = {
-		"Authorization": os.environ.get("TOP_GG")
-	}
-	payload = {
-		"server_count": len(bot.guilds)
-	}
-
-	try:
-		async with aiohttp.ClientSession() as session:
-			async with session.post(url, json=payload, headers=headers) as response:
-				if response.status == 200:
-					print(f"Posted server count ({payload['server_count']}) successfully.")
-				else:
-					print(f"Failed to post server count. Status: {response.status} - {await response.text()}")
-	except Exception as e:
-		print(f"Failed to post server count\n{type(e).__name__}: {e}")
 
 @bot.event
 async def on_interaction(interaction: discord.Interaction):
