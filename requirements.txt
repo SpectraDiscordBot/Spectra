@@ -4,4 +4,4 @@ python-dotenv
 humanfriendly
 emoji
 google-api-python-client
-aiohttp
+git+https://github.com/top-gg/python-sdk/

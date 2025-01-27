@@ -5,6 +5,7 @@ import discord
 import datetime
 import aiohttp
 import os
+import topgg
 from discord.ext import commands
 from discord import Button, app_commands
 from discord.ui import View
@@ -55,6 +56,26 @@ def get_prefix(Client, message):
 bot = commands.AutoShardedBot(shard_count=1, command_prefix=get_prefix, intents=intents, status=discord.Status.idle, activity=discord.CustomActivity(name=">help | spectrabot.pages.dev"), owner_ids=[856196104385986560, 998434044335374336])
 
 bot.remove_command("help")
+
+# TopGG
+
+from .callbacks import autopost, webhook
+
+dblclient = topgg.DBLClient(os.environ.get("TOP_GG")).set_data(bot)
+webhook_manager = topgg.WebhookManager().set_data(client).endpoint(webhook.endpoint)
+autoposter: topgg.AutoPoster = (
+	dblclient.autopost()
+	.on_success(autopost.on_autopost_success)
+	.on_error(autopost.on_autopost_error)
+	.stats(autopost.stats)
+)
+
+@topgg.endpoint("/dblwebhook", topgg.WebhookType.BOT, "testing")
+def endpoint(
+	vote_data: topgg.BotVoteData,
+):
+	print("Received a vote!", vote_data)
+	bot.dispatch("dbl_vote", vote_data)
 
 # Classes
 
@@ -150,6 +171,15 @@ class ErrorButtons(discord.ui.View):
 
 @bot.event
 async def on_ready():
+	assert bot.user is not None
+	dblclient.default_bot_id = bot.user.id
+	if not autoposter.is_running:
+		# don't await unless you want to wait for the autopost loop to get finished
+		autoposter.start()
+
+	# we can also start the webhook here
+	if not webhook_manager.is_running:
+		await webhook_manager.start(6000)
 	print(f"{bot.user} Is Ready.")
 	await bot.load_extension("autorole.commands")
 	await bot.load_extension("welcomemessage.commands")
@@ -175,6 +205,15 @@ async def on_ready():
 	startTime = datetime.datetime.utcnow()
 
 	update_stats.start()
+
+@bot.event
+async def on_dbl_vote(vote_data):
+	embed = discord.Embed(title="Thanks!", description=f"Thank you for voting! ♥", color=discord.Colour.pink())
+	embed.set_footer(text="Spectra", icon_url="https://i.ibb.co/cKqBfp1/spectra.gif")
+	try:
+		await vote_data.user.send(embed=embed)
+	except:
+		pass
 
 @bot.event
 async def on_command_error(ctx, error):
@@ -379,23 +418,23 @@ async def on_message(message):
 
 @tasks.loop(minutes=30)
 async def update_stats():
-    url = "https://top.gg/api/bots/856196104385986560/stats"
-    headers = {
-        "Authorization": os.environ.get("TOP_GG")
-    }
-    payload = {
-        "server_count": len(bot.guilds)
-    }
+	url = "https://top.gg/api/bots/856196104385986560/stats"
+	headers = {
+		"Authorization": os.environ.get("TOP_GG")
+	}
+	payload = {
+		"server_count": len(bot.guilds)
+	}
 
-    try:
-        async with aiohttp.ClientSession() as session:
-            async with session.post(url, json=payload, headers=headers) as response:
-                if response.status == 200:
-                    print(f"Posted server count ({payload['server_count']}) successfully.")
-                else:
-                    print(f"Failed to post server count. Status: {response.status} - {await response.text()}")
-    except Exception as e:
-        print(f"Failed to post server count\n{type(e).__name__}: {e}")
+	try:
+		async with aiohttp.ClientSession() as session:
+			async with session.post(url, json=payload, headers=headers) as response:
+				if response.status == 200:
+					print(f"Posted server count ({payload['server_count']}) successfully.")
+				else:
+					print(f"Failed to post server count. Status: {response.status} - {await response.text()}")
+	except Exception as e:
+		print(f"Failed to post server count\n{type(e).__name__}: {e}")
 
 @bot.event
 async def on_interaction(interaction: discord.Interaction):
