@@ -61,7 +61,7 @@ bot.remove_command("help")
 
 from callbacks import autopost, webhook
 
-dblclient = topgg.DBLClient(os.environ.get("TOP_GG")).set_data(bot)
+dblclient = topgg.DBLClient(bot, os.environ.get("TOP_GG"))
 webhook_manager = topgg.WebhookManager().set_data(client).endpoint(webhook.endpoint)
 autoposter: topgg.AutoPoster = (
 	dblclient.autopost()
@@ -216,11 +216,11 @@ async def on_dbl_vote(vote_data):
 	except:
 		pass
 
-@tasks.loop(minutes=30)
+@tasks.loop(minutes=10)
 async def update_stats():
     try:
-        await bot.topggpy.post_guild_count()
-        print(f'Posted server count ({bot.topggpy.guild_count})')
+        await dblclient.post_guild_count(len(bot.guilds))
+        print(f'Posted server count ({len(bot.guilds)})')
     except Exception as e:
         print('Failed to post server count\n{}: {}'.format(type(e).__name__, e))
 
