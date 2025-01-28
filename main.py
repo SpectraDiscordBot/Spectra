@@ -205,6 +205,7 @@ async def on_ready():
 
 	global startTime
 	startTime = datetime.datetime.utcnow()
+	update_stats.start()
 
 @bot.event
 async def on_dbl_vote(vote_data):
@@ -214,6 +215,14 @@ async def on_dbl_vote(vote_data):
 		await vote_data.user.send(embed=embed)
 	except:
 		pass
+
+@tasks.loop(minutes=30)
+async def update_stats():
+    try:
+        await bot.topggpy.post_guild_count()
+        print(f'Posted server count ({bot.topggpy.guild_count})')
+    except Exception as e:
+        print('Failed to post server count\n{}: {}'.format(type(e).__name__, e))
 
 @bot.event
 async def on_command_error(ctx, error):
