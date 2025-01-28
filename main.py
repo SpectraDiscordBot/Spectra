@@ -61,7 +61,7 @@ bot.remove_command("help")
 
 from callbacks import autopost, webhook
 
-dblclient = topgg.DBLClient(bot, os.environ.get("TOP_GG"))
+dblclient = topgg.DBLClient(os.environ.get("TOP_GG")).set_data(bot)
 webhook_manager = topgg.WebhookManager().set_data(client).endpoint(webhook.endpoint)
 autoposter: topgg.AutoPoster = (
 	dblclient.autopost()
