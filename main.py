@@ -62,20 +62,6 @@ bot.remove_command("help")
 from callbacks import autopost, webhook
 
 dblclient = topgg.DBLClient(os.environ.get("TOP_GG")).set_data(bot)
-webhook_manager = topgg.WebhookManager().set_data(client).endpoint(webhook.endpoint)
-autoposter: topgg.AutoPoster = (
-	dblclient.autopost()
-	.on_success(autopost.on_autopost_success)
-	.on_error(autopost.on_autopost_error)
-	.stats(autopost.stats)
-)
-
-@topgg.endpoint("/dblwebhook", topgg.WebhookType.BOT, "testing")
-def endpoint(
-	vote_data: topgg.BotVoteData,
-):
-	print("Received a vote!", vote_data)
-	bot.dispatch("dbl_vote", vote_data)
 
 # Classes
 
@@ -173,14 +159,6 @@ class ErrorButtons(discord.ui.View):
 async def on_ready():
 	assert bot.user is not None
 	dblclient.default_bot_id = bot.user.id
-	if not autoposter.is_running:
-		autoposter.start()
-		print("AutoPoster Started.")
-
-	# we can also start the webhook here
-	if not webhook_manager.is_running:
-		await webhook_manager.start(6000)
-		print("Webhook Manager Started.")
 
 	print(f"{bot.user} Is Ready.")
 	await bot.load_extension("autorole.commands")
