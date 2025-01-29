@@ -173,6 +173,7 @@ async def on_ready():
 	await bot.load_extension("anti-toxicity.commands")
 	await bot.load_extension("reports.commands")
 	await bot.load_extension("owner-stuff.commands")
+	await bot.load_extension("TopGG.topgg")
 	with open("spectra.gif", "rb") as f:
 		image = f.read()
 
@@ -312,6 +313,9 @@ async def on_guild_remove(guild):
 async def on_message(message):
 	if isinstance(message.channel, discord.channel.DMChannel):
 		return
+	
+	await bot.process_commands(message)
+
 	if bot.user.mentioned_in(message):
 		if message.author.id == 856196104385986560:
 			await message.reply("<:Checkmark:1326641983024009266> Owner of Spectra Verified")
@@ -400,8 +404,6 @@ async def on_message(message):
 			pass
 	else:
 		pass
-
-	await bot.process_commands(message)
 
 @bot.event
 async def on_interaction(interaction: discord.Interaction):
