@@ -5,7 +5,7 @@ import discord
 import datetime
 import aiohttp
 import os
-import dbl
+import topgg
 from discord.ext import commands
 from discord import Button, app_commands
 from discord.ui import View
@@ -60,8 +60,8 @@ bot.remove_command("help")
 # TopGG
 
 from callbacks import webhook
-webhook_manager = dbl.WebhookManager().set_data(bot).endpoint(webhook.endpoint)
-dblclient = dbl.DBLClient(os.environ.get("TOP_GG")).set_data(bot)
+webhook_manager = topgg.WebhookManager().set_data(bot).endpoint(webhook.endpoint)
+topggclient = topgg.topggClient(os.environ.get("TOP_GG")).set_data(bot)
 
 # Classes
 
@@ -158,7 +158,7 @@ class ErrorButtons(discord.ui.View):
 @bot.event
 async def on_ready():
 	assert bot.user is not None
-	dblclient.default_bot_id = bot.user.id
+	topggclient.default_bot_id = bot.user.id
 
 	if not webhook_manager.is_running:
 		await webhook_manager.start(5000)

@@ -4,7 +4,7 @@ import os
 
 import discord
 
-import dbl
+import topgg
 
 from dotenv import load_dotenv
 
@@ -16,14 +16,14 @@ class TopGG(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.token = os.environ.get("TOP_GG")
-        self.dblpy = dbl.DBLClient(self.bot, self.token, webhook_path='/dblwebhook', webhook_auth='youshallnotpass', webhook_port=5000)
+        self.topggpy = topgg.topggClient(self.bot, self.token, webhook_path='/dblwebhook', webhook_auth='youshallnotpass', webhook_port=5000)
         self.update_stats.start()
 
     def cog_unload(self):
         self.update_stats.cancel()
 
     @commands.Cog.listener()
-    async def on_dbl_vote(self, vote_data):
+    async def on_topgg_vote(self, vote_data):
         embed = discord.Embed(title="Thanks!", description=f"Thank you for voting! ♥", color=discord.Colour.pink())
         embed.set_footer(text="Spectra", icon_url="https://i.ibb.co/cKqBfp1/spectra.gif")
         user_id = vote_data.get('user')
@@ -40,7 +40,7 @@ class TopGG(commands.Cog):
         await self.bot.wait_until_ready()
         try:
             server_count = len(self.bot.guilds)
-            await self.dblpy.post_guild_count(server_count)
+            await self.topggpy.post_guild_count(server_count)
             print('Posted server count ({})'.format(server_count))
         except Exception as e:
             print('Failed to post server count\n{}: {}'.format(type(e).__name__, e))

@@ -25,11 +25,11 @@ import topgg
 import discord
 
 
-@topgg.endpoint("/dblwebhook", topgg.WebhookType.BOT, "youshallnotpass")
+@topgg.endpoint("/topggwebhook", topgg.WebhookType.BOT, "youshallnotpass")
 def endpoint(
     vote_data: topgg.BotVoteData,
     client: discord.Client = topgg.data(discord.Client),
 ):
     print("Received a vote!", vote_data)
 
-    client.dispatch("dbl_vote", vote_data)
+    client.dispatch("topgg_vote", vote_data)
