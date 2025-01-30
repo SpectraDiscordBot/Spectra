@@ -65,7 +65,6 @@ async def setup_hook():
     token = os.environ.get("TOP_GG")
     if token:
         bot.topggpy = topgg.DBLClient(bot, token)
-        await bot.topggpy.start()
 
 # Classes
 
