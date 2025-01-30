@@ -18,6 +18,7 @@ class ManageRoles(commands.Cog):
 
     @commands.hybrid_command(name="create-role", description="Create a role.")
     @commands.has_permissions(manage_roles=True)
+    @commands.bot_has_permissions(manage_roles=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
     @app_commands.describe(name="The name of the role.", color="The color of the role.", mentionable="Whether the role is mentionable or not.")
     async def create(self, ctx: commands.Context, name: str, color: str, mentionable: bool = False):
@@ -38,6 +39,7 @@ class ManageRoles(commands.Cog):
     @commands.hybrid_command(name="delete-role", description="Delete a role.")
     @app_commands.describe(role="The role you want to delete.")
     @commands.has_permissions(manage_roles=True)
+    @commands.bot_has_permissions(manage_roles=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def delete(self, ctx: commands.Context, role: discord.Role):
         try:
@@ -68,6 +70,7 @@ class ManageRoles(commands.Cog):
     @commands.hybrid_command(name="edit-role", description="Edit a role.")
     @app_commands.describe(role="The role you want to edit.", name="The name of the role.", color="The color of the role.", mentionable="Whether the role is mentionable or not.")
     @commands.has_permissions(manage_roles=True)
+    @commands.bot_has_permissions(manage_roles=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def edit(self, ctx: commands.Context, role: discord.Role, name: str = None, color: str = None, mentionable: bool = None):
         try:

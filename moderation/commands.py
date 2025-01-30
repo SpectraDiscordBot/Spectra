@@ -23,6 +23,7 @@ class Moderation(commands.Cog):
 
 	@commands.hybrid_command(name="purge", description="Purges messages from the channel.")
 	@commands.has_permissions(manage_messages=True)
+	@commands.both_has_permissions(manage_messages=True)
 	@commands.cooldown(1, 5, commands.BucketType.user)
 	async def purge(self, ctx, limit: int = 5, *, reason: str = None):
 		await ctx.defer(ephemeral=True)
@@ -71,6 +72,7 @@ class Moderation(commands.Cog):
 
 	@commands.hybrid_command(name="mute", description="Mute a user.")
 	@commands.has_permissions(moderate_members=True)
+	@commands.bot_has_permissions(moderate_members=True)
 	@commands.cooldown(1, 5, commands.BucketType.user)
 	async def mute(self, ctx, user: discord.Member, time: str, *, reason: str):
 		if user.id == ctx.author.id:
@@ -109,6 +111,7 @@ class Moderation(commands.Cog):
 
 	@commands.hybrid_command(name="unmute", description="Unmute a user.")
 	@commands.has_permissions(moderate_members=True)
+	@commands.bot_has_permissions(moderate_members=True)
 	@commands.cooldown(1, 5, commands.BucketType.user)
 	async def unmute(self, ctx, user: discord.Member):
 		if user.id == ctx.author.id:
@@ -138,6 +141,7 @@ class Moderation(commands.Cog):
 
 	@commands.hybrid_command(name="ban", description="Ban a user.")
 	@commands.has_permissions(ban_members=True)
+	@commands.bot_has_permissions(ban_members=True)
 	@commands.cooldown(1, 5, commands.BucketType.user)
 	async def ban(self, ctx, user: discord.User, delete_message_days : int = 0, *, reason: str = "No Reason Provided"):
 		if user.id == ctx.author.id:
@@ -173,6 +177,7 @@ class Moderation(commands.Cog):
 
 	@commands.hybrid_command(name="kick", description="Kick a user.")
 	@commands.has_permissions(kick_members=True)
+	@commands.bot_has_permissions(kick_members=True)
 	@commands.cooldown(1, 5, commands.BucketType.user)
 	async def kick(self, ctx, user: discord.Member, *, reason: str = "No Reason Provided"):
 		if user.id == ctx.author.id:
@@ -202,6 +207,7 @@ class Moderation(commands.Cog):
 
 	@commands.hybrid_command(name="unban", description="Unban a user.")
 	@commands.has_permissions(ban_members=True)
+	@commands.bot_has_permissions(ban_members=True)
 	@commands.cooldown(1, 5, commands.BucketType.user)
 	async def unban(self, ctx, user: discord.User):
 		try:
@@ -214,6 +220,7 @@ class Moderation(commands.Cog):
 
 	@commands.hybrid_command(name="slowmode", description="Set the slowmode in a channel")
 	@commands.has_permissions(manage_channels=True)
+	@commands.bot_has_permissions(manage_channels=True)
 	@commands.cooldown(1, 5, commands.BucketType.user)
 	async def slowmode(self, ctx, seconds: int, channel: discord.TextChannel = None):
 		if not channel:
