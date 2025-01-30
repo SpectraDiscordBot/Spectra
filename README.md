@@ -1,6 +1,6 @@
 ### Up to date as of January 30, 2025.
 
-Support us by voting on TopGG!
+Support us by voting on [TopGG](https://top.gg/bot/1279512390756470836), or by buying a donation package on our [bot's store](https://discord.com/discovery/applications/1279512390756470836/store)!
 
 
 Clone by running `git clone https://github.com/SpectraDiscordBot/Spectra.git`
