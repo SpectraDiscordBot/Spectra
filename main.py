@@ -59,7 +59,7 @@ bot.remove_command("help")
 
 # TopGG
 
-from callbacks import autopost, webhook
+from callbacks import webhook
 webhook_manager = dbl.WebhookManager().set_data(bot).endpoint(webhook.endpoint)
 dblclient = dbl.DBLClient(os.environ.get("TOP_GG")).set_data(bot)
 
