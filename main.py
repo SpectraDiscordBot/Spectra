@@ -184,7 +184,6 @@ async def on_ready():
 
 	global startTime
 	startTime = datetime.datetime.utcnow()
-	update_stats.start()
 
 @bot.event
 async def on_dbl_vote(vote_data):
