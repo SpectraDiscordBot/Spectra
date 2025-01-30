@@ -59,7 +59,6 @@ bot.remove_command("help")
 
 # TopGG
 bot.topgg_webhook = topgg.WebhookManager(bot).dbl_webhook("/dblwebhook", "youshallnotpass")
-bot.topgg_webhook.run(5000)
 
 topggclient = topgg.topggClient(os.environ.get("TOP_GG")).set_data(bot)
 
@@ -159,6 +158,10 @@ class ErrorButtons(discord.ui.View):
 async def on_ready():
 	assert bot.user is not None
 	topggclient.default_bot_id = bot.user.id
+
+	try:
+		await bot.topgg_webhook.run(5000)
+	except: pass
 
 	print(f"{bot.user} Is Ready.")
 	await bot.load_extension("autorole.commands")
