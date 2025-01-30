@@ -197,12 +197,10 @@ async def on_dbl_vote(vote_data):
 @bot.event
 async def on_command_error(ctx, error):
 	if isinstance(error, commands.CommandNotFound):
-		return
+		await ctx.send("I don't think that command exists! If you're using another bot, consider changing my prefix for this server!", ephemeral=True)
 	elif isinstance(error, commands.CommandOnCooldown):
 		msg = '**Still On Cooldown!** You may retry after {:.2f}s'.format(error.retry_after)
 		await ctx.send(msg, ephemeral=True)
-	elif isinstance(error, commands.CommandNotFound):
-		pass
 	elif isinstance(error, commands.MissingRequiredArgument):
 		msg = f"Missing required arguments: `{error.args}`"
 		await ctx.send(msg, ephemeral=True)
