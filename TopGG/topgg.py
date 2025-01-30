@@ -15,7 +15,7 @@ class TopGG(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.token = os.environ.get("TOP_GG")
-        self.topggpy = topgg.topggClient(self.bot, self.token, webhook_path='/dblwebhook', webhook_auth='youshallnotpass', webhook_port=5000)
+        self.topggpy = topgg.DBLClient(self.bot, self.token, webhook_path='/dblwebhook', webhook_auth='youshallnotpass', webhook_port=5000)
         self.update_stats.start()
 
     def cog_unload(self):
