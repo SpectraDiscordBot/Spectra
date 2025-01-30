@@ -60,7 +60,12 @@ bot.remove_command("help")
 # TopGG
 bot.topgg_webhook = topgg.WebhookManager(bot).dbl_webhook("/dblwebhook", "youshallnotpass")
 
-dblclient = topgg.DBLClient(os.environ.get("TOP_GG")).set_data(bot)
+@bot.event
+async def setup_hook():
+    token = os.environ.get("TOP_GG")
+    if token:
+        bot.topggpy = topgg.DBLClient(bot, token)
+        await bot.topggpy.start()
 
 # Classes
 
@@ -693,4 +698,8 @@ async def on_modlog(guild_id, action_taker, action, message):
 
 # Run Bot
 
-bot.run(os.environ.get('TOKEN'))
+async def main():
+    await bot.start(os.environ.get('TOKEN'))
+
+if __name__ == "__main__":
+    asyncio.run(main())
