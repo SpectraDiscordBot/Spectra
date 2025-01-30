@@ -5,7 +5,7 @@ import discord
 import datetime
 import aiohttp
 import os
-import topgg
+import dbl
 from discord.ext import commands
 from discord import Button, app_commands
 from discord.ui import View
@@ -60,8 +60,8 @@ bot.remove_command("help")
 # TopGG
 
 from callbacks import autopost, webhook
-
-dblclient = topgg.DBLClient(os.environ.get("TOP_GG")).set_data(bot)
+webhook_manager = dbl.WebhookManager().set_data(bot).endpoint(webhook.endpoint)
+dblclient = dbl.DBLClient(os.environ.get("TOP_GG")).set_data(bot)
 
 # Classes
 
@@ -159,6 +159,9 @@ class ErrorButtons(discord.ui.View):
 async def on_ready():
 	assert bot.user is not None
 	dblclient.default_bot_id = bot.user.id
+
+	if not webhook_manager.is_running:
+		await webhook_manager.start(5000)
 
 	print(f"{bot.user} Is Ready.")
 	await bot.load_extension("autorole.commands")
