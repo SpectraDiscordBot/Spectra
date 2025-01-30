@@ -10,7 +10,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-
 class TopGG(commands.Cog):
 
     def __init__(self, bot):

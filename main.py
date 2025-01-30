@@ -58,9 +58,9 @@ bot = commands.AutoShardedBot(command_prefix=get_prefix, intents=intents, status
 bot.remove_command("help")
 
 # TopGG
+bot.topgg_webhook = topgg.WebhookManager(bot).dbl_webhook("/dblwebhook", "youshallnotpass")
+bot.topgg_webhook.run(5000)
 
-from callbacks import webhook
-webhook_manager = topgg.WebhookManager().set_data(bot).endpoint(webhook.endpoint)
 topggclient = topgg.topggClient(os.environ.get("TOP_GG")).set_data(bot)
 
 # Classes
@@ -159,9 +159,6 @@ class ErrorButtons(discord.ui.View):
 async def on_ready():
 	assert bot.user is not None
 	topggclient.default_bot_id = bot.user.id
-
-	if not webhook_manager.is_running:
-		await webhook_manager.start(5000)
 
 	print(f"{bot.user} Is Ready.")
 	await bot.load_extension("autorole.commands")
