@@ -2,6 +2,8 @@ from discord.ext import commands, tasks
 
 import os
 
+import discord
+
 import dbl
 
 from dotenv import load_dotenv
@@ -19,6 +21,19 @@ class TopGG(commands.Cog):
 
     def cog_unload(self):
         self.update_stats.cancel()
+
+    @commands.Cog.listener()
+    async def on_dbl_vote(self, vote_data):
+        embed = discord.Embed(title="Thanks!", description=f"Thank you for voting! ♥", color=discord.Colour.pink())
+        embed.set_footer(text="Spectra", icon_url="https://i.ibb.co/cKqBfp1/spectra.gif")
+        user_id = vote_data.get('user')
+        user = self.bot.get_user(user_id)
+        try:
+            await user.send(embed=embed)
+        except discord.Forbidden: 
+            pass
+        except Exception as e:
+            print('Failed to send thank you message\n{}: {}'.format(type(e).__name__, e))
 
     @tasks.loop(minutes=30)
     async def update_stats(self):

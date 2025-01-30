@@ -20,20 +20,16 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
-# import discord
 
 import topgg
+import discord
 
 
-# this can be async too!
 @topgg.endpoint("/dblwebhook", topgg.WebhookType.BOT, "youshallnotpass")
 def endpoint(
     vote_data: topgg.BotVoteData,
-    # uncomment this if you want to get access to client
-    # client: discord.Client = topgg.data(discord.Client),
+    client: discord.Client = topgg.data(discord.Client),
 ):
-    # this function will be called whenever someone votes for your bot.
     print("Received a vote!", vote_data)
 
-    # do anything with client here
-    # client.dispatch("dbl_vote", vote_data)
+    client.dispatch("dbl_vote", vote_data)
