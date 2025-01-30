@@ -195,14 +195,6 @@ async def on_dbl_vote(vote_data):
 	except:
 		pass
 
-@tasks.loop(minutes=10)
-async def update_stats():
-    try:
-        await dblclient.post_guild_count(len(bot.guilds))
-        print(f'Posted server count ({len(bot.guilds)})')
-    except Exception as e:
-        print('Failed to post server count\n{}: {}'.format(type(e).__name__, e))
-
 @bot.event
 async def on_command_error(ctx, error):
 	if isinstance(error, commands.CommandNotFound):
