@@ -23,7 +23,7 @@ class Moderation(commands.Cog):
 
 	@commands.hybrid_command(name="purge", description="Purges messages from the channel.")
 	@commands.has_permissions(manage_messages=True)
-	@commands.both_has_permissions(manage_messages=True)
+	@commands.bot_has_permissions(manage_messages=True)
 	@commands.cooldown(1, 5, commands.BucketType.user)
 	async def purge(self, ctx, limit: int = 5, *, reason: str = None):
 		await ctx.defer(ephemeral=True)
