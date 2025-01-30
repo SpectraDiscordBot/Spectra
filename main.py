@@ -186,15 +186,6 @@ async def on_ready():
 	startTime = datetime.datetime.utcnow()
 
 @bot.event
-async def on_dbl_vote(vote_data):
-	embed = discord.Embed(title="Thanks!", description=f"Thank you for voting! ♥", color=discord.Colour.pink())
-	embed.set_footer(text="Spectra", icon_url="https://i.ibb.co/cKqBfp1/spectra.gif")
-	try:
-		await vote_data.user.send(embed=embed)
-	except:
-		pass
-
-@bot.event
 async def on_command_error(ctx, error):
 	if isinstance(error, commands.CommandNotFound):
 		await ctx.send("I don't think that command exists! If you're using another bot, consider changing my prefix for this server!", ephemeral=True)
