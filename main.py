@@ -162,7 +162,7 @@ class ErrorButtons(discord.ui.View):
 @bot.event
 async def on_ready():
 	assert bot.user is not None
-	dblclient.default_bot_id = bot.user.id
+	bot.topggpy.default_bot_id = bot.user.id
 
 	try:
 		await bot.topgg_webhook.run(5000)
