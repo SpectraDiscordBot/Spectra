@@ -275,7 +275,7 @@ async def on_member_join(member):
 			role_id = int(data.get("role"))
 			role = member.guild.get_role(role_id)
 
-			if role:
+			if role and role not in member.roles:
 				try:
 					await member.add_roles(role)
 				except discord.Forbidden:
