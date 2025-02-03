@@ -589,7 +589,13 @@ async def help(ctx: commands.Context):
 	embed.set_footer(text="Made with ❤ by brutiv & tyler.hers", icon_url="https://i.ibb.co/cKqBfp1/spectra.gif")
 	embed.set_thumbnail(url="https://i.ibb.co/cKqBfp1/spectra.gif")
 	embed.add_field(name="Prefix", value=f"`{get_prefix(bot, ctx.message)}`\n`/`", inline=False)
-	await ctx.send(embed=embed, view=HelpButtons(), ephemeral=True)
+	if ctx.interaction: await ctx.send(embed=embed, view=HelpButtons(), ephemeral=True)
+	else:
+		try:
+			await ctx.author.send(embed=embed, view=HelpButtons())
+			await ctx.message.add_reaction("✅")
+		except:
+			await ctx.send("I can't send messages to you. Make sure your DMs are enabled.")
 
 @bot.hybrid_command(name="set-prefix", description="Set a custom prefix for the server.")
 @commands.has_permissions(manage_guild=True)
