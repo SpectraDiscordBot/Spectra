@@ -44,8 +44,8 @@ cases_collection = db['Cases']
 custom_cmds_collection = db["CustomCommands"]
 custom_prefix_collection = db["CustomPrefixes"]
 
-def get_prefix(Client, message):
-	prefixes = custom_prefix_collection.find_one({"guild_id": str(message.guild.id)})
+def get_prefix(Client, message, guild):
+	prefixes = custom_prefix_collection.find_one({"guild_id": str(guild.id)})
 	if prefixes:
 		return prefixes.get("prefix")
 	else:
@@ -70,7 +70,7 @@ async def setup_hook():
 
 class CommandPaginator(View):
 	def __init__(self, commands, per_page=10):
-		super().__init__(timeout=60)
+		super().__init__(timeout=120)
 		self.commands = commands
 		self.per_page = per_page
 		self.current_page = 0
@@ -127,7 +127,7 @@ class HelpButtons(discord.ui.View):
 	async def uptime(self, interaction: discord.Interaction, button: discord.ui.Button):
 		embed = discord.Embed(
 			title="Uptime",
-			description=f"The bot has been up for {datetime.datetime.utcnow() - startTime}.",
+			description=f"The bot has been up for {datetime.datetime.now() - startTime}.",
 			color=discord.Color.blue()
 		)
 		embed.set_footer(text="Spectra", icon_url="https://i.ibb.co/cKqBfp1/spectra.gif")
@@ -588,7 +588,7 @@ async def help(ctx: commands.Context):
 	)
 	embed.set_footer(text="Made with ❤ by brutiv & tyler.hers", icon_url="https://i.ibb.co/cKqBfp1/spectra.gif")
 	embed.set_thumbnail(url="https://i.ibb.co/cKqBfp1/spectra.gif")
-	embed.add_field(name="Prefix", value=f"`{get_prefix(bot, ctx.message)}`\n`/`", inline=False)
+	embed.add_field(name="Prefix", value=f"`{get_prefix(bot, ctx.message, ctx.guild)}`\n`/`", inline=False)
 	if ctx.interaction: await ctx.send(embed=embed, view=HelpButtons(), ephemeral=True)
 	else:
 		try:
