@@ -45,7 +45,7 @@ custom_cmds_collection = db["CustomCommands"]
 custom_prefix_collection = db["CustomPrefixes"]
 
 def get_prefix(Client, message, guild):
-	prefixes = custom_prefix_collection.find_one({"guild_id": str(guild.id)})
+	prefixes = custom_prefix_collection.find_one({"guild_id": str(message.guild.id)})
 	if prefixes:
 		return prefixes.get("prefix")
 	else:
