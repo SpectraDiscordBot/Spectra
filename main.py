@@ -190,7 +190,7 @@ async def on_ready():
 	await bot.tree.sync()
 
 	global startTime
-	startTime = datetime.datetime.utcnow()
+	startTime = datetime.datetime.now()
 
 @bot.event
 async def on_command_error(ctx, error):
