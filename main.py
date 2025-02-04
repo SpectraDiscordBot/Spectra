@@ -641,7 +641,7 @@ async def invite(ctx: commands.Context):
 async def support(ctx: commands.Context):
 	embed = discord.Embed(
 		title="Support Server",
-		description="E-mail: spectra.official@protonmail.com/n[Click here to join the support server.](https://discord.gg/fcPF66DubA)",
+		description="E-mail: spectra.official@protonmail.com\n[Click here to join the support server.](https://discord.gg/fcPF66DubA)",
 		color=discord.Color.blue()
 	)
 	embed.set_footer(text="Spectra", icon_url="https://i.ibb.co/cKqBfp1/spectra.gif")
