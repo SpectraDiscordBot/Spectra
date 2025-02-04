@@ -44,12 +44,15 @@ cases_collection = db['Cases']
 custom_cmds_collection = db["CustomCommands"]
 custom_prefix_collection = db["CustomPrefixes"]
 
-def get_prefix(Client, message, guild):
-	prefixes = custom_prefix_collection.find_one({"guild_id": str(message.guild.id)})
-	if prefixes:
-		return prefixes.get("prefix")
-	else:
+def get_prefix(Client, message):
+	if not message.guild:
 		return ">"
+	else:
+		try:
+			custom_prefix_collection.find_one({"guild_id": str(message.guild.id)})
+		except:
+			return ">"
+
 
 # Bot
 
@@ -588,7 +591,7 @@ async def help(ctx: commands.Context):
 	)
 	embed.set_footer(text="Made with ❤ by brutiv & tyler.hers", icon_url="https://i.ibb.co/cKqBfp1/spectra.gif")
 	embed.set_thumbnail(url="https://i.ibb.co/cKqBfp1/spectra.gif")
-	embed.add_field(name="Prefix", value=f"`{get_prefix(bot, ctx.message, ctx.guild)}`\n`/`", inline=False)
+	embed.add_field(name="Prefix", value=f"`{get_prefix(bot, ctx.message)}`\n`/`", inline=False)
 	await ctx.send(embed=embed, view=HelpButtons(), ephemeral=True)
 
 @bot.hybrid_command(name="set-prefix", description="Set a custom prefix for the server.")
@@ -631,6 +634,17 @@ async def invite(ctx: commands.Context):
 	embed = discord.Embed(title="Invite Spectra to your server!", description="[Click Me To Invite!](https://discord.com/oauth2/authorize?client_id=1279512390756470836&permissions=939912256&integration_type=0&scope=bot+applications.commands)", color=discord.Colour.blue())
 	embed.set_footer(text="Invite Spectra For Free!")
 	await ctx.send(embed=embed)
+
+@bot.hybrid_command(name="support", description="Support server of the bot")
+@commands.cooldown(1, 5, commands.BucketType.user)
+async def support(ctx: commands.Context):
+	embed = discord.Embed(
+		title="Support Server",
+		description="E-mail: spectra.official@protonmail.com/n[Click here to join the support server.](https://discord.gg/fcPF66DubA)",
+		color=discord.Color.blue()
+	)
+	embed.set_footer(text="Spectra", icon_url="https://i.ibb.co/cKqBfp1/spectra.gif")
+	await ctx.send(embed=embed, ephemeral=True)
 
 @bot.command()
 @commands.is_owner()
