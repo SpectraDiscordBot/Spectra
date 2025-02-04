@@ -49,7 +49,8 @@ def get_prefix(Client, message):
 		return ">"
 	else:
 		try:
-			custom_prefix_collection.find_one({"guild_id": str(message.guild.id)})
+			prefix = custom_prefix_collection.find_one({"guild_id": str(message.guild.id)})
+			return prefix
 		except:
 			return ">"
 
