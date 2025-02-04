@@ -7,6 +7,7 @@ import requests
 
 import requests
 
+
 def send_webhook(webhook_url, item_name, user_id, amount, bot_token):
     user_info = get_user_info(user_id, bot_token)
     if user_info is None:
@@ -21,9 +22,9 @@ def send_webhook(webhook_url, item_name, user_id, amount, bot_token):
             {
                 "title": "New Purchase",
                 "description": f"**Item:** {item_name}\n**User:** {user_name}\n**Amount:** ${amount:.2f}",
-                "color": 3447003
+                "color": 3447003,
             }
-        ]
+        ],
     }
 
     # Send the webhook
@@ -33,10 +34,9 @@ def send_webhook(webhook_url, item_name, user_id, amount, bot_token):
     else:
         print(f"Failed to send webhook: {response.status_code}, {response.text}")
 
+
 def get_user_info(user_id, bot_token):
-    headers = {
-        "Authorization": f"Bot {bot_token}"
-    }
+    headers = {"Authorization": f"Bot {bot_token}"}
     url = f"https://discord.com/api/v10/users/{user_id}"
     response = requests.get(url, headers=headers)
 
@@ -46,34 +46,43 @@ def get_user_info(user_id, bot_token):
         print(f"Failed to fetch user info: {response.status_code}, {response.text}")
         return None
 
+
 async def on_purchase(user_id, sku_id, bot):
-	user = await bot.fetch_user(user_id)
-	if user:
-		try:
-			await user.send(f"Thank you for supporting Spectra!")
-			try:
-				send_webhook(os.environ["WEBHOOK_URL"], "Spectra", user_id, 1.0, bot.user.bot_token)
-			except:
-				pass
-		except discord.Forbidden:
-			pass
+    user = await bot.fetch_user(user_id)
+    if user:
+        try:
+            await user.send(f"Thank you for supporting Spectra!")
+            try:
+                send_webhook(
+                    os.environ["WEBHOOK_URL"],
+                    "Spectra",
+                    user_id,
+                    1.0,
+                    bot.user.bot_token,
+                )
+            except:
+                pass
+        except discord.Forbidden:
+            pass
+
 
 class Purchases(commands.Cog):
-	def __init__(self, bot):
-		self.bot = bot
+    def __init__(self, bot):
+        self.bot = bot
 
-	@commands.Cog.listener()
-	async def on_socket_raw_receive(self, payload):
-		if isinstance(payload, bytes):
-			payload = payload.decode('utf-8')
-		event_data = json.loads(payload)
-		
-		if event_data.get("t") == "ENTITLEMENT_CREATE":
-			entitlement = event_data.get("d", {})
-			user_id = entitlement.get("user_id")
-			sku_id = entitlement.get("sku_id")
-			
-			await on_purchase(user_id, sku_id, self.bot)
+    @commands.Cog.listener()
+    async def on_socket_raw_receive(self, payload):
+        if isinstance(payload, bytes):
+            payload = payload.decode("utf-8")
+        event_data = json.loads(payload)
+
+        if event_data.get("t") == "ENTITLEMENT_CREATE":
+            entitlement = event_data.get("d", {})
+            user_id = entitlement.get("user_id")
+            sku_id = entitlement.get("sku_id")
+
+            await on_purchase(user_id, sku_id, self.bot)
+
 
 async def setup(bot):
-	await bot.add_cog(Purchases(bot))
+    await bot.add_cog(Purchases(bot))
