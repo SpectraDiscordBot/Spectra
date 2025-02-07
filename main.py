@@ -158,7 +158,6 @@ class HelpButtons(discord.ui.View):
                 "help",
                 "refresh",
                 "verify",
-                "servers",
                 "load",
                 "biggest_server",
                 "shutdown",
@@ -1002,10 +1001,7 @@ async def load(ctx: commands.Context, extension):
 @bot.command()
 @commands.cooldown(1, 15, commands.BucketType.user)
 async def servers(ctx: commands.Context):
-    if ctx.author.id == 856196104385986560 or ctx.author.id == 998434044335374336:
-        return await ctx.send(f"Currently in {len(bot.guilds)} servers.")
-    else:
-        return
+    await ctx.send(f"Currently in {len(bot.guilds)} servers.")
 
 
 async def send_modlog(guild_id, action_taker: discord.Member, action, message):
