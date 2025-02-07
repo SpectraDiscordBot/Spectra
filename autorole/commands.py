@@ -10,8 +10,6 @@ load_dotenv()
 client = MongoClient(os.environ.get("MONGO_URI"))
 db = client["Spectra"]
 autorole_collection = db["AutoRole"]
-welcome_messages_collection = db["WelcomeMessages"]
-
 
 class AutoRole_Commands(commands.Cog):
     def __init__(self, bot):
