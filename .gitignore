@@ -1,3 +1,6 @@
 .env
 owner-stuff/
 Spectra.rar
+.idea/
+.qodo/
+__pycache__/

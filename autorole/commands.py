@@ -29,7 +29,7 @@ class AutoRole_Commands(commands.Cog):
         )
         count = autorole_collection.count_documents({"guild_id": guild_id})
 
-        if count >= 3:
+        if count >= 5:
             await ctx.send(
                 "You have reached the maximum limit of 3 auto roles. Please remove one first.",
                 delete_after=10,
