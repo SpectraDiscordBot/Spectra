@@ -54,9 +54,9 @@ class Reaction_Role_Commands(commands.Cog):
             if r["role_id"] == str(role.id):
                 await ctx.send(f"The role {role.name} is already configured.")
                 return
-            if len(list(roles)) >= 10:
+            if len(list(roles)) >= 15:
                 await ctx.send(
-                    "You have reached the maximum limit of 10 reaction roles. Please remove one first."
+                    "You have reached the maximum limit of 15 reaction roles. Please remove one first."
                 )
                 return
 
