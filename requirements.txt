@@ -5,3 +5,4 @@ humanfriendly
 emoji
 google-api-python-client
 topggpy
+motor

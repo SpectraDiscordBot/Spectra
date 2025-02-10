@@ -7,11 +7,6 @@ from pymongo import MongoClient
 
 load_dotenv()
 
-client = MongoClient(os.environ.get("MONGO_URI"))
-db = client["Spectra"]
-autorole_collection = db["AutoRole"]
-welcome_messages_collection = db["WelcomeMessages"]
-
 
 class ManageRoles(commands.Cog):
     def __init__(self, bot):

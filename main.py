@@ -256,6 +256,8 @@ async def on_ready():
     await bot.load_extension("reports.commands")
     await bot.load_extension("owner-stuff.commands")
     await bot.load_extension("TopGG.topgg")
+    await bot.load_extension("verification.commands")
+
     with open("spectra.gif", "rb") as f:
         image = f.read()
 
@@ -949,9 +951,12 @@ async def vote(ctx: commands.Context):
 
 
 @bot.hybrid_command(name="ping", description="Check if the bot is online.")
-@commands.cooldown(1, 15, commands.BucketType.user)
+@commands.cooldown(1, 5, commands.BucketType.user)
 async def ping(ctx: commands.Context):
-    await ctx.send(f"Pong! {round(bot.latency * 1000)}ms")
+    then = datetime.datetime.now(datetime.timezone.utc)
+    msg = await ctx.send("Pinging...")
+    time_diff = (then - ctx.message.created_at).total_seconds() * 1000
+    await msg.edit(content=f"Pong! Websocket: `{round(bot.latency * 1000)}ms` Bot: `{round(time_diff)}ms`")
 
 
 @bot.hybrid_command(name="invite", description="Invite Spectra to your server!")

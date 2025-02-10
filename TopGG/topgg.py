@@ -60,5 +60,5 @@ class TopGG(commands.Cog):
             print("Failed to post server count\n{}: {}".format(type(e).__name__, e))
 
 
-def setup(bot):
-    bot.add_cog(TopGG(bot))
+async def setup(bot):
+    await bot.add_cog(TopGG(bot))
