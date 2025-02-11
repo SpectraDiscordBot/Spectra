@@ -1,38 +1,60 @@
 import discord
 from discord.ext import commands
-from discord import app_commands, ui
-from libretranslatepy import LibreTranslateAPI # type: ignore
+from googletrans import Translator
 
-class LanguageDropdown(ui.Select):
-    def __init__(self, bot, text):
-        self.bot = bot
+COMMON_LANGUAGES = {
+    "en": "English",
+    "es": "Spanish",
+    "fr": "French",
+    "de": "German",
+    "it": "Italian",
+    "pt": "Portuguese",
+    "ru": "Russian",
+    "zh-cn": "Chinese (Simplified)",
+    "zh-tw": "Chinese (Traditional)",
+    "ja": "Japanese",
+    "ko": "Korean",
+    "ar": "Arabic",
+    "hi": "Hindi",
+    "nl": "Dutch",
+    "sv": "Swedish",
+    "no": "Norwegian",
+    "da": "Danish",
+    "fi": "Finnish",
+    "pl": "Polish",
+    "tr": "Turkish",
+    "el": "Greek",
+    "cs": "Czech",
+    "ro": "Romanian",
+    "hu": "Hungarian",
+    "id": "Indonesian"
+}
+
+class LanguageDropdown(discord.ui.Select):
+    def __init__(self, text: str):
         self.text = text
-        self.lt = LibreTranslateAPI("https://translate.argosopentech.com")
-        self.languages = {lang["code"]: lang["name"].title() for lang in self.lt.languages()}
-
-        options = [discord.SelectOption(label=name, value=code) for code, name in self.languages.items()]
-        super().__init__(placeholder="Choose a language", options=options)
+        self.translator = Translator()
+        options = [discord.SelectOption(label=name, value=code) for code, name in COMMON_LANGUAGES.items()]
+        super().__init__(placeholder="Choose a language", options=options, min_values=1, max_values=1)
 
     async def callback(self, interaction: discord.Interaction):
-        try:
-            translated = self.lt.translate(self.text, target=self.values[0])
-            await interaction.response.send_message(f"**{self.languages[self.values[0]]}:** {translated}", ephemeral=True)
-        except Exception as e:
-            await interaction.response.send_message(f"Error: {e}", ephemeral=True)
+        target = self.values[0]
+        result = self.translator.translate(self.text, dest=target)
+        await interaction.response.send_message(f"**{COMMON_LANGUAGES[target]}:** {result.text}", ephemeral=True)
 
-class TranslateView(ui.View):
-    def __init__(self, bot, text):
-        super().__init__()
-        self.add_item(LanguageDropdown(bot, text))
+class TranslateView(discord.ui.View):
+    def __init__(self, text: str):
+        super().__init__(timeout=30)
+        self.add_item(LanguageDropdown(text))
 
 class Translate(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
-        self.lt = LibreTranslateAPI("https://translate.argosopentech.com")
 
-    @commands.hybrid_command(name="translate", description="Translate something", aliases=["tr"])
-    async def translate(self, ctx, *, text: str):
-        await ctx.send("Select a language:", view=TranslateView(self.bot, text))
+    @commands.hybrid_command(name="translate", aliases=["tr"])
+    async def translate(self, ctx: commands.Context, *, text: str):
+        view = TranslateView(text)
+        await ctx.send("Select a language:", view=view)
 
-async def setup(bot):
+async def setup(bot: commands.Bot):
     await bot.add_cog(Translate(bot))
