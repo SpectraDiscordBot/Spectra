@@ -130,6 +130,11 @@ class CommandPaginator(View):
                 continue
             if command.name == "status":
                 continue
+            if command.name == "blacklist":
+                return
+            if command.name == "unblacklist":
+                return
+                
             aliases = (
                 ", ".join(command.aliases)
                 if hasattr(command, "aliases") and command.aliases
@@ -176,8 +181,11 @@ class HelpButtons(discord.ui.View):
                 "refresh",
                 "verify",
                 "load",
+                "unload",
                 "biggest_server",
                 "shutdown",
+                "blacklist",
+                "unblacklist"
             ]
         ]
         paginator = CommandPaginator(commands)
