@@ -28,7 +28,7 @@ intents.members = True
 
 # AntiSpam Options
 
-anti_spam = commands.CooldownMapping.from_cooldown(5, 25, commands.BucketType.member)
+anti_spam = commands.CooldownMapping.from_cooldown(5, 15, commands.BucketType.member)
 too_many_violations = commands.CooldownMapping.from_cooldown(
     5, 30, commands.BucketType.member
 )
