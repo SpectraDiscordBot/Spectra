@@ -257,6 +257,7 @@ async def on_ready():
     await bot.load_extension("owner-stuff.commands")
     await bot.load_extension("TopGG.topgg")
     await bot.load_extension("verification.commands")
+    await bot.load_extension("Translation.commands")
 
     with open("spectra.gif", "rb") as f:
         image = f.read()
