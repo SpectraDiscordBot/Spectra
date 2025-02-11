@@ -32,6 +32,15 @@ class Warning_Commands(commands.Cog):
         if user.id == self.bot.user.id:
             await ctx.send("I cannot warn myself.")
             return
+        
+        member = await discord.utils.get(ctx.guild.members, id=user.id)
+        if not member:
+            await ctx.send("Couldn't find the user in the warning.")
+            return
+        if member.top_role >= ctx.author.top_role:
+            await ctx.send("You cannot warn this user.")
+            return
+        
 
         data = warning_collection.find_one({"guild_id": str(ctx.guild.id)})
         if not data or not data.get("logs_channel"):
@@ -110,6 +119,15 @@ class Warning_Commands(commands.Cog):
         if not data:
             await ctx.send("No warning system has been set up.", ephemeral=True)
             return
+        
+        member = await discord.utils.get(ctx.guild.members, id=user.id)
+        if not member:
+            await ctx.send("Couldn't find the user in the warning.")
+            return
+        if member.top_role >= ctx.author.top_role:
+            await ctx.send("You cannot unwarn this user.")
+            return
+        
 
         warning = warning_collection.find_one(
             {"guild_id": str(ctx.guild.id), "case_number": case_number}
@@ -213,6 +231,15 @@ class Warning_Commands(commands.Cog):
         if user.id == self.bot.user.id:
             await ctx.send("I cannot clear my own warnings.")
             return
+        
+        member = await discord.utils.get(ctx.guild.members, id=user.id)
+        if not member:
+            await ctx.send("Couldn't find the user in the warning.")
+            return
+        if member.top_role >= ctx.author.top_role:
+            await ctx.send("You cannot warn this user.")
+            return
+        
 
         data = warning_collection.find_one({"guild_id": str(ctx.guild.id)})
         if not data:
