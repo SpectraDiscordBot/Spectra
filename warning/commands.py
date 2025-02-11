@@ -33,7 +33,7 @@ class Warning_Commands(commands.Cog):
             await ctx.send("I cannot warn myself.")
             return
         
-        member = await discord.utils.get(ctx.guild.members, id=user.id)
+        member = discord.utils.get(ctx.guild.members, id=user.id)
         if not member:
             await ctx.send("Couldn't find the user in the warning.")
             return
@@ -120,7 +120,7 @@ class Warning_Commands(commands.Cog):
             await ctx.send("No warning system has been set up.", ephemeral=True)
             return
         
-        member = await discord.utils.get(ctx.guild.members, id=user.id)
+        member = discord.utils.get(ctx.guild.members, id=user.id)
         if not member:
             await ctx.send("Couldn't find the user in the warning.")
             return
@@ -232,7 +232,7 @@ class Warning_Commands(commands.Cog):
             await ctx.send("I cannot clear my own warnings.")
             return
         
-        member = await discord.utils.get(ctx.guild.members, id=user.id)
+        member = discord.utils.get(ctx.guild.members, id=user.id)
         if not member:
             await ctx.send("Couldn't find the user in the warning.")
             return

@@ -106,6 +106,12 @@ class Moderation(commands.Cog):
             await ctx.send("I cannot mute myself.")
             return
         try:
+            if user.top_role > ctx.author.top_role:
+                await ctx.send("You cannot ban this user.")
+                return
+        except:
+            pass
+        try:
             duration = parse_timespan(time)
         except InvalidTimespan:
             await ctx.send("Invalid time.")
@@ -160,6 +166,12 @@ class Moderation(commands.Cog):
         if not user.is_timed_out():
             await ctx.send(f"{user.mention} is not muted.")
             return
+        try:
+            if user.top_role > ctx.author.top_role:
+                await ctx.send("You cannot ban this user.")
+                return
+        except:
+            pass
         try:
             await user.timeout(None)
             cases = cases_collection.find_one({"guild_id": str(ctx.guild.id)})
