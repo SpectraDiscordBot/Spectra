@@ -45,6 +45,23 @@ modlog_collection = db["ModLogs"]
 cases_collection = db["Cases"]
 custom_cmds_collection = db["CustomCommands"]
 custom_prefix_collection = db["CustomPrefixes"]
+blacklist_collection = db["Blacklist"]
+
+async def blacklist_check(ctx):
+    user_blacklisted = blacklist_collection.find_one({"_id": ctx.author.id})
+    server_blacklisted = blacklist_collection.find_one({"_id": ctx.guild.id if ctx.guild else None})
+
+    if user_blacklisted:
+        return False
+    if server_blacklisted:
+        await ctx.send("This server is blacklisted from using this bot.")
+        return False
+    return True
+
+def blacklist_check_decorator():
+    async def predicate(ctx):
+        return await blacklist_check(ctx)
+    return commands.check(predicate)
 
 
 def get_prefix(Client, message):
@@ -228,6 +245,12 @@ class ErrorButtons(discord.ui.View):
         )
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
+
+
+@bot.before_invoke
+async def before_any_command(ctx):
+    if not await blacklist_check(ctx):
+        raise commands.CheckFailure
 
 # Bot Events
 
@@ -1008,6 +1031,30 @@ async def load(ctx: commands.Context, extension):
 @commands.cooldown(1, 15, commands.BucketType.user)
 async def servers(ctx: commands.Context):
     await ctx.send(f"Currently in {len(bot.guilds)} servers.")
+
+@bot.command()
+@commands.is_owner()
+async def blacklist(ctx, target: str, target_id: int):
+    if target.lower() == "user":
+        blacklist_collection.update_one({"_id": target_id}, {"$set": {"type": "user"}}, upsert=True)
+        await ctx.send(f"User `{target_id}` has been blacklisted.")
+    elif target.lower() == "server":
+        blacklist_collection.update_one({"_id": target_id}, {"$set": {"type": "server"}}, upsert=True)
+        await ctx.send(f"Server `{target_id}` has been blacklisted.")
+    else:
+        await ctx.send("Invalid target. Use `user` or `server`.")
+
+@bot.command()
+@commands.is_owner()
+async def unblacklist(ctx, target: str, target_id: int):
+    result = blacklist_collection.delete_one({"_id": target_id})
+    if result.deleted_count:
+        await ctx.send(f"Successfully removed `{target_id}` from the blacklist.")
+    else:
+        await ctx.send(f"`{target_id}` is not blacklisted.")
+
+
+# Mod Logs
 
 
 async def send_modlog(guild_id, action_taker: discord.Member, action, message):
