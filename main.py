@@ -316,8 +316,7 @@ async def on_command_error(ctx, error):
         )
         await ctx.send(msg, ephemeral=True)
     elif isinstance(error, commands.MissingRequiredArgument):
-        msg = f"Missing required arguments: `{error.args}`"
-        await ctx.send(msg, ephemeral=True)
+        await ctx.send(f"Error: Missing required argument `{error.param.name}`.\nUsage: `!{ctx.command} <{error.param.name}>`", ephemeral=True)
     else:
         embed = discord.Embed(
             title="Error!", description="{}".format(error), color=discord.Color.red()
@@ -328,7 +327,7 @@ async def on_command_error(ctx, error):
         embed.set_thumbnail(
             url="https://media.discordapp.net/attachments/914579638792114190/1280203446825517239/error-icon-25239.png?ex=66d739de&is=66d5e85e&hm=83a98b27d14a3a19f4795d3fec58d1cd7306f6a940c45e49cd2dfef6edcdc96e&=&format=webp&quality=lossless&width=640&height=640SS"
         )
-        await ctx.send(embed=embed, view=ErrorButtons(), delete_after=10)
+        await ctx.send(embed=embed, view=ErrorButtons(), ephemeral=True)
         print(error)
 
 
@@ -376,9 +375,6 @@ async def on_tree_error(
             await interaction.channel.send(
                 interaction.user.mention, msg, delete_after=5
             )
-    elif isinstance(error, commands.MissingRequiredArgument):
-        msg = f"Missing required arguments. Format: `{error.args}`"
-        await interaction.response.send_message(msg, ephemeral=True)
     else:
         embed = discord.Embed(
             title="Error!", description="{}".format(error), color=discord.Color.red()
