@@ -316,7 +316,10 @@ async def on_command_error(ctx, error):
         )
         await ctx.send(msg, ephemeral=True)
     elif isinstance(error, commands.MissingRequiredArgument):
-        await ctx.send(f"Error: Missing required argument `{error.param.name}`.\nUsage: `!{ctx.command} <{error.param.name}>`", ephemeral=True)
+        required_params = [param for param in ctx.command.params if ctx.command.params[param].default == ctx.command.params[param].empty]
+        
+        usage = f"/{ctx.command} " + " ".join(f"<{param}>" for param in required_params)
+        await ctx.send(f"Error: Missing required argument `{error.param.name}`.\nUsage: `{usage}`", ephemeral=True)
     else:
         embed = discord.Embed(
             title="Error!", description="{}".format(error), color=discord.Color.red()
