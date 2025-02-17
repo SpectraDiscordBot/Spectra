@@ -2,11 +2,11 @@ import asyncio
 import datetime
 import discord
 import os
+import motor.motor_asyncio
 from discord.ext import commands
 from discord import app_commands
 from dotenv import load_dotenv
 from discord.ui import View
-from pymongo import MongoClient
 from googleapiclient import discovery
 
 load_dotenv()
@@ -40,7 +40,7 @@ class AntiToxicity(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         mongo_uri = os.getenv("MONGO_URI")
-        self.cluster = MongoClient(mongo_uri)
+        self.cluster = motor.motor_asyncio.AsyncIOMotorClient(mongo_uri)
         self.db = self.cluster["Spectra"]
         self.collection = self.db["ToxicitySettings"]
 
@@ -51,7 +51,7 @@ class AntiToxicity(commands.Cog):
             return
 
         guild_id = message.guild.id
-        config = self.collection.find_one({"_id": guild_id})
+        config = await self.collection.find_one({"_id": guild_id})
 
         if not config or not config.get("enabled", False):
             return
@@ -109,7 +109,7 @@ class AntiToxicity(commands.Cog):
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def enable(self, ctx):
         guild_id = ctx.guild.id
-        self.collection.update_one(
+        await self.collection.update_one(
             {"_id": guild_id}, {"$set": {"enabled": True}}, upsert=True
         )
         try:
@@ -136,7 +136,7 @@ class AntiToxicity(commands.Cog):
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def disable(self, ctx):
         guild_id = ctx.guild.id
-        self.collection.update_one(
+        await self.collection.update_one(
             {"_id": guild_id}, {"$set": {"enabled": False}}, upsert=True
         )
         try:
@@ -169,7 +169,7 @@ class AntiToxicity(commands.Cog):
             return
 
         guild_id = ctx.guild.id
-        self.collection.update_one(
+        await self.collection.update_one(
             {"_id": guild_id}, {"$set": {"threshold": threshold}}, upsert=True
         )
         try:
