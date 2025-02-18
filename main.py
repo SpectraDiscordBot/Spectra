@@ -85,6 +85,7 @@ bot = commands.AutoShardedBot(
 	status=discord.Status.idle,
 	activity=discord.CustomActivity(name=">help | spectrabot.pages.dev"),
 	owner_ids=[856196104385986560, 998434044335374336],
+    case_insensitive=True
 )
 
 bot.remove_command("help")
