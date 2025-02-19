@@ -26,38 +26,28 @@ class Warning_Commands(commands.Cog):
     async def issue_warning(
         self, ctx, user: discord.User, *, reason: str = "No Reason Provided"
     ):
-        if user.id == ctx.author.id:
-            await ctx.send("You cannot warn yourself.")
+        if user.id in [ctx.author.id, self.bot.user.id]:
+            await ctx.send("You cannot warn yourself or the bot.")
             return
-        if user.id == self.bot.user.id:
-            await ctx.send("I cannot warn myself.")
-            return
-        
+
         msg = await ctx.send("Loading, please wait...")
-        
+
         member = discord.utils.get(ctx.guild.members, id=user.id)
-        if not member:
-            await msg.edit(content="Couldn't find the user in the warning.")
-            return
-        if member.top_role >= ctx.author.top_role:
+        if not member or member.top_role >= ctx.author.top_role:
             await msg.edit(content="You cannot warn this user.")
             return
-        
 
         data = await warning_collection.find_one({"guild_id": str(ctx.guild.id)})
         if not data or not data.get("logs_channel"):
             await msg.edit(content="No warning system has been set up.")
             return
 
-        cases = await cases_collection.find_one({"guild_id": str(ctx.guild.id)})
-        if not cases:
-            await cases_collection.insert_one({"guild_id": str(ctx.guild.id), "cases": 0})
-
-        await cases_collection.update_one(
-            {"guild_id": str(ctx.guild.id)}, {"$set": {"cases": cases["cases"] + 1}}
+        case = await cases_collection.find_one_and_update(
+            {"guild_id": str(ctx.guild.id)},
+            {"$inc": {"cases": 1}},
+            upsert=True,
+            return_document=True
         )
-
-        case = await cases_collection.find_one({"guild_id": str(ctx.guild.id)})
 
         case_number = case["cases"]
 
