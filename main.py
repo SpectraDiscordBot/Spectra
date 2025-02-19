@@ -85,7 +85,7 @@ bot = commands.AutoShardedBot(
 	status=discord.Status.idle,
 	activity=discord.CustomActivity(name=">help | spectrabot.pages.dev"),
 	owner_ids=[856196104385986560, 998434044335374336],
-    case_insensitive=True
+	case_insensitive=True
 )
 
 bot.remove_command("help")
@@ -408,7 +408,6 @@ bot.tree.on_error = on_tree_error
 
 @bot.event
 async def on_member_join(member):
-	# Fetch the autorole setting for this guild
 	autorole_data = await autorole_collection.find({"guild_id": str(member.guild.id)})
 	if autorole_data:
 		for data in autorole_data:
@@ -421,7 +420,6 @@ async def on_member_join(member):
 				except discord.Forbidden:
 					pass
 
-	# Welcome messaging
 	welcome_messaging = await welcome_messages_collection.find_one(
 		{"guild_id": str(member.guild.id)}
 	)
@@ -435,9 +433,9 @@ async def on_member_join(member):
 				try:
 					await channel.send(f"{member.mention} {message}")
 				except Exception as e:
-					print(f"Error sending welcome message: {e}")
+					pass
 			else:
-				print("Channel not found or bot lacks permission to send messages.")
+				pass
 
 
 @bot.event
@@ -465,30 +463,23 @@ async def on_message(message):
 	if bot.user.mentioned_in(message):
 		if message.author.id == 856196104385986560:
 			await message.reply(
-				"<:Checkmark:1326641983024009266> Owner of Spectra Verified"
+				"<:Checkmark:1326642406086410317> Owner of Spectra Verified"
 			)
 		elif message.author.id == 998434044335374336:
 			await message.reply(
-				"<:Checkmark:1326641983024009266> Co Owner of Spectra Verified"
+				"<:Checkmark:1326642406086410317> Co Owner of Spectra Verified"
 			)
 		else:
 			pass
 
-	command_name = message.content.lstrip(".")
-
-	custom_command = await custom_cmds_collection.find_one(
-		{"guild_id": message.guild.id, "name": command_name.lower()}
-	)
-
-	if custom_command:
-		await message.channel.send(custom_command["reply"])
-		pass
-
 	antispam_guild = await antispam_collection.find_one({"guild_id": message.guild.id})
 	if antispam_guild:
 		if (
-			message.author.id == 1283213543084396644
-			or message.author.top_role >= message.guild.me.top_role
+			message.author.top_role >= message.guild.me.top_role
+		):
+			return
+		if (
+			message.author.id == message.guild.owner.id
 		):
 			return
 		bucket = anti_spam.get_bucket(message)
