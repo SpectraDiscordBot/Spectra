@@ -124,6 +124,11 @@ class Warning_Commands(commands.Cog):
             await ctx.send("No warning system has been set up.", ephemeral=True)
             return
         
+        try:
+            user = discord.utils.get(ctx.guild.members, id=int(warning["user_id"]))
+        except:
+            await ctx.send("Couldn't find the user in the warning.")
+
         member = discord.utils.get(ctx.guild.members, id=user.id)
         if not member:
             await ctx.send("Couldn't find the user in the warning.")
@@ -139,11 +144,6 @@ class Warning_Commands(commands.Cog):
         if not warning:
             await ctx.send("This warning does not exist.", ephemeral=True)
             return
-
-        try:
-            user = discord.utils.get(ctx.guild.members, id=int(warning["user_id"]))
-        except:
-            await ctx.send("Couldn't find the user in the warning.")
 
         if user.id == ctx.author.id:
             await ctx.send("You cannot revoke a warning from yourself.")
