@@ -565,6 +565,11 @@ async def on_message(message):
 						await message.author.send(embed=dm_embed)
 					except:
 						pass
+					channel_embed = discord.Embed(title="Timed out", description=f"<:modshield:1325613380945444864> **{message.author.name}** has been timed out for spamming.", color=discord.Colour.pink())
+					channel_embed.set_footer(text="Anti-Spam")
+					try:
+						await message.channel.send(embed=channel_embed)
+					except: pass
 				except Exception as e:
 					print(e)
 					return

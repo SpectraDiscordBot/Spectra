@@ -93,15 +93,19 @@ class Warning_Commands(commands.Cog):
 
         warn_log.set_footer(text="Warning System")
         await ctx.send(
-            f"<:Checkmark:1326642406086410317> `[CASE #{case_number}]` Warning issued to {user.mention} for `{reason}`."
+            f"<:Checkmark:1326642406086410317> `[CASE #{case_number}]` Warning issued to {user.mention} for `{reason}`.",
+            ephemeral=True
         )
         try:
             await logs_channel.send(embed=warn_log)
         except:
             pass
         try:
+            dm_embed = discord.Embed(title="Warned", description=f"You have been warned in **{ctx.guild.name}**", color=discord.Colour.pink())
+            dm_embed.add_field(name="Reason:", value=reason, inline=False)
+            dm_embed.add_field(name="Case Number:", value=f"CASE #{case_number}", inline=False)
             await user.send(
-                f"You have been warned in **{ctx.guild.name}** for: `{reason}`.\n Your case number is `[CASE #{case_number}]`"
+                embed=dm_embed
             )
         except:
             pass
