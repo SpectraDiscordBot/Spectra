@@ -420,7 +420,6 @@ bot.tree.on_error = on_tree_error
 
 @bot.event
 async def on_member_join(member):
-    print("Member joined")
 
     try:
         autorole_data = await autorole_collection.find(
