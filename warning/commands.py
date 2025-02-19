@@ -33,18 +33,20 @@ class Warning_Commands(commands.Cog):
             await ctx.send("I cannot warn myself.")
             return
         
+        msg = await ctx.send("Loading, please wait...")
+        
         member = discord.utils.get(ctx.guild.members, id=user.id)
         if not member:
-            await ctx.send("Couldn't find the user in the warning.")
+            await msg.edit(content="Couldn't find the user in the warning.")
             return
         if member.top_role >= ctx.author.top_role:
-            await ctx.send("You cannot warn this user.")
+            await msg.edit(content="You cannot warn this user.")
             return
         
 
         data = await warning_collection.find_one({"guild_id": str(ctx.guild.id)})
         if not data or not data.get("logs_channel"):
-            await ctx.send("No warning system has been set up.", ephemeral=True)
+            await msg.edit(content="No warning system has been set up.")
             return
 
         cases = await cases_collection.find_one({"guild_id": str(ctx.guild.id)})
@@ -92,9 +94,8 @@ class Warning_Commands(commands.Cog):
             pass
 
         warn_log.set_footer(text="Warning System")
-        await ctx.send(
-            f"<:Checkmark:1326642406086410317> `[CASE #{case_number}]` Warning issued to {user.mention} for `{reason}`.",
-            ephemeral=True
+        await msg.edit(
+            content=f"<:Checkmark:1326642406086410317> `[CASE #{case_number}]` Warning issued to {user.mention} for `{reason}`."
         )
         try:
             await logs_channel.send(embed=warn_log)
