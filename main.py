@@ -408,7 +408,7 @@ bot.tree.on_error = on_tree_error
 
 @bot.event
 async def on_member_join(member):
-	autorole_data = await autorole_collection.find({"guild_id": str(member.guild.id)})
+	autorole_data = autorole_collection.find({"guild_id": str(member.guild.id)})
 	if autorole_data:
 		for data in autorole_data:
 			role_id = int(data.get("role"))
@@ -981,7 +981,7 @@ async def vote(ctx: commands.Context):
 @bot.hybrid_command(name="ping", description="Check if the bot is online.")
 @commands.cooldown(1, 5, commands.BucketType.user)
 async def ping(ctx: commands.Context):
-	then = datetime.datetime.utcnow()
+	then = datetime.datetime.now()
 
 	message = await ctx.send("Pinging...")
 
@@ -990,7 +990,7 @@ async def ping(ctx: commands.Context):
 	else:
 		msg = message
 
-	now = datetime.datetime.utcnow()
+	now = datetime.datetime.now()
 	time_diff = (now - then).total_seconds() * 1000
 
 	await msg.edit(
