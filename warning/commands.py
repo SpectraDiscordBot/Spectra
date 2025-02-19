@@ -1,13 +1,13 @@
 import datetime
 import discord
 import os
+import motor.motor_asyncio
 from discord.ext import commands
 from dotenv import load_dotenv
-from pymongo import MongoClient
 
 load_dotenv()
 
-client = MongoClient(os.environ.get("MONGO_URI"))
+client = motor.motor_asyncio.AsyncIOMotorClient(os.environ.get("MONGO_URI"))
 db = client["Spectra"]
 warning_collection = db["Warnings"]
 cases_collection = db["Cases"]
@@ -42,25 +42,25 @@ class Warning_Commands(commands.Cog):
             return
         
 
-        data = warning_collection.find_one({"guild_id": str(ctx.guild.id)})
+        data = await warning_collection.find_one({"guild_id": str(ctx.guild.id)})
         if not data or not data.get("logs_channel"):
             await ctx.send("No warning system has been set up.", ephemeral=True)
             return
 
-        cases = cases_collection.find_one({"guild_id": str(ctx.guild.id)})
+        cases = await cases_collection.find_one({"guild_id": str(ctx.guild.id)})
         if not cases:
-            cases_collection.insert_one({"guild_id": str(ctx.guild.id), "cases": 0})
+            await cases_collection.insert_one({"guild_id": str(ctx.guild.id), "cases": 0})
 
-        cases_collection.update_one(
+        await cases_collection.update_one(
             {"guild_id": str(ctx.guild.id)}, {"$set": {"cases": cases["cases"] + 1}}
         )
 
-        case = cases_collection.find_one({"guild_id": str(ctx.guild.id)})
+        case = await cases_collection.find_one({"guild_id": str(ctx.guild.id)})
 
         case_number = case["cases"]
 
         logs_channel = ctx.guild.get_channel(int(data.get("logs_channel")))
-        warning_collection.insert_one(
+        await warning_collection.insert_one(
             {
                 "guild_id": str(ctx.guild.id),
                 "user_id": str(user.id),
@@ -119,12 +119,12 @@ class Warning_Commands(commands.Cog):
     @commands.has_permissions(moderate_members=True)
     async def revoke_warning(self, ctx, case_number: int):
 
-        data = warning_collection.find_one({"guild_id": str(ctx.guild.id)})
+        data = await warning_collection.find_one({"guild_id": str(ctx.guild.id)})
         if not data:
             await ctx.send("No warning system has been set up.", ephemeral=True)
             return
         
-        warning = warning_collection.find_one(
+        warning = await warning_collection.find_one(
             {"guild_id": str(ctx.guild.id), "case_number": case_number}
         )
         if not warning:
@@ -152,7 +152,7 @@ class Warning_Commands(commands.Cog):
             await ctx.send("I cannot revoke a warning from myself.")
             return
 
-        warning_collection.delete_one(
+        await warning_collection.delete_one(
             {
                 "guild_id": str(ctx.guild.id),
                 "user_id": str(user.id),
@@ -201,12 +201,12 @@ class Warning_Commands(commands.Cog):
         if user is None:
             user = ctx.author
 
-        data = warning_collection.find_one({"guild_id": str(ctx.guild.id)})
+        data = await warning_collection.find_one({"guild_id": str(ctx.guild.id)})
         if not data:
             await ctx.send("No warning system has been set up.", ephemeral=True)
             return
 
-        warnings = warning_collection.find(
+        warnings = await warning_collection.find(
             {"guild_id": str(ctx.guild.id), "user_id": str(user.id)}
         )
         embed = discord.Embed(
@@ -245,12 +245,12 @@ class Warning_Commands(commands.Cog):
             return
         
 
-        data = warning_collection.find_one({"guild_id": str(ctx.guild.id)})
+        data = await warning_collection.find_one({"guild_id": str(ctx.guild.id)})
         if not data:
             await ctx.send("No warning system has been set up.", ephemeral=True)
             return
 
-        warning_collection.delete_many(
+        await warning_collection.delete_many(
             {"guild_id": str(ctx.guild.id), "user_id": str(user.id)}
         )
         warn_log = discord.Embed(
@@ -285,11 +285,11 @@ class Warning_Commands(commands.Cog):
     @commands.has_permissions(manage_guild=True)
     async def setup(self, ctx, channel: discord.TextChannel):
         guild_id = str(ctx.guild.id)
-        if warning_collection.find_one({"guild_id": guild_id}):
+        if await warning_collection.find_one({"guild_id": guild_id}):
             await ctx.send("Warning System has already been set.", ephemeral=True)
             return
         else:
-            warning_collection.insert_one(
+            await warning_collection.insert_one(
                 {"guild_id": str(guild_id), "logs_channel": str(channel.id)}
             )
             embed = discord.Embed(
@@ -323,10 +323,10 @@ class Warning_Commands(commands.Cog):
     @commands.has_permissions(manage_guild=True)
     async def disable(self, ctx):
         guild_id = str(ctx.guild.id)
-        if not warning_collection.find_one({"guild_id": guild_id}):
+        if not await warning_collection.find_one({"guild_id": guild_id}):
             await ctx.send("No warning system has been set up.", ephemeral=True)
             return
-        warning_collection.delete_one({"guild_id": guild_id})
+        await warning_collection.delete_one({"guild_id": guild_id})
         await ctx.send(
             "<:switch_off:1326648782393180282> Warning System has been disabled.",
             ephemeral=True,
