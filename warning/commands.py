@@ -124,10 +124,18 @@ class Warning_Commands(commands.Cog):
             await ctx.send("No warning system has been set up.", ephemeral=True)
             return
         
+        warning = warning_collection.find_one(
+            {"guild_id": str(ctx.guild.id), "case_number": case_number}
+        )
+        if not warning:
+            await ctx.send("This warning does not exist.", ephemeral=True)
+            return
+        
         try:
             user = discord.utils.get(ctx.guild.members, id=int(warning["user_id"]))
         except:
             await ctx.send("Couldn't find the user in the warning.")
+            return
 
         member = discord.utils.get(ctx.guild.members, id=user.id)
         if not member:
@@ -135,14 +143,6 @@ class Warning_Commands(commands.Cog):
             return
         if member.top_role >= ctx.author.top_role:
             await ctx.send("You cannot unwarn this user.")
-            return
-        
-
-        warning = warning_collection.find_one(
-            {"guild_id": str(ctx.guild.id), "case_number": case_number}
-        )
-        if not warning:
-            await ctx.send("This warning does not exist.", ephemeral=True)
             return
 
         if user.id == ctx.author.id:
