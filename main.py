@@ -1017,18 +1017,13 @@ async def vote(ctx: commands.Context):
 async def ping(ctx: commands.Context):
     then = datetime.datetime.now()
 
-    message = await ctx.send("Pinging...")
-
-    if ctx.interaction:
-        msg = await ctx.interaction.original_response()
-    else:
-        msg = message
+    msg = await ctx.send("Pinging...")
 
     now = datetime.datetime.now()
     time_diff = (now - then).total_seconds() * 1000
 
     await msg.edit(
-        content=f"Pong! 🏓 \nDiscord: `{round(bot.latency * 1000)}ms`\nBot Latency: `{round(time_diff)}ms`"
+        content=f"Pong! 🏓 \nDiscord: `{round(ctx.bot.latency * 1000)}ms`\nBot Latency: `{round(time_diff)}ms`"
     )
 
 
