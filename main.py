@@ -437,11 +437,8 @@ async def on_member_join(member):
             if role and role not in member.roles:
                 try:
                     await member.add_roles(role)
-                    print(f"Role {role.name} added to {member.name}")
                 except discord.Forbidden:
-                    print(f"Bot does not have permission to add role {role.name}")
-                except Exception as e:
-                    print(f"Error adding role: {e}")
+                    pass
 
     try:
         welcome_messaging = await welcome_messages_collection.find_one(
@@ -457,18 +454,16 @@ async def on_member_join(member):
 
         if message and channel_id:
             channel = member.guild.get_channel(int(channel_id))
+            formatted_message = message.replace("{server}", member.guild.name)
+            if "{user}" in formatted_message:
+                    formatted_message = formatted_message.replace("{user}", member.mention)
+            else:
+                formatted_message = f"{member.mention} {formatted_message}"
             if channel:
                 try:
-                    await channel.send(f"{member.mention} {message}")
-                    print(f"Welcome message sent in {channel.name}")
+                    await channel.send(f"{formatted_message}")
                 except Exception as e:
-                    print(f"Error sending welcome message: {e}")
-            else:
-                print("Channel not found")
-        else:
-            print("Message or channel ID not found in welcome_messaging")
-    else:
-        print("No welcome messaging data found")
+                    return
 
 
 @bot.event
