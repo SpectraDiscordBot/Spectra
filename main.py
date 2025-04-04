@@ -69,12 +69,12 @@ def blacklist_check_decorator():
     return commands.check(predicate)
 
 
-def get_prefix(Client, message):
+async def get_prefix(Client, message):
     if not message.guild:
         return ">"
     else:
         try:
-            prefix = custom_prefix_collection.find_one(
+            prefix = await custom_prefix_collection.find_one(
                 {"guild_id": str(message.guild.id)}
             )
             return prefix["prefix"]
@@ -951,7 +951,7 @@ async def help(ctx: commands.Context):
     )
     embed.set_thumbnail(url="https://i.ibb.co/cKqBfp1/spectra.gif")
     embed.add_field(
-        name="Prefix", value=f"`{get_prefix(bot, ctx.message)}`\n`/`", inline=False
+        name="Prefix", value=f"`{await get_prefix(bot, ctx.message)}`\n`/`", inline=False
     )
     await ctx.send(embed=embed, view=HelpButtons(), ephemeral=True)
 
