@@ -1066,10 +1066,10 @@ async def load(ctx: commands.Context, extension):
         return
 
 
-@bot.command()
+@bot.hybrid_command(name="servers", description="Spectra's server count")
 @commands.cooldown(1, 15, commands.BucketType.user)
 async def servers(ctx: commands.Context):
-    await ctx.send(f"Currently in {len(bot.guilds)} servers.")
+    await ctx.send(f"Currently in {len(bot.guilds)} servers.", ephemeral=True)
 
 
 @bot.command()
@@ -1142,7 +1142,6 @@ async def send_modlog(guild_id, action_taker: discord.Member, action, message):
 @bot.event
 async def on_modlog(guild_id, action_taker, action, message):
     await send_modlog(guild_id, action_taker, action, message)
-
 
 # Run Bot
 
