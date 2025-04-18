@@ -1145,10 +1145,8 @@ async def on_modlog(guild_id, action_taker, action, message):
 
 # Run Bot
 
-
 async def main():
     await bot.start(os.environ.get("TOKEN"))
-
 
 if __name__ == "__main__":
     asyncio.run(main())
