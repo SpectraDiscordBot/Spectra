@@ -37,8 +37,8 @@ class Warning_Commands(commands.Cog):
 			await msg.edit(content="You cannot warn this user.")
 			return
 
-		data = await warning_collection.find_one({"guild_id": str(ctx.guild.id)})
-		if not data or not data.get("logs_channel"):
+		data = await warning_collection.find_one({"guild_id": str(ctx.guild.id), "logs_channel": {"$exists": True}})
+		if not data:
 			await msg.edit(content="No warning system has been set up.")
 			return
 
@@ -110,9 +110,9 @@ class Warning_Commands(commands.Cog):
 	@commands.has_permissions(moderate_members=True)
 	async def revoke_warning(self, ctx, case_number: int):
 
-		data = await warning_collection.find_one({"guild_id": str(ctx.guild.id)})
+		data = await warning_collection.find_one({"guild_id": str(ctx.guild.id), "logs_channel": {"$exists": True}})
 		if not data:
-			await ctx.send("No warning system has been set up.", ephemeral=True)
+			await ctx.send(content="No warning system has been set up.")
 			return
 		
 		warning = await warning_collection.find_one(
@@ -192,9 +192,9 @@ class Warning_Commands(commands.Cog):
 		if user is None:
 			user = ctx.author
 
-		data = await warning_collection.find_one({"guild_id": str(ctx.guild.id)})
+		data = await warning_collection.find_one({"guild_id": str(ctx.guild.id), "logs_channel": {"$exists": True}})
 		if not data:
-			await ctx.send("No warning system has been set up.", ephemeral=True)
+			await ctx.send(content="No warning system has been set up.")
 			return
 
 		cursor = warning_collection.find(
@@ -236,9 +236,9 @@ class Warning_Commands(commands.Cog):
 			return
 		
 
-		data = await warning_collection.find_one({"guild_id": str(ctx.guild.id)})
+		data = await warning_collection.find_one({"guild_id": str(ctx.guild.id), "logs_channel": {"$exists": True}})
 		if not data:
-			await ctx.send("No warning system has been set up.", ephemeral=True)
+			await ctx.send(content="No warning system has been set up.")
 			return
 
 		await warning_collection.delete_many(
@@ -276,8 +276,9 @@ class Warning_Commands(commands.Cog):
 	@commands.has_permissions(manage_guild=True)
 	async def setup(self, ctx, channel: discord.TextChannel):
 		guild_id = str(ctx.guild.id)
-		if await warning_collection.find_one({"guild_id": guild_id}):
-			await ctx.send("Warning System has already been set.", ephemeral=True)
+		data = await warning_collection.find_one({"guild_id": str(ctx.guild.id), "logs_channel": {"$exists": True}})
+		if data:
+			await ctx.send(content="Warnings have already been setup.", ephemeral=True)
 			return
 		else:
 			await warning_collection.insert_one(
@@ -314,10 +315,11 @@ class Warning_Commands(commands.Cog):
 	@commands.has_permissions(manage_guild=True)
 	async def disable(self, ctx):
 		guild_id = str(ctx.guild.id)
-		if not await warning_collection.find_one({"guild_id": guild_id}):
-			await ctx.send("No warning system has been set up.", ephemeral=True)
+		data = await warning_collection.find_one({"guild_id": str(ctx.guild.id), "logs_channel": {"$exists": True}})
+		if not data:
+			await ctx.send(content="No warning system has been set up.", ephemeral=True)
 			return
-		await warning_collection.delete_one({"guild_id": guild_id})
+		await warning_collection.delete_many({"guild_id": guild_id})
 		await ctx.send(
 			"<:switch_off:1326648782393180282> Warning System has been disabled.",
 			ephemeral=True,
