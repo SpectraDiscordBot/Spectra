@@ -9,7 +9,6 @@ class CommandPaginator(discord.ui.View):
 		self.commands = commands
 		self.per_page = per_page
 		self.current_page = 0
-		self.bot.start_time = datetime.datetime.now()
 
 	def get_embed(self):
 		embed = discord.Embed(
@@ -128,7 +127,7 @@ class HelpButtons(discord.ui.View):
 class Core(commands.Cog):
 	def __init__(self, bot):
 		self.bot = bot
-
+		self.bot.start_time = datetime.datetime.now()
 
 	async def get_prefix(self, Client, message):
 		if not message.guild:
