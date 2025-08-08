@@ -1,0 +1,9 @@
+discord.py
+python-dotenv
+humanfriendly
+emoji
+google-api-python-client
+topggpy
+motor
+pillow
+googletrans==4.0.0-rc1

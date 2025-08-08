@@ -1,0 +1,11 @@
+.env
+owner-stuff/
+custom-bots/
+Purchases/
+Spectra.rar
+.idea/
+.qodo/
+__pycache__/
+.qodo
+.idea
+Bot.zip
