@@ -155,6 +155,7 @@ async def on_ready():
 		await bot.load_extension("moderation-logs.commands"); print("✅ | Loaded Moderation Logs Commands")
 		await bot.load_extension("anti-toxicity.commands"); print("✅ | Loaded Anti-Toxicity Commands")
 		await bot.load_extension("reports.commands"); print("✅ | Loaded Reports Commands")
+		await bot.load_extension("anti-ping.commands"); print("✅ | Loaded Anti-Ping Commands")
 		await bot.load_extension("owner-stuff.commands"); print("✅ | Loaded Owner Commands")
 		await bot.load_extension("TopGG.topgg"); print("✅ | Loaded TopGG Commands")
 		await bot.load_extension("verification.commands"); print("✅ | Loaded Verification Commands")
@@ -278,13 +279,13 @@ bot.tree.on_error = on_tree_error
 
 @bot.event
 async def on_guild_remove(guild):
-    guild_id = guild.id
-    collections = await db.list_collection_names()
-    for collection_name in collections:
-        collection = db[collection_name]
-        result = await collection.delete_many({"guild_id": guild_id})
+	guild_id = guild.id
+	collections = await db.list_collection_names()
+	for collection_name in collections:
+		collection = db[collection_name]
+		result = await collection.delete_many({"guild_id": guild_id})
 
-    print(f"All data for guild {guild_id} has been removed from the database.")
+	print(f"All data for guild {guild_id} has been removed from the database.")
 
 
 @bot.event
