@@ -22,13 +22,32 @@ class AntiPing(commands.Cog):
 			role = message.guild.get_role(role_id)
 			bypass_role = message.guild.get_role(int(bypass_role_id)) if bypass_role_id else None
 
-			if role and role in message.role_mentions:
-				if bypass_role and bypass_role in message.author.roles:
-					continue
+			if bypass_role and bypass_role in message.author.roles:
+				continue
+
+			blocked = False
+			for user in message.mentions:
+				if role in user.roles:
+					blocked = True
+					break
+
+			if role in message.role_mentions:
+				blocked = True
+
+			if message.mention_everyone:
+				blocked = True
+
+			if blocked:
 				await message.delete()
-				embed = discord.Embed(title="Anti-Ping", description=f"You are not allowed to ping members with the role **{role.name}**.\nPlease turn your ping off if you're replying to their message.", color=discord.Color.pink())
-				try: embed.set_thumbnail(url=message.guild.icon.url)
-				except: pass
+				embed = discord.Embed(
+					title="Anti-Ping",
+					description=f"You are not allowed to ping members with the role **{role.name}**." if not message.mention_everyone else "You are not allowed to use @everyone/@here.",
+					color=discord.Color.pink()
+				)
+				try:
+					embed.set_thumbnail(url=message.guild.icon.url)
+				except:
+					pass
 				embed.set_footer(text="Powered By Spectra", icon_url=self.bot.user.display_avatar.url)
 				await message.channel.send(
 					content=f"{message.author.mention}",
