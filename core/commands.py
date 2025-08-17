@@ -102,7 +102,7 @@ class HelpButtons(discord.ui.View):
 		embed = discord.Embed(
 			title="Support Server",
 			description="[Click here to join the support server.](https://discord.gg/fcPF66DubA)",
-			color=discord.Color.blue(),
+			color=discord.Color.pink(),
 		)
 		embed.set_footer(
 			text="Spectra", icon_url="https://i.ibb.co/cKqBfp1/spectra.gif"
@@ -118,7 +118,7 @@ class HelpButtons(discord.ui.View):
 		embed = discord.Embed(
 			title="Uptime",
 			description=f"The bot has been up for {datetime.datetime.now() - startTime}.",
-			color=discord.Color.blue(),
+			color=discord.Color.pink(),
 		)
 		embed.set_footer(
 			text="Spectra", icon_url="https://i.ibb.co/cKqBfp1/spectra.gif"
@@ -146,7 +146,7 @@ class Core(commands.Cog):
 	@commands.cooldown(1, 15, commands.BucketType.user)
 	async def help(self, ctx: commands.Context):
 		embed = discord.Embed(
-			title="Help", description="Get help with the bot.", color=discord.Color.blue()
+			title="Help", description="Get help with the bot.", color=discord.Color.pink()
 		)
 		embed.set_footer(
 			text="Made with ❤ by brutiv & tyler.hers",
@@ -243,7 +243,7 @@ class Core(commands.Cog):
 		embed = discord.Embed(
 			title="Support Server",
 			description="E-mail: spectra.official@protonmail.com\n[Click here to join the support server.](https://discord.gg/fcPF66DubA)",
-			color=discord.Color.blue(),
+			color=discord.Color.pink(),
 		)
 		embed.set_footer(text="Spectra", icon_url="https://i.ibb.co/cKqBfp1/spectra.gif")
 		await ctx.send(embed=embed, ephemeral=True)
