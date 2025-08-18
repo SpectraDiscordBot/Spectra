@@ -23,6 +23,7 @@ load_dotenv()
 # Intents
 
 intents = discord.Intents.default()
+intents.guilds = True
 intents.message_content = True
 intents.members = True
 intents.reactions = True
