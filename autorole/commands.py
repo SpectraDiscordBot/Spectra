@@ -112,6 +112,7 @@ class AutoRole_Commands(commands.Cog):
 					pass
 				except Exception as e:
 					print(f"Failed to add auto roles: {e}")
+					await member.send("❌ An error occurred while assigning your auto roles. Please contact the server admin.")
 
 async def setup(bot):
 	await bot.add_cog(AutoRole_Commands(bot))

@@ -52,8 +52,9 @@ class Verification(commands.Cog):
             await interaction.response.send_message("<:Checkmark:1326642406086410317> Successfully verified!", ephemeral=True)
         except discord.Forbidden:
             await interaction.response.send_message("❌ Missing permissions to assign roles.", ephemeral=True)
-        except discord.HTTPException:
-            await interaction.response.send_message("❌ Failed to assign roles. Try again later.", ephemeral=True)
+        except Exception as e:
+            print(f"Failed to verify member: {e}")
+            await interaction.response.send_message("❌ An error occurred during verification.", ephemeral=True)
 
     @commands.hybrid_command(name="setup-verification", description="Setup the verification system")
     @commands.has_permissions(manage_guild=True)
