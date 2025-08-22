@@ -107,9 +107,11 @@ class AutoRole_Commands(commands.Cog):
 					roles_to_add.append(role)
 			if roles_to_add:
 				try:
-					await member.edit(roles=member.roles + roles_to_add)
+					await member.add_roles(*roles_to_add, reason="Spectra AutoRole")
 				except discord.Forbidden:
 					pass
+				except Exception as e:
+					print(f"Failed to add auto roles: {e}")
 
 async def setup(bot):
 	await bot.add_cog(AutoRole_Commands(bot))
