@@ -11,6 +11,11 @@ load_dotenv()
 class AutoRole_Commands(commands.Cog):
 	def __init__(self, bot):
 		self.bot = bot
+		self.cache = {} # {guild_id: [role_ids...]}
+
+	async def load_guild_roles(self, guild_id):
+		data = await autorole_collection.find({"guild_id": str(guild_id)}).to_list(length=None)
+		self.cache[str(guild_id)] = [int(d["role"]) for d in data]
 
 	@commands.Cog.listener()
 	async def on_guild_role_delete(self, role):
@@ -18,6 +23,7 @@ class AutoRole_Commands(commands.Cog):
 		if existing:
 			try: 
 				await autorole_collection.delete_one({"guild_id": str(role.guild.id), "role": str(role.id)})
+				await self.load_guild_roles(role.guild.id)
 				self.bot.dispatch(
 					"modlog",
 					role.guild.id,
@@ -52,6 +58,7 @@ class AutoRole_Commands(commands.Cog):
 			return
 		else:
 			await autorole_collection.insert_one({"guild_id": guild_id, "role": role_id})
+			await self.load_guild_roles(ctx.guild.id)
 			self.bot.dispatch(
 				"modlog",
 				ctx.guild.id,
@@ -76,6 +83,7 @@ class AutoRole_Commands(commands.Cog):
 			await autorole_collection.delete_one(
 				{"guild_id": guild_id, "role": str(auto_role.id)}
 			)
+			await self.load_guild_roles(ctx.guild.id)
 			self.bot.dispatch(
 				"modlog",
 				ctx.guild.id,
@@ -92,19 +100,10 @@ class AutoRole_Commands(commands.Cog):
 
 	@commands.Cog.listener()
 	async def on_member_join(self, member):
-		try:
-			autorole_data = await autorole_collection.find({"guild_id": str(member.guild.id)}).to_list(length=None)
-		except Exception as e:
-			print(f"Error fetching autorole data: {e}")
-			return
+		roles = self.cache.get(str(member.guild.id), [])
 
-		if autorole_data:
-			roles_to_add = []
-			for data in autorole_data:
-				role_id = int(data.get("role"))
-				role = member.guild.get_role(role_id)
-				if role and role not in member.roles:
-					roles_to_add.append(role)
+		if roles:
+			roles_to_add = [member.guild.get_role(r) for r in roles if member.guild.get_role(r)]
 			if roles_to_add:
 				try:
 					await member.add_roles(*roles_to_add, reason="Spectra AutoRole")
@@ -115,4 +114,7 @@ class AutoRole_Commands(commands.Cog):
 					await member.send("❌ An error occurred while assigning your auto roles. Please contact the server admin.")
 
 async def setup(bot):
-	await bot.add_cog(AutoRole_Commands(bot))
+	cog = AutoRole_Commands(bot)
+	for guild in bot.guilds:
+		await cog.load_guild_roles(guild.id)
+	await bot.add_cog(cog)

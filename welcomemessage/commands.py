@@ -79,6 +79,11 @@ class WelcomeEmbedSetupButtonView(discord.ui.View):
 class WelcomeMessage_Commands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.cache = {}
+
+    async def load_guild_welcome(self, guild_id):
+        data = await welcome_messages_collection.find_one({"guild_id": str(guild_id)})
+        self.cache[str(guild_id)] = data
 
     def build_embed(self, data, member):
         def replace_vars(text):
@@ -125,7 +130,7 @@ class WelcomeMessage_Commands(commands.Cog):
 
     async def send_welcome(self, member: discord.Member):
         guild_id = str(member.guild.id)
-        data = await welcome_messages_collection.find_one({"guild_id": guild_id})
+        data = self.cache.get(guild_id)
         if not data:
             return
         channel_id = data.get("channel")
@@ -237,6 +242,7 @@ class WelcomeMessage_Commands(commands.Cog):
                     "channel": str(channel.id),
                 }
             )
+            await self.load_guild_welcome(ctx.guild.id)
             self.bot.dispatch(
                 "modlog",
                 ctx.guild.id,
@@ -273,6 +279,7 @@ class WelcomeMessage_Commands(commands.Cog):
             {"$set": {"dm_message": message, "dm_enabled": True}},
             upsert=True,
         )
+        await self.load_guild_welcome(ctx.guild.id)
         self.bot.dispatch(
             "modlog",
             ctx.guild.id,
@@ -305,6 +312,7 @@ class WelcomeMessage_Commands(commands.Cog):
             await welcome_messages_collection.update_one(
                 query, {"$unset": {"dm_message": "", "dm_enabled": ""}}
             )
+            await self.load_guild_welcome(ctx.guild.id)
             self.bot.dispatch(
                 "modlog",
                 ctx.guild.id,
@@ -341,6 +349,7 @@ class WelcomeMessage_Commands(commands.Cog):
             await welcome_messages_collection.delete_one(
                 query, comment="Removed Welcome Message"
             )
+            await self.load_guild_welcome(ctx.guild.id)
             self.bot.dispatch(
                 "modlog",
                 ctx.guild.id,
@@ -357,4 +366,7 @@ class WelcomeMessage_Commands(commands.Cog):
 
 
 async def setup(bot):
-    await bot.add_cog(WelcomeMessage_Commands(bot))
+    cog = WelcomeMessage_Commands(bot)
+    for guild in bot.guilds:
+        await cog.load_guild_welcome(guild.id)
+    await bot.add_cog(cog)
