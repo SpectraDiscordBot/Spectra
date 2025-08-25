@@ -88,6 +88,7 @@ class HelpButtons(discord.ui.View):
 				"blacklist",
 				"unblacklist",
 				"servers",
+				"sync"
 			]
 		]
 		paginator = CommandPaginator(commands)

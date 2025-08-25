@@ -191,19 +191,8 @@ class Moderation(commands.Cog):
             pass
         try:
             await user.timeout(None)
-            case_id = await self._get_next_case_id(ctx.guild.id)
-            case_obj = {
-                "case_id": case_id,
-                "type": "Unmute",
-                "target": f"{user} [{user.id}]",
-                "moderator": f"{ctx.author} [{ctx.author.id}]",
-                "reason": "Unmuted",
-                "timestamp": datetime.datetime.utcnow().isoformat(),
-                "edit_history": []
-            }
-            await self._add_case(ctx.guild.id, case_obj)
-            self.bot.dispatch("modlog", ctx.guild.id, ctx.author.id, "Unmute", f"[#{case_id}]Unmuted {user.mention}")
-            await ctx.send(f"<:Checkmark:1326642406086410317> [#{case_id}] Unmuted {user.mention}.")
+            self.bot.dispatch("modlog", ctx.guild.id, ctx.author.id, "Unmute", f"Unmuted {user.mention}")
+            await ctx.send(f"<:Checkmark:1326642406086410317> Unmuted {user.mention}.")
         except Exception as e:
             await ctx.send("I do not have permission to unmute users.")
             print(e)

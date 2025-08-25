@@ -158,7 +158,7 @@ async def on_ready():
 		await bot.load_extension("reports.commands"); print("✅ | Loaded Reports Commands")
 		await bot.load_extension("anti-ping.commands"); print("✅ | Loaded Anti-Ping Commands")
 		await bot.load_extension("owner-stuff.commands"); print("✅ | Loaded Owner Commands")
-		await bot.load_extension("TopGG.topgg"); print("✅ | Loaded TopGG Commands")
+		#await bot.load_extension("TopGG.topgg"); print("✅ | Loaded TopGG Commands")
 		await bot.load_extension("verification.commands"); print("✅ | Loaded Verification Commands")
 	except Exception as e:
 		print(e)
@@ -277,6 +277,55 @@ async def on_tree_error(
 
 
 bot.tree.on_error = on_tree_error
+
+@bot.event
+async def on_guild_join(guild):
+	await asyncio.sleep(1.5)
+
+	inviter = None
+	async for entry in guild.audit_logs(limit=5, action=discord.AuditLogAction.bot_add):
+		if entry.target.id == bot.user.id:
+			inviter = entry.user
+			break
+
+	if inviter:
+		embed = discord.Embed(
+			title="Thanks for adding me!",
+			description=f"Hello! I'm Spectra, a multipurpose bot with moderation, auto-role, welcome messages, reaction roles, and much more!\n\nYou were the one who invited me to **{guild.name}**. If you need any help, feel free to join my [Support Server](https://discord.gg/fcPF66DubA) or check out my website at [spectrabot.pages.dev](https://spectrabot.pages.dev)!",
+			color=discord.Color.pink(),
+		)
+		embed.set_thumbnail(url=bot.user.display_avatar.url)
+		embed.set_footer(
+			text="Made with ❤ by brutiv & tyler.hers",
+			icon_url=bot.user.display_avatar.url,
+		)
+		embed.set_author(name=inviter.name, icon_url=inviter.display_avatar.url)
+		try:
+			await inviter.send(embed=embed)
+		except discord.Forbidden:
+			pass
+		except Exception as e:
+			print(e)
+
+	server_owner_embed = discord.Embed(
+		title="Spectra",
+		description=f"Hello! I'm Spectra, a multipurpose bot with moderation, auto-role, welcome messages, reaction roles, and much more!\n\nThanks for adding me to **{guild.name}**! If you need any help, feel free to join my [Support Server](https://discord.gg/fcPF66DubA) or check out my website at [spectrabot.pages.dev](https://spectrabot.pages.dev)!",
+		color=discord.Color.pink(),
+	)
+	server_owner_embed.set_thumbnail(url=bot.user.display_avatar.url)
+	server_owner_embed.set_footer(
+		text="Made with ❤ by brutiv & tyler.hers",
+		icon_url=bot.user.display_avatar.url,
+	)
+	server_owner_embed.set_author(name=guild.owner.name, icon_url=guild.owner.display_avatar.url)
+
+	if not inviter or inviter.id != guild.owner_id:
+		try:
+			await guild.owner.send(embed=server_owner_embed)
+		except discord.Forbidden:
+			pass
+		except Exception as e:
+			print(e)
 
 @bot.event
 async def on_guild_remove(guild):
