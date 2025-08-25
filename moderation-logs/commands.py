@@ -62,7 +62,7 @@ class ModLog(commands.Cog):
     @app_commands.describe(channel="The channel to send logs to")
     async def setup(self, ctx: commands.Context, channel: discord.TextChannel):
         guild_id = str(ctx.guild.id)
-        if modlog_collection.find_one({"guild_id": guild_id}):
+        if await modlog_collection.find_one({"guild_id": guild_id}):
             await ctx.send("Moderation logs are already enabled.", ephemeral=True)
             return
         try:
@@ -74,7 +74,7 @@ class ModLog(commands.Cog):
                     ephemeral=True,
                 )
                 return
-            modlog_collection.insert_one(
+            await modlog_collection.insert_one(
                 {"guild_id": guild_id, "channel_id": channel.id}
             )
             await ctx.send(
@@ -104,19 +104,19 @@ class ModLog(commands.Cog):
     @app_commands.default_permissions(manage_guild=True)
     async def disable(self, ctx: commands.Context):
         guild_id = str(ctx.guild.id)
-        if not modlog_collection.find_one({"guild_id": guild_id}):
+        if not await modlog_collection.find_one({"guild_id": guild_id}):
             await ctx.send("Moderation logs are already disabled.", ephemeral=True)
             return
         try:
-            modlogs = modlog_collection.find_one({"guild_id": guild_id})
+            modlogs = await modlog_collection.find_one({"guild_id": guild_id})
             channel = discord.utils.get(ctx.guild.channels, id=modlogs["channel_id"])
-            modlog_collection.delete_one({"guild_id": guild_id})
             embed = discord.Embed(
                 title="Moderation Logs",
-                description="Moderation logs have been disabled.",
+                description=f"Moderation logs have been disabled by {ctx.author.mention}.",
                 color=discord.Colour.pink(),
             )
             await channel.send(embed=embed)
+            await modlog_collection.delete_one({"guild_id": guild_id})
             await ctx.send(
                 f"<:switch_off:1326648782393180282> Moderation logs have been disabled.",
                 ephemeral=True,
