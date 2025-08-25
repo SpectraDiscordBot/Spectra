@@ -35,7 +35,7 @@ class AutoRole_Commands(commands.Cog):
 				print(e)
 
 	@commands.hybrid_command(name="autorole-add", description="Add an auto role.")
-	@commands.has_permissions(administrator=True)
+	@commands.has_permissions(manage_roles=True)
 	@commands.cooldown(1, 5, commands.BucketType.user)
 	@app_commands.describe(auto_role="The role you want to set as auto role.")
 	async def autorole_add(self, ctx, auto_role: discord.Role):
@@ -71,7 +71,7 @@ class AutoRole_Commands(commands.Cog):
 			)
 
 	@commands.hybrid_command(name="autorole-remove", description="Remove an auto role.")
-	@commands.has_permissions(administrator=True)
+	@commands.has_permissions(manage_roles=True)
 	@commands.cooldown(1, 5, commands.BucketType.user)
 	async def autorole_remove(self, ctx, auto_role: discord.Role):
 		guild_id = str(ctx.guild.id)
@@ -103,6 +103,10 @@ class AutoRole_Commands(commands.Cog):
 		roles = self.cache.get(str(member.guild.id), [])
 
 		if roles:
+			for r_id in roles:
+				role_obj = member.guild.get_role(r_id)
+				if not role_obj:
+					print(f"Role ID {r_id} not found in guild {member.guild.id}")
 			roles_to_add = [member.guild.get_role(r) for r in roles if member.guild.get_role(r)]
 			if roles_to_add:
 				try:
