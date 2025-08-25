@@ -7,7 +7,7 @@ from discord import app_commands, utils
 from dotenv import load_dotenv
 from motor.motor_asyncio import AsyncIOMotorClient
 from humanfriendly import parse_timespan, InvalidTimespan
-from db import *
+from db import cases_collection
 
 load_dotenv()
 
@@ -15,38 +15,30 @@ class Moderation(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.hybrid_command(
-        name="purge", description="Purges messages from the channel."
-    )
+
+    @commands.hybrid_command(name="purge", description="Purges messages from the channel.")
     @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(manage_messages=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def purge(self, ctx, limit: int = 5, *, reason: str = None):
         await ctx.defer(ephemeral=True)
         if limit > 100:
-            await ctx.send(
-                "Currently, you can only delete up to 100 messages.", ephemeral=True
-            )
+            await ctx.send("Currently, you can only delete up to 100 messages.", ephemeral=True)
             return
         if limit < 1:
             await ctx.send("Please specify a number between 1 and 100.", ephemeral=True)
             return
-
         try:
             await ctx.message.delete()
         except discord.HTTPException:
             pass
-
         skipped = []
-
         def check(message):
             if message.created_at < discord.utils.utcnow() - datetime.timedelta(days=14):
                 skipped.append(message)
                 return False
             return True
-
         deleted = await ctx.channel.purge(limit=limit, check=check)
-
         embed = discord.Embed(
             title="Purge Summary",
             description=f"Purged {len(deleted)} messages from {ctx.channel.mention}",
@@ -54,36 +46,80 @@ class Moderation(commands.Cog):
             timestamp=datetime.datetime.utcnow(),
         )
         embed.add_field(name="Deleted by", value=ctx.author.mention, inline=True)
-        embed.add_field(
-            name="Reason", value=reason or "No reason provided.", inline=False
-        )
-
+        embed.add_field(name="Reason", value=reason or "No reason provided.", inline=False)
         if skipped:
-            skipped_preview = "\n".join(
-                [
-                    f"**{msg.author}**: {msg.content}"
-                    for msg in skipped[:5]
-                    if msg.content
-                ]
-            )
-            embed.add_field(
-                name="Skipped Messages (Older than 14 days)",
-                value=skipped_preview or "No skipped messages.",
-                inline=False,
-            )
-
-        self.bot.dispatch(
-            "modlog",
-            ctx.guild.id,
-            ctx.author.id,
-            "Purge",
-            f"Purged {len(deleted)} messages in {ctx.channel.mention}\nReason: {reason}",
-        )
-
+            skipped_preview = "\n".join([f"**{msg.author}**: {msg.content}" for msg in skipped[:5] if msg.content])
+            embed.add_field(name="Skipped Messages (Older than 14 days)", value=skipped_preview or "No skipped messages.", inline=False)
+        self.bot.dispatch("modlog", ctx.guild.id, ctx.author.id, "Purge", f"Purged {len(deleted)} messages in {ctx.channel.mention}\nReason: {reason}")
         try:
-            await ctx.send(embed=embed, ephemeral=True, delete_after=5)
+            await ctx.send(f"<:Checkmark:1326642406086410317>", embed=embed, ephemeral=True, delete_after=5)
         except discord.HTTPException:
             pass
+
+    async def _get_next_case_id(self, guild_id):
+        doc = await cases_collection.find_one({"guild_id": str(guild_id)})
+        if not doc:
+            await cases_collection.insert_one({"guild_id": str(guild_id), "cases": [], "last_case_id": 0})
+            return 1
+        return doc.get("last_case_id", 0) + 1
+
+    async def _add_case(self, guild_id, case):
+        await cases_collection.update_one(
+            {"guild_id": str(guild_id)},
+            {"$push": {"cases": case}, "$set": {"last_case_id": case["case_id"]}},
+            upsert=True
+        )
+
+    async def _edit_case(self, guild_id, case_id, editor_id, new_data):
+        doc = await cases_collection.find_one({"guild_id": str(guild_id)})
+        if not doc:
+            return False
+        cases = doc.get("cases", [])
+        for i, c in enumerate(cases):
+            if c["case_id"] == case_id:
+                history = c.get("edit_history", [])
+                history.append({"editor_id": editor_id, "timestamp": datetime.datetime.utcnow().isoformat(), "old_data": {k: c[k] for k in new_data}})
+                for k, v in new_data.items():
+                    c[k] = v
+                c["edit_history"] = history
+                cases[i] = c
+                await cases_collection.update_one({"guild_id": str(guild_id)}, {"$set": {"cases": cases}})
+                return True
+        return False
+
+    @commands.hybrid_command(name="case", description="View a moderation case.")
+    @commands.has_permissions(moderate_members=True)
+    async def case(self, ctx, case_id: int):
+        doc = await cases_collection.find_one({"guild_id": str(ctx.guild.id)})
+        if not doc or not doc.get("cases"):
+            await ctx.send("No cases found.")
+            return
+        case = next((c for c in doc["cases"] if c["case_id"] == case_id), None)
+        if not case:
+            await ctx.send("Case not found.")
+            return
+        embed = discord.Embed(title=f"Case #{case['case_id']}", color=discord.Color.orange())
+        embed.add_field(name="Type", value=case["type"])
+        embed.add_field(name="Target", value=case["target"])
+        embed.add_field(name="Moderator", value=case["moderator"])
+        embed.add_field(name="Reason", value=case["reason"])
+        embed.add_field(name="Timestamp", value=case["timestamp"])
+        if case.get("revoked"):
+            r = case["revoked"]
+            embed.add_field(name="Revoked", value=f"By <@{r['by']}> at {r['timestamp']}", inline=False)
+        if case.get("edit_history"):
+            edits = "\n".join([f"By <@{h['editor_id']}> at {h['timestamp']}" for h in case["edit_history"]])
+            embed.add_field(name="Edit History", value=edits, inline=False)
+        await ctx.send(embed=embed, ephemeral=True)
+
+    @commands.hybrid_command(name="editcase", description="Edit a moderation case.")
+    @commands.has_permissions(moderate_members=True)
+    async def editcase(self, ctx, case_id: int, *, reason: str):
+        ok = await self._edit_case(ctx.guild.id, case_id, ctx.author.id, {"reason": reason})
+        if ok:
+            await ctx.send(f"<:Checkmark:1326642406086410317> Case #{case_id} updated.")
+        else:
+            await ctx.send("Case not found.")
 
     @commands.hybrid_command(name="mute", description="Mute a user.")
     @commands.has_permissions(moderate_members=True)
@@ -111,31 +147,22 @@ class Moderation(commands.Cog):
             await ctx.send(f"{user.mention} is already muted.")
             return
         try:
-            cases = await cases_collection.find_one({"guild_id": str(ctx.guild.id)})
-            if not cases:
-                await cases_collection.insert_one({"guild_id": str(ctx.guild.id), "cases": 0})
-                cases = {"cases": 0}
-            await cases_collection.update_one(
-                {"guild_id": str(ctx.guild.id)}, {"$set": {"cases": cases["cases"] + 1}}
-            )
-            case = await cases_collection.find_one({"guild_id": str(ctx.guild.id)})
-            case_number = case["cases"]
-            await user.timeout(
-                utils.utcnow() + datetime.timedelta(seconds=duration),
-                reason=f"[#{case_number}] Moderator: {ctx.author.name}\nReason: {reason}",
-            )
-            self.bot.dispatch(
-                "modlog",
-                ctx.guild.id,
-                ctx.author.id,
-                "Mute",
-                f"[#{case_number}] Muted {user.mention} with reason: {reason}",
-            )
-            await ctx.send(f"[#{case_number}] Muted {user.mention} for `{time}`.")
+            case_id = await self._get_next_case_id(ctx.guild.id)
+            await user.timeout(utils.utcnow() + datetime.timedelta(seconds=duration), reason=f"[#{case_id}] Moderator: {ctx.author.name}\nReason: {reason}")
+            case_obj = {
+                "case_id": case_id,
+                "type": "Mute",
+                "target": f"{user} [{user.id}]",
+                "moderator": f"{ctx.author} [{ctx.author.id}]",
+                "reason": reason,
+                "timestamp": datetime.datetime.utcnow().isoformat(),
+                "edit_history": []
+            }
+            await self._add_case(ctx.guild.id, case_obj)
+            self.bot.dispatch("modlog", ctx.guild.id, ctx.author.id, "Mute", f"[#{case_id}] Muted {user.mention} with reason: {reason}")
+            await ctx.send(f"<:Checkmark:1326642406086410317> [#{case_id}] Muted {user.mention} for `{time}`.")
             try:
-                await user.send(
-                    f"[#{case_number}] You have been muted in **{ctx.guild.name}** for: `{reason}`."
-                )
+                await user.send(f"[#{case_id}] You have been muted in **{ctx.guild.name}** for: `{reason}`.")
             except:
                 pass
         except Exception as e:
@@ -164,23 +191,19 @@ class Moderation(commands.Cog):
             pass
         try:
             await user.timeout(None)
-            cases = await cases_collection.find_one({"guild_id": str(ctx.guild.id)})
-            if not cases:
-                await cases_collection.insert_one({"guild_id": str(ctx.guild.id), "cases": 0})
-                cases = {"cases": 0}
-            await cases_collection.update_one(
-                {"guild_id": str(ctx.guild.id)}, {"$set": {"cases": cases["cases"] + 1}}
-            )
-            case = await cases_collection.find_one({"guild_id": str(ctx.guild.id)})
-            case_number = case["cases"]
-            self.bot.dispatch(
-                "modlog",
-                ctx.guild.id,
-                ctx.author.id,
-                "Unmute",
-                f"[#{case_number}]Unmuted {user.mention}",
-            )
-            await ctx.send(f"[#{case_number}] Unmuted {user.mention}.")
+            case_id = await self._get_next_case_id(ctx.guild.id)
+            case_obj = {
+                "case_id": case_id,
+                "type": "Unmute",
+                "target": f"{user} [{user.id}]",
+                "moderator": f"{ctx.author} [{ctx.author.id}]",
+                "reason": "Unmuted",
+                "timestamp": datetime.datetime.utcnow().isoformat(),
+                "edit_history": []
+            }
+            await self._add_case(ctx.guild.id, case_obj)
+            self.bot.dispatch("modlog", ctx.guild.id, ctx.author.id, "Unmute", f"[#{case_id}]Unmuted {user.mention}")
+            await ctx.send(f"<:Checkmark:1326642406086410317> [#{case_id}] Unmuted {user.mention}.")
         except Exception as e:
             await ctx.send("I do not have permission to unmute users.")
             print(e)
@@ -189,14 +212,7 @@ class Moderation(commands.Cog):
     @commands.has_permissions(ban_members=True)
     @commands.bot_has_permissions(ban_members=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def ban(
-        self,
-        ctx,
-        user: discord.User,
-        delete_message_days: int = 0,
-        *,
-        reason: str = "No Reason Provided",
-    ):
+    async def ban(self, ctx, user: discord.User, delete_message_days: int = 0, *, reason: str = "No Reason Provided"):
         if user.id == ctx.author.id:
             await ctx.send("You cannot ban yourself.")
             return
@@ -210,33 +226,23 @@ class Moderation(commands.Cog):
         except:
             pass
         if delete_message_days > 7:
-            await ctx.send(
-                "Number of days to delete messages cannot be more than 7, or a week."
-            )
+            await ctx.send("Number of days to delete messages cannot be more than 7, or a week.")
             return
         try:
-            cases = await cases_collection.find_one({"guild_id": str(ctx.guild.id)})
-            if not cases:
-                await cases_collection.insert_one({"guild_id": str(ctx.guild.id), "cases": 0})
-                cases = {"cases": 0}
-            await cases_collection.update_one(
-                {"guild_id": str(ctx.guild.id)}, {"$set": {"cases": cases["cases"] + 1}}
-            )
-            case = await cases_collection.find_one({"guild_id": str(ctx.guild.id)})
-            case_number = case["cases"]
-            await ctx.guild.ban(
-                user,
-                reason=f"[#{case_number}]Moderator: {ctx.author.name}\nReason: {reason}",
-                delete_message_days=delete_message_days,
-            )
-            self.bot.dispatch(
-                "modlog",
-                ctx.guild.id,
-                ctx.author.id,
-                "Ban",
-                f"[#{case_number}]Banned {user.mention} with reason: {reason}",
-            )
-            await ctx.send(f"[#{case_number}] Banned {user.mention}.")
+            case_id = await self._get_next_case_id(ctx.guild.id)
+            await ctx.guild.ban(user, reason=f"[#{case_id}]Moderator: {ctx.author.name}\nReason: {reason}", delete_message_days=delete_message_days)
+            case_obj = {
+                "case_id": case_id,
+                "type": "Ban",
+                "target": f"{user} [{user.id}]",
+                "moderator": f"{ctx.author} [{ctx.author.id}]",
+                "reason": reason,
+                "timestamp": datetime.datetime.utcnow().isoformat(),
+                "edit_history": []
+            }
+            await self._add_case(ctx.guild.id, case_obj)
+            self.bot.dispatch("modlog", ctx.guild.id, ctx.author.id, "Ban", f"[#{case_id}]Banned {user.mention} with reason: {reason}")
+            await ctx.send(f"<:Checkmark:1326642406086410317> [#{case_id}] Banned {user.mention}.")
         except Exception as e:
             await ctx.send("I do not have permission to ban users.")
             print(e)
@@ -245,9 +251,7 @@ class Moderation(commands.Cog):
     @commands.has_permissions(kick_members=True)
     @commands.bot_has_permissions(kick_members=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def kick(
-        self, ctx, user: discord.Member, *, reason: str = "No Reason Provided"
-    ):
+    async def kick(self, ctx, user: discord.Member, *, reason: str = "No Reason Provided"):
         if user.id == ctx.author.id:
             await ctx.send("You cannot kick yourself.")
             return
@@ -258,26 +262,20 @@ class Moderation(commands.Cog):
             await ctx.send("You cannot kick this user.")
             return
         try:
-            cases = await cases_collection.find_one({"guild_id": str(ctx.guild.id)})
-            if not cases:
-                await cases_collection.insert_one({"guild_id": str(ctx.guild.id), "cases": 0})
-                cases = {"cases": 0}
-            await cases_collection.update_one(
-                {"guild_id": str(ctx.guild.id)}, {"$set": {"cases": cases["cases"] + 1}}
-            )
-            case = await cases_collection.find_one({"guild_id": str(ctx.guild.id)})
-            case_number = case["cases"]
-            await user.kick(
-                reason=f"[#{case_number}] Moderator: {ctx.author.name}\nReason: {reason}"
-            )
-            self.bot.dispatch(
-                "modlog",
-                ctx.guild.id,
-                ctx.author.id,
-                "Kick",
-                f"[#{case_number}] Kicked {user.mention} with reason: {reason}",
-            )
-            await ctx.send(f"[#{case_number}] Kicked {user.mention}.")
+            case_id = await self._get_next_case_id(ctx.guild.id)
+            await user.kick(reason=f"[#{case_id}] Moderator: {ctx.author.name}\nReason: {reason}")
+            case_obj = {
+                "case_id": case_id,
+                "type": "Kick",
+                "target": f"{user} [{user.id}]",
+                "moderator": f"{ctx.author} [{ctx.author.id}]",
+                "reason": reason,
+                "timestamp": datetime.datetime.utcnow().isoformat(),
+                "edit_history": []
+            }
+            await self._add_case(ctx.guild.id, case_obj)
+            self.bot.dispatch("modlog", ctx.guild.id, ctx.author.id, "Kick", f"[#{case_id}] Kicked {user.mention} with reason: {reason}")
+            await ctx.send(f"<:Checkmark:1326642406086410317> [#{case_id}] Kicked {user.mention}.")
         except Exception as e:
             await ctx.send("I do not have permission to kick users.")
             print(e)
@@ -298,7 +296,7 @@ class Moderation(commands.Cog):
                 "Unban",
                 f"Unbanned `{user.name} [{user.id}]`",
             )
-            await ctx.send(f"Unbanned user `{user.name}`.")
+            await ctx.send(f"<:Checkmark:1326642406086410317> Unbanned user `{user.name}`.")
         except Exception as e:
             await ctx.send("I do not have permission to unban users.")
             print(e)
@@ -314,7 +312,7 @@ class Moderation(commands.Cog):
             channel = ctx.channel
         try:
             await channel.edit(slowmode_delay=seconds)
-            await ctx.send(f"Set slowmode in {channel.mention} to {seconds} seconds.")
+            await ctx.send(f"<:Checkmark:1326642406086410317> Set slowmode in {channel.mention} to {seconds} seconds.")
             self.bot.dispatch(
                 "modlog",
                 ctx.guild.id,

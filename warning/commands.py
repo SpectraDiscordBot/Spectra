@@ -10,6 +10,31 @@ load_dotenv()
 
 
 class Warning_Commands(commands.Cog):
+	async def _revoke_case(self, guild_id, case_id, revoker_id):
+		doc = await cases_collection.find_one({"guild_id": str(guild_id)})
+		if not doc:
+			return False
+		cases = doc.get("cases", [])
+		for i, c in enumerate(cases):
+			if c["case_id"] == case_id:
+				c["revoked"] = {"by": revoker_id, "timestamp": datetime.datetime.utcnow().isoformat()}
+				cases[i] = c
+				await cases_collection.update_one({"guild_id": str(guild_id)}, {"$set": {"cases": cases}})
+				return True
+		return False
+	async def _get_next_case_id(self, guild_id):
+		doc = await cases_collection.find_one({"guild_id": str(guild_id)})
+		if not doc:
+			await cases_collection.insert_one({"guild_id": str(guild_id), "cases": [], "last_case_id": 0})
+			return 1
+		return doc.get("last_case_id", 0) + 1
+
+	async def _add_case(self, guild_id, case):
+		await cases_collection.update_one(
+			{"guild_id": str(guild_id)},
+			{"$push": {"cases": case}, "$set": {"last_case_id": case["case_id"]}},
+			upsert=True
+		)
 
 	def __init__(self, bot):
 		self.bot = bot
@@ -38,14 +63,17 @@ class Warning_Commands(commands.Cog):
 			await msg.edit(content="No warning system has been set up.")
 			return
 
-		case = await cases_collection.find_one_and_update(
-			{"guild_id": str(ctx.guild.id)},
-			{"$inc": {"cases": 1}},
-			upsert=True,
-			return_document=True
-		)
-
-		case_number = case["cases"]
+		case_id = await self._get_next_case_id(ctx.guild.id)
+		case_obj = {
+			"case_id": case_id,
+			"type": "Warning",
+			"target": f"{user} [{user.id}]",
+			"moderator": f"{ctx.author} [{ctx.author.id}]",
+			"reason": reason,
+			"timestamp": datetime.datetime.utcnow().isoformat(),
+			"edit_history": []
+		}
+		await self._add_case(ctx.guild.id, case_obj)
 
 		logs_channel = ctx.guild.get_channel(int(data.get("logs_channel")))
 		await warning_collection.insert_one(
@@ -55,7 +83,7 @@ class Warning_Commands(commands.Cog):
 				"reason": reason,
 				"issued_by": str(ctx.author.id),
 				"issued_at": str(datetime.datetime.utcnow()),
-				"case_number": case_number,
+				"case_number": case_id,
 			}
 		)
 		warn_log = discord.Embed(
@@ -64,7 +92,7 @@ class Warning_Commands(commands.Cog):
 			color=discord.Color.pink(),
 		)
 		warn_log.add_field(
-			name="Case Number:", value=f"CASE #{case_number}", inline=False
+			name="Case Number:", value=f"CASE #{case_id}", inline=False
 		)
 		warn_log.add_field(name="Reason:", value=reason, inline=False)
 		warn_log.add_field(name="Issued By:", value=f"<@{ctx.author.id}>", inline=False)
@@ -73,15 +101,13 @@ class Warning_Commands(commands.Cog):
 			value=f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
 			inline=False,
 		)
-
 		try:
 			warn_log.set_thumbnail(url=user.avatar.url)
 		except:
 			pass
-
 		warn_log.set_footer(text="Warning System")
 		await msg.edit(
-			content=f"<:Checkmark:1326642406086410317> `[CASE #{case_number}]` Warning issued to {user.mention} for `{reason}`."
+			content=f"<:Checkmark:1326642406086410317> `[CASE #{case_id}]` Warning issued to {user.mention} for `{reason}`."
 		)
 		try:
 			await logs_channel.send(embed=warn_log)
@@ -90,7 +116,7 @@ class Warning_Commands(commands.Cog):
 		try:
 			dm_embed = discord.Embed(title="Warned", description=f"You have been warned in **{ctx.guild.name}**", color=discord.Colour.pink())
 			dm_embed.add_field(name="Reason:", value=reason, inline=False)
-			dm_embed.add_field(name="Case Number:", value=f"CASE #{case_number}", inline=False)
+			dm_embed.add_field(name="Case Number:", value=f"CASE #{case_id}", inline=False)
 			await user.send(
 				embed=dm_embed
 			)
@@ -146,6 +172,7 @@ class Warning_Commands(commands.Cog):
 				"case_number": case_number,
 			}
 		)
+		await self._revoke_case(ctx.guild.id, case_number, ctx.author.id)
 		warn_log = discord.Embed(
 			title=f"Warning revoked from {user.name}",
 			description="",
