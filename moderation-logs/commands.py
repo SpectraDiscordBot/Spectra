@@ -14,7 +14,7 @@ class ModLog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def send_modlog(self, guild_id, action_taker: discord.Member, action, message):
+    async def send_modlog(self, guild_id, action_taker: discord.User, action, message):
         guild = self.bot.get_guild(guild_id)
         if not guild:
             print(f"Guild not found for ID: {guild_id}")
@@ -30,7 +30,7 @@ class ModLog(commands.Cog):
                 description=f"<:modshield:1325613380945444864> {message}",
                 color=discord.Color.yellow(),
             )
-            taker = guild.get_member(action_taker)
+            taker = self.bot.get_user(action_taker)
             embed.add_field(
                 name="Issued by", value=(taker.mention if taker else "None found")
             )
