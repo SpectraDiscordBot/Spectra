@@ -7,11 +7,31 @@ from db import *
 
 load_dotenv()
 
-class ReactionRoleSettings(commands.Cog):
+class ReactionRoleCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.hybrid_command(name="reaction-role-settings", description="Configure role assignment settings")
+    async def get_settings(self, guild_id):
+        default = {
+            "embed_title": "Select Your Roles",
+            "embed_description": "Click a button to assign/remove roles.",
+            "embed_color": 0xE91E63,
+            "max_buttons": 15,
+            "button_add_msg": "Added the **{role}** role",
+            "button_remove_msg": "Removed the **{role}** role",
+            "reaction_add_msg": "Added the **{role}** role",
+            "reaction_remove_msg": "Removed the **{role}** role"
+        }
+        data = await button_settings_collection.find_one({"guild_id": guild_id})
+        if data:
+            default.update(data)
+        return default
+
+    @commands.hybrid_group(name="reaction-role")
+    async def reaction_role(self, ctx):
+        pass
+
+    @reaction_role.command(name="reaction-role-settings", description="Configure role assignment settings")
     @commands.has_permissions(manage_guild=True)
     @app_commands.describe(
         embed_title="Embed title",
@@ -61,27 +81,7 @@ class ReactionRoleSettings(commands.Cog):
         await button_settings_collection.update_one({"guild_id": guild_id}, {"$set": data}, upsert=True)
         await ctx.send("Role settings updated.", ephemeral=True)
 
-class ReactionRoleCommands(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
-
-    async def get_settings(self, guild_id):
-        default = {
-            "embed_title": "Select Your Roles",
-            "embed_description": "Click a button to assign/remove roles.",
-            "embed_color": 0xE91E63,
-            "max_buttons": 15,
-            "button_add_msg": "Added the **{role}** role",
-            "button_remove_msg": "Removed the **{role}** role",
-            "reaction_add_msg": "Added the **{role}** role",
-            "reaction_remove_msg": "Removed the **{role}** role"
-        }
-        data = await button_settings_collection.find_one({"guild_id": guild_id})
-        if data:
-            default.update(data)
-        return default
-
-    @commands.hybrid_command(name="add-reaction-role", description="Add a new role assignment")
+    @reaction_role.command(name="add", description="Add a new role assignment")
     @commands.has_permissions(manage_roles=True)
     @app_commands.describe(
         type="Button or reaction role",
@@ -235,7 +235,7 @@ class ReactionRoleCommands(commands.Cog):
             })
             await ctx.send(f"Added reaction role: {custom_emoji or emoji} for {role.mention}", ephemeral=True)
 
-    @commands.hybrid_command(name="remove-reaction-role", description="Remove a role assignment")
+    @reaction_role.command(name="remove", description="Remove a role assignment")
     @commands.has_permissions(manage_roles=True)
     @app_commands.describe(
         type="Button or reaction role",
@@ -320,7 +320,7 @@ class ReactionRoleCommands(commands.Cog):
             await reaction_roles_collection.delete_one({"_id": data["_id"]})
             await ctx.send("Reaction role configuration removed.", ephemeral=True)
 
-    @commands.hybrid_command(name="send-reaction-roles", description="Send the button role panel")
+    @reaction_role.command(name="send", description="Send the button role panel")
     @commands.has_permissions(manage_channels=True)
     @app_commands.describe(channel="Channel to send message in")
     async def send_panel(self, ctx: commands.Context, channel: discord.TextChannel = None):
@@ -522,5 +522,4 @@ class ReactionRoleCommands(commands.Cog):
             pass
 
 async def setup(bot):
-    await bot.add_cog(ReactionRoleSettings(bot))
     await bot.add_cog(ReactionRoleCommands(bot))

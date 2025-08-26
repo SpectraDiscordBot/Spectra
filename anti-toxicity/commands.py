@@ -100,8 +100,12 @@ class AntiToxicity(commands.Cog):
 
     # Commands
 
-    @commands.hybrid_command(
-        name="anti-toxicity-enable", description="Enable the anti-toxicity system"
+    @commands.hybrid_group(name="anti-toxicity")
+    async def anti_toxicity(self, ctx):
+        pass
+
+    @anti_toxicity.command(
+        name="enable", description="Enable the anti-toxicity system"
     )
     @commands.has_permissions(manage_guild=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
@@ -127,8 +131,8 @@ class AntiToxicity(commands.Cog):
         )
         await ctx.send(embed=embed, ephemeral=True)
 
-    @commands.hybrid_command(
-        name="anti-toxicity-disable", description="Disable the anti-toxicity system"
+    @anti_toxicity.command(
+        name="disable", description="Disable the anti-toxicity system"
     )
     @commands.has_permissions(manage_guild=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
@@ -154,8 +158,8 @@ class AntiToxicity(commands.Cog):
         )
         await ctx.send(embed=embed, ephemeral=True)
 
-    @commands.hybrid_command(
-        name="anti-toxicity-configure", description="Set the toxicity threshold"
+    @anti_toxicity.command(
+        name="configure", description="Set the toxicity threshold"
     )
     @commands.has_permissions(manage_guild=True)
     @commands.cooldown(1, 5, commands.BucketType.user)

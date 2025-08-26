@@ -168,11 +168,15 @@ class AntiSpam(commands.Cog):
         else:
             pass
 
-    @commands.hybrid_command(name="spam-enable", description="Enable spam detection.")
+    @commands.hybrid_group(name="anti-spam")
+    async def antispam(self, ctx):
+        pass
+
+    @antispam.command(name="enable", description="Enable spam detection.")
     @commands.has_permissions(manage_guild=True)
     @app_commands.describe(channel="The channel to send logs to")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def enable(self, ctx, channel: discord.TextChannel = None):
+    async def anti_spam_enable(self, ctx, channel: discord.TextChannel = None):
         if antispam_collection.find_one({"guild_id": ctx.guild.id}):
             await ctx.send("Spam detection is already enabled.", ephemeral=True)
             return
@@ -204,10 +208,10 @@ class AntiSpam(commands.Cog):
                 ephemeral=True,
             )
 
-    @commands.hybrid_command(name="spam-disable", description="Disable spam detection.")
+    @antispam.command(name="disable", description="Disable spam detection.")
     @commands.has_permissions(manage_guild=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def disable(self, ctx):
+    async def anti_spam_disable(self, ctx):
         if not antispam_collection.find_one({"guild_id": ctx.guild.id}):
             await ctx.send("Spam detection is already disabled.", ephemeral=True)
             return

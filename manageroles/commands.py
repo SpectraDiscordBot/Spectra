@@ -11,7 +11,11 @@ class ManageRoles(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.hybrid_command(name="create-role", description="Create a role.")
+    @commands.hybrid_group(name="role")
+    async def manage_roles(self, ctx):
+        pass
+
+    @manage_roles.command(name="create", description="Create a role.")
     @commands.has_permissions(manage_roles=True)
     @commands.bot_has_permissions(manage_roles=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
@@ -52,7 +56,7 @@ class ManageRoles(commands.Cog):
             )
             await ctx.send(embed=embed)
 
-    @commands.hybrid_command(name="delete-role", description="Delete a role.")
+    @manage_roles.command(name="delete", description="Delete a role.")
     @app_commands.describe(role="The role you want to delete.")
     @commands.has_permissions(manage_roles=True)
     @commands.bot_has_permissions(manage_roles=True)
@@ -80,7 +84,7 @@ class ManageRoles(commands.Cog):
             )
             await ctx.send(embed=embed)
 
-    @commands.hybrid_command(name="list-roles", description="List all roles.")
+    @manage_roles.command(name="list", description="List all roles.")
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def list(self, ctx: commands.Context):
         try:
@@ -109,7 +113,7 @@ class ManageRoles(commands.Cog):
             )
             await ctx.send(embed=embed)
 
-    @commands.hybrid_command(name="edit-role", description="Edit a role.")
+    @manage_roles.command(name="edit", description="Edit a role.")
     @app_commands.describe(
         role="The role you want to edit.",
         name="The name of the role.",

@@ -34,7 +34,11 @@ class AutoRole_Commands(commands.Cog):
 			except Exception as e:
 				print(e)
 
-	@commands.hybrid_command(name="autorole-add", description="Add an auto role.")
+	@commands.hybrid_group(name="autorole")
+	async def autorole(self, ctx):
+		pass
+	
+	@autorole.command(name="add", description="Add an auto role.")
 	@commands.has_permissions(manage_roles=True)
 	@commands.cooldown(1, 5, commands.BucketType.user)
 	@app_commands.describe(auto_role="The role you want to set as auto role.")
@@ -70,7 +74,7 @@ class AutoRole_Commands(commands.Cog):
 				f"<:Checkmark:1326642406086410317> **{auto_role.name}** has been successfully added.", ephemeral=True
 			)
 
-	@commands.hybrid_command(name="autorole-remove", description="Remove an auto role.")
+	@autorole.command(name="remove", description="Remove an auto role.")
 	@commands.has_permissions(manage_roles=True)
 	@commands.cooldown(1, 5, commands.BucketType.user)
 	async def autorole_remove(self, ctx, auto_role: discord.Role):

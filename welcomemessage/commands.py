@@ -188,9 +188,13 @@ class WelcomeMessage_Commands(commands.Cog):
 	@commands.Cog.listener()
 	async def on_member_join(self, member):
 		await self.send_welcome(member)
+		
+	@commands.hybrid_group(name="welcome")
+	async def welcome(self, ctx):
+		pass
 
-	@commands.hybrid_command(
-		name="welcome-help", description="Learn how to setup welcome messages"
+	@welcome.command(
+		name="help", description="Learn how to setup welcome messages"
 	)
 	@commands.has_permissions(manage_guild=True)
 	async def welcome_help(self, ctx: commands.Context):
@@ -220,8 +224,8 @@ class WelcomeMessage_Commands(commands.Cog):
 		)
 		await ctx.send(embed=embed)
 
-	@commands.hybrid_command(
-		name="welcome-setup", description="Setup the welcome message (plain text)."
+	@welcome.command(
+		name="setup", description="Setup the welcome message (plain text)."
 	)
 	@commands.has_permissions(manage_guild=True)
 	@commands.cooldown(1, 5, commands.BucketType.user)
@@ -257,8 +261,8 @@ class WelcomeMessage_Commands(commands.Cog):
 				ephemeral=True,
 			)
 
-	@commands.hybrid_command(
-		name="welcome-embed-setup",
+	@welcome.command(
+		name="embed-setup",
 		description="Setup a fully customizable embed welcome message.",
 	)
 	@commands.has_permissions(manage_guild=True)
@@ -267,8 +271,8 @@ class WelcomeMessage_Commands(commands.Cog):
 		view = WelcomeEmbedSetupButtonView(self.bot, ctx)
 		await ctx.send("Click the button below to setup the welcome embed message.", view=view, ephemeral=True)
 
-	@commands.hybrid_command(
-		name="welcome-dm-setup",
+	@welcome.command(
+		name="dm-setup",
 		description="Set a DM welcome message, sent to a user's DMs when they join",
 	)
 	@commands.has_permissions(manage_guild=True)
@@ -299,8 +303,8 @@ class WelcomeMessage_Commands(commands.Cog):
 				"<:switch_on:1326648555414224977> DM Welcome Message has been set."
 			)
 
-	@commands.hybrid_command(
-		name="welcome-dm-remove", description="Remove the DM welcome message."
+	@welcome.command(
+		name="dm-remove", description="Remove the DM welcome message."
 	)
 	@commands.has_permissions(manage_guild=True)
 	@commands.cooldown(1, 5, commands.BucketType.user)
@@ -339,8 +343,8 @@ class WelcomeMessage_Commands(commands.Cog):
 			else:
 				await ctx.send("DM Welcome Message is not set.")
 
-	@commands.hybrid_command(
-		name="welcome-remove", description="Remove the welcome message."
+	@welcome.command(
+		name="remove", description="Remove the welcome message."
 	)
 	@commands.has_permissions(manage_guild=True)
 	@commands.cooldown(1, 5, commands.BucketType.user)
