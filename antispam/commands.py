@@ -15,10 +15,10 @@ class AntiSpam(commands.Cog):
         self.bot = bot
 
     anti_spam = commands.CooldownMapping.from_cooldown(
-        10, 40, commands.BucketType.member
+        5, 10, commands.BucketType.member
     )
     too_many_violations = commands.CooldownMapping.from_cooldown(
-        5, 30, commands.BucketType.member
+        3, 30, commands.BucketType.member
     )
 
     @commands.Cog.listener()
