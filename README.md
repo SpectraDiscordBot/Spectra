@@ -1,10 +1,59 @@
-### Up to date as of August 27, 2025.
+````markdown
+# ![Spectra](https://raw.githubusercontent.com/SpectraDiscordBot/Spectra/main/assets/logo.png) Spectra
 
-Support us by voting on [TopGG](https://top.gg/bot/1279512390756470836), or by buying a donation package on our [bot's store](https://discord.com/discovery/applications/1279512390756470836/store)!
+[![TopGG](https://top.gg/api/widget/1279512390756470836.svg)](https://top.gg/bot/1279512390756470836)
+[![Python](https://img.shields.io/badge/Python-3.13+-blue?logo=python)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow?logo=opensourceinitiative)](https://opensource.org/licenses/MIT)
+[![GitHub Stars](https://img.shields.io/github/stars/SpectraDiscordBot/Spectra?style=social)](https://github.com/SpectraDiscordBot/Spectra/stargazers)
 
+---
 
-Clone by running `git clone https://github.com/SpectraDiscordBot/Spectra.git`
+### Last Updated: August 27, 2025
 
-After that, run `pip install -r requirements.txt`, but make sure you're using Python 3.13+, as that's the highest supported as of `7/8/2025` for Spectra.
+Support Spectra by [voting on TopGG](https://top.gg/bot/1279512390756470836) ⭐  
+Or help development directly through our [donation packages](https://discord.com/discovery/applications/1279512390756470836/store) 💖
 
-If you have issues with the code, join our support server or make an issue. Thanks! :)
+---
+
+## 🚀 Installation
+
+Clone the repository:
+
+```bash
+git clone https://github.com/SpectraDiscordBot/Spectra.git
+cd Spectra
+````
+
+Install dependencies (**Python 3.13+ required**):
+
+```bash
+pip install -r requirements.txt
+```
+
+Run the bot (configure your token and environment variables first):
+
+```bash
+python bot.py
+```
+
+---
+
+## 🛟 Support & Community
+
+| Action              | Link                                                                                                                                                                     |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Join Support Server | [![Discord](https://img.shields.io/badge/Discord-Join%20Server-7289DA?logo=discord\&logoColor=white)](https://discord.gg/fcPF66DubA)                            |
+| Report Issues       | [![GitHub](https://img.shields.io/badge/GitHub-Open%20Issue-181717?logo=github\&logoColor=white)](https://github.com/SpectraDiscordBot/Spectra/issues)                   |
+| Vote on TopGG       | [![TopGG](https://img.shields.io/badge/TopGG-Vote-FF5F5F?logo=top.gg\&logoColor=white)](https://top.gg/bot/1279512390756470836)                                          |
+| Donate              | [![Donate](https://img.shields.io/badge/Donate-Buy%20Support-4CAF50?logo=paypal\&logoColor=white)](https://discord.com/discovery/applications/1279512390756470836/store) |
+
+---
+
+## ⚖️ License
+
+Spectra is licensed under the **MIT License**.
+Feel free to use, modify, and distribute with proper attribution.
+
+---
+
+Thanks for supporting Spectra! 🚀
