@@ -1,4 +1,4 @@
-# ![Spectra](https://raw.githubusercontent.com/SpectraDiscordBot/Spectra/main/spectra.gif) Spectra
+# ![Spectra](https://raw.githubusercontent.com/SpectraDiscordBot/Spectra/main/spectra.gif)
 
 [![TopGG](https://top.gg/api/widget/1279512390756470836.svg)](https://top.gg/bot/1279512390756470836)
 [![Python](https://img.shields.io/badge/Python-3.13+-blue?logo=python)](https://www.python.org/)
