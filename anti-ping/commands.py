@@ -96,7 +96,7 @@ class AntiPing(commands.Cog):
 				ephemeral=True
 			)
 
-	@anti_ping.command(name="remove", description="Remove an auto role.")
+	@anti_ping.command(name="remove", description="Remove a role from the anti-ping list")
 	@commands.has_permissions(administrator=True)
 	@commands.cooldown(1, 5, commands.BucketType.user)
 	async def anti_ping_remove(self, ctx, role: discord.Role):
