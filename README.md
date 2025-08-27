@@ -32,7 +32,7 @@ pip install -r requirements.txt
 Run the bot (configure your token and environment variables first):
 
 ```bash
-python bot.py
+python main.py
 ```
 
 ---
