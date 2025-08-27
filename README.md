@@ -1,4 +1,3 @@
-````markdown
 # ![Spectra](https://raw.githubusercontent.com/SpectraDiscordBot/Spectra/main/assets/logo.png) Spectra
 
 [![TopGG](https://top.gg/api/widget/1279512390756470836.svg)](https://top.gg/bot/1279512390756470836)
