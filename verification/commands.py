@@ -60,7 +60,7 @@ class Verification(commands.Cog):
     async def verification(self, ctx):
         pass
 
-    @verification.command(name="setup-verification", description="Setup the verification system")
+    @verification.command(name="setup", description="Setup the verification system")
     @commands.has_permissions(manage_guild=True)
     @app_commands.describe(
         channel="Channel to send the verification message in",
@@ -134,7 +134,7 @@ class Verification(commands.Cog):
         except:
             pass
 
-    @verification.command(name="disable-verification", description="Disable the verification system")
+    @verification.command(name="disable", description="Disable the verification system")
     @commands.has_permissions(manage_guild=True)
     async def disable_verification(self, ctx: commands.Context):
         guild_id = str(ctx.guild.id)
