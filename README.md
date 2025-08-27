@@ -1,6 +1,6 @@
 # ![Spectra](https://raw.githubusercontent.com/SpectraDiscordBot/Spectra/main/spectra.gif)
 
-[![TopGG](https://top.gg/api/widget/1279512390756470836.svg)](https://top.gg/bot/1279512390756470836)
+[![TopGG](https://img.shields.io/badge/TopGG-Vote-brightgreen?logo=top.gg&logoColor=white)](https://top.gg/bot/1279512390756470836)
 [![Python](https://img.shields.io/badge/Python-3.13+-blue?logo=python)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?logo=opensourceinitiative)](https://opensource.org/licenses/MIT)
 [![GitHub Stars](https://img.shields.io/github/stars/SpectraDiscordBot/Spectra?style=social)](https://github.com/SpectraDiscordBot/Spectra/stargazers)
