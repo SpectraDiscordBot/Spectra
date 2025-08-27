@@ -39,8 +39,12 @@ class Warning_Commands(commands.Cog):
 	def __init__(self, bot):
 		self.bot = bot
 
-	@commands.hybrid_command(
-		name="issue-warning", description="Issue a warning.", aliases=["warn"]
+	@commands.hybrid_group(name="warnings")
+	async def warnings(self, ctx):
+		pass
+
+	@warnings.command(
+		name="issue", description="Issue a warning.", aliases=["warn"]
 	)
 	@commands.cooldown(1, 5, type=commands.BucketType.user)
 	@commands.has_permissions(moderate_members=True)
@@ -123,8 +127,8 @@ class Warning_Commands(commands.Cog):
 		except:
 			pass
 
-	@commands.hybrid_command(
-		name="revoke-warning",
+	@warnings.command(
+		name="revoke",
 		description="Revoke a warning from a user.",
 		aliases=["unwarn"],
 	)
@@ -204,8 +208,8 @@ class Warning_Commands(commands.Cog):
 		except:
 			pass
 
-	@commands.hybrid_command(
-		name="list-warnings",
+	@warnings.command(
+		name="list",
 		description="List all warnings of a user.",
 		aliases=["warns", "warnings"],
 	)
@@ -238,8 +242,8 @@ class Warning_Commands(commands.Cog):
 
 		await ctx.send(embed=embed)
 
-	@commands.hybrid_command(
-		name="clear-warnings", description="Clear all warnings of a user."
+	@warnings.command(
+		name="clear", description="Clear all warnings of a user."
 	)
 	@commands.has_permissions(administrator=True)
 	async def clear(self, ctx, user: discord.User):
@@ -295,7 +299,7 @@ class Warning_Commands(commands.Cog):
 		except:
 			pass
 
-	@commands.hybrid_command(name="setup-warnings", description="Setup warning system.")
+	@warnings.command(name="setup", description="Setup warning system.")
 	@commands.has_permissions(manage_guild=True)
 	async def setup(self, ctx, channel: discord.TextChannel):
 		guild_id = str(ctx.guild.id)
@@ -332,8 +336,8 @@ class Warning_Commands(commands.Cog):
 			except:
 				pass
 
-	@commands.hybrid_command(
-		name="disable-warnings", description="Disable warning system."
+	@warnings.command(
+		name="disable", description="Disable warning system."
 	)
 	@commands.has_permissions(manage_guild=True)
 	async def disable(self, ctx):

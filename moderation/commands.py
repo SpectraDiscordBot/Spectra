@@ -201,7 +201,7 @@ class Moderation(commands.Cog):
     @commands.has_permissions(ban_members=True)
     @commands.bot_has_permissions(ban_members=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def ban(self, ctx, user: discord.User, delete_message_days: int = 0, *, reason: str = "No Reason Provided"):
+    async def ban(self, ctx, user: discord.User, delete_message_days: int, *, reason: str = "No Reason Provided"):
         if user.id == ctx.author.id:
             await ctx.send("You cannot ban yourself.")
             return

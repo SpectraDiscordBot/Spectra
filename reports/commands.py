@@ -270,8 +270,12 @@ class Report_Commands(commands.Cog):
         else:
             pass
 
-    @commands.hybrid_command(
-        name="enable-reports", description="Setup the user report system"
+    @commands.hybrid_group(name="reports")
+    async def reports(self, ctx):
+        pass
+
+    @reports.command(
+        name="enable", description="Setup the user report system"
     )
     @commands.has_permissions(manage_guild=True)
     async def setup_reports(self, ctx, channel: discord.TextChannel):
@@ -298,8 +302,8 @@ class Report_Commands(commands.Cog):
             except Exception as e:
                 print(e)
 
-    @commands.hybrid_command(
-        name="disable-reports", description="Setup the user report system"
+    @reports.command(
+        name="disable", description="Setup the user report system"
     )
     @commands.has_permissions(manage_guild=True)
     async def disable_reports(self, ctx):
@@ -321,9 +325,8 @@ class Report_Commands(commands.Cog):
                 print(e)
 
     @commands.hybrid_command(
-        name="report-user",
-        description="Report a user to server moderators.",
-        aliases=["report"],
+        name="report",
+        description="Report a user to server moderators."
     )
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def report_user(

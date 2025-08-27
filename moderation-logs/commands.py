@@ -55,8 +55,12 @@ class ModLog(commands.Cog):
     async def on_modlog(self, guild_id, action_taker, action, message):
         await self.send_modlog(guild_id, action_taker, action, message)
 
-    @commands.hybrid_command(
-        name="setup-modlogs", description="Enable moderation logs related to Spectra"
+    @commands.hybrid_group(name="modlogs")
+    async def modlogs(self, ctx):
+        pass
+
+    @modlogs.command(
+        name="setup", description="Enable moderation logs related to Spectra"
     )
     @app_commands.default_permissions(manage_guild=True)
     @app_commands.describe(channel="The channel to send logs to")
@@ -98,8 +102,8 @@ class ModLog(commands.Cog):
                 "An error occurred while setting up moderation logs.", ephemeral=True
             )
 
-    @commands.hybrid_command(
-        name="disable-modlogs", description="Disable moderation logs related to Spectra"
+    @modlogs.command(
+        name="disable", description="Disable moderation logs related to Spectra"
     )
     @app_commands.default_permissions(manage_guild=True)
     async def disable(self, ctx: commands.Context):

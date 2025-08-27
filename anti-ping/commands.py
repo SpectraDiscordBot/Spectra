@@ -55,8 +55,12 @@ class AntiPing(commands.Cog):
 					delete_after=10
 				)
 				break
+			
+	@commands.hybrid_group(name="anti-ping")
+	async def anti_ping(self, ctx):
+		pass
 	
-	@commands.hybrid_command(name="anti-ping-add", description="Add a role to the anti-ping list")
+	@anti_ping.command(name="add", description="Add a role to the anti-ping list")
 	@commands.has_permissions(manage_roles=True)
 	@app_commands.describe(role="The role for anti-ping", bypass_role="They will be able to ping the role")
 	async def anti_ping_add(self, ctx: commands.Context, role: discord.Role, bypass_role: discord.Role = None):
@@ -92,7 +96,7 @@ class AntiPing(commands.Cog):
 				ephemeral=True
 			)
 
-	@commands.hybrid_command(name="anti-ping-remove", description="Remove an auto role.")
+	@anti_ping.command(name="remove", description="Remove a role from the anti-ping list")
 	@commands.has_permissions(administrator=True)
 	@commands.cooldown(1, 5, commands.BucketType.user)
 	async def anti_ping_remove(self, ctx, role: discord.Role):

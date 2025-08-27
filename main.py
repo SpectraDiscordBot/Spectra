@@ -173,10 +173,7 @@ async def on_ready():
 @bot.event
 async def on_command_error(ctx, error):
 	if isinstance(error, commands.CommandNotFound):
-		await ctx.send(
-			"I don't think that command exists! If you're using another bot, consider changing my prefix for this server!",
-			ephemeral=True,
-		)
+		pass
 	elif isinstance(error, commands.CommandOnCooldown):
 		msg = "**Still On Cooldown!** You may retry after {:.2f}s".format(
 			error.retry_after

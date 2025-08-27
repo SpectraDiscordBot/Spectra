@@ -1,4 +1,4 @@
-### Up to date as of August 7, 2025.
+### Up to date as of August 27, 2025.
 
 Support us by voting on [TopGG](https://top.gg/bot/1279512390756470836), or by buying a donation package on our [bot's store](https://discord.com/discovery/applications/1279512390756470836/store)!
 
