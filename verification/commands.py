@@ -56,7 +56,11 @@ class Verification(commands.Cog):
             print(f"Failed to verify member: {e}")
             await interaction.response.send_message("❌ An error occurred during verification.", ephemeral=True)
 
-    @commands.hybrid_command(name="setup-verification", description="Setup the verification system")
+    @commands.hybrid_group(name="verification")
+    async def verification(self, ctx):
+        pass
+
+    @verification.command(name="setup-verification", description="Setup the verification system")
     @commands.has_permissions(manage_guild=True)
     @app_commands.describe(
         channel="Channel to send the verification message in",
@@ -130,7 +134,7 @@ class Verification(commands.Cog):
         except:
             pass
 
-    @commands.hybrid_command(name="disable-verification", description="Disable the verification system")
+    @verification.command(name="disable-verification", description="Disable the verification system")
     @commands.has_permissions(manage_guild=True)
     async def disable_verification(self, ctx: commands.Context):
         guild_id = str(ctx.guild.id)
@@ -150,7 +154,7 @@ class Verification(commands.Cog):
         except:
             pass
 
-    @commands.hybrid_command(name="send", description="Resend the verification message")
+    @verification.command(name="send", description="Resend the verification message")
     @commands.has_permissions(manage_guild=True)
     async def send_verification(self, ctx: commands.Context):
         guild_id = str(ctx.guild.id)
