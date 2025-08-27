@@ -150,7 +150,7 @@ class Verification(commands.Cog):
         except:
             pass
 
-    @commands.hybrid_command(name="send-verification", description="Resend the verification message")
+    @commands.hybrid_command(name="send", description="Resend the verification message")
     @commands.has_permissions(manage_guild=True)
     async def send_verification(self, ctx: commands.Context):
         guild_id = str(ctx.guild.id)
