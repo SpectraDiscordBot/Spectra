@@ -72,7 +72,7 @@ bot.remove_command("help")
 
 # TopGG
 bot.topgg_webhook = topgg.WebhookManager(bot).dbl_webhook(
-	"/dblwebhook", "youshallnotpass"
+	"/dblwebhook", os.environ.get("WEBHOOK_AUTH")
 )
 
 
@@ -133,13 +133,12 @@ async def on_ready():
 	if getattr(bot, "ready", False):
 		return
 	assert bot.user is not None
-	# bot.topggpy.default_bot_id = bot.user.id
-	"""
+	bot.topggpy.default_bot_id = 1279512390756470836
+
 	try:
-		await bot.topgg_webhook.run(5000)
+		await bot.topgg_webhook.run(6350)
 	except:
 		pass
-	"""
 
 	print(f"✅ | {bot.user} Is Ready.")
 	print(f"✅ | Bot ID: {bot.user.id}")
@@ -158,7 +157,7 @@ async def on_ready():
 		await bot.load_extension("reports.commands"); print("✅ | Loaded Reports Commands")
 		await bot.load_extension("anti-ping.commands"); print("✅ | Loaded Anti-Ping Commands")
 		await bot.load_extension("owner-stuff.commands"); print("✅ | Loaded Owner Commands")
-		#await bot.load_extension("TopGG.topgg"); print("✅ | Loaded TopGG Commands")
+		await bot.load_extension("TopGG.topgg"); print("✅ | Loaded TopGG Commands")
 		await bot.load_extension("verification.commands"); print("✅ | Loaded Verification Commands")
 	except Exception as e:
 		print(e)
