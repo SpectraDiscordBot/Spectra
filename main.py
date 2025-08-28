@@ -133,7 +133,7 @@ async def on_ready():
 	if getattr(bot, "ready", False):
 		return
 	assert bot.user is not None
-	bot.topggpy.default_bot_id = 1279512390756470836
+	bot.topggpy.default_bot_id = bot.user.id
 
 	try:
 		await bot.topgg_webhook.run(6350)
