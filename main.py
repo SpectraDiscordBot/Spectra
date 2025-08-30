@@ -70,18 +70,6 @@ bot = commands.Bot(
 
 bot.remove_command("help")
 
-# TopGG
-bot.topgg_webhook = topgg.WebhookManager(bot).dbl_webhook(
-	"/dblwebhook", os.environ.get("WEBHOOK_AUTH")
-)
-
-
-@bot.event
-async def setup_hook():
-	token = os.environ.get("TOP_GG")
-	if token:
-		bot.topggpy = topgg.DBLClient(bot, token)
-
 
 # Classes
 
@@ -133,12 +121,6 @@ async def on_ready():
 	if getattr(bot, "ready", False):
 		return
 	assert bot.user is not None
-	bot.topggpy.default_bot_id = bot.user.id
-
-	try:
-		await bot.topgg_webhook.run(6350)
-	except:
-		pass
 
 	print(f"✅ | {bot.user} Is Ready.")
 	print(f"✅ | Bot ID: {bot.user.id}")
@@ -147,7 +129,6 @@ async def on_ready():
 		await bot.load_extension("autorole.commands"); print("✅ | Loaded AutoRole Commands")
 		await bot.load_extension("reaction-roles.commands"); print("✅ | Loaded Reaction Role Commands")
 		await bot.load_extension("welcomemessage.commands"); print("✅ | Loaded Welcome Message Commands")
-		await bot.load_extension("tickets.commands"); print("✅ | Loaded Ticket Commands")
 		await bot.load_extension("manageroles.commands"); print("✅ | Loaded Manage Roles Commands")
 		await bot.load_extension("moderation.commands"); print("✅ | Loaded Moderation Commands")
 		await bot.load_extension("antispam.commands"); print("✅ | Loaded Anti-Spam Commands")
