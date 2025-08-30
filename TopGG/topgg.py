@@ -28,6 +28,13 @@ class TopGG(commands.Cog):
     def cog_unload(self):
         self.update_stats.cancel()
 
+    async def check_vote(self, user_id: int) -> bool:
+        try:
+            return await self.topggpy.get_user_vote(user_id)
+        except Exception as e:
+            print(f"Vote check failed: {e}")
+            return False
+
     @commands.Cog.listener()
     async def on_dbl_vote(self, vote_data):
         embed = discord.Embed(

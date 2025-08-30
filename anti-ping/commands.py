@@ -56,6 +56,76 @@ class AntiPing(commands.Cog):
 				)
 				break
 			
+	@commands.Cog.listener()
+	async def on_guild_role_delete(self, role: discord.Role):
+		guild_id = str(role.guild.id)
+		role_id = str(role.id)
+		deleted_role = await anti_ping_collection.find_one(
+			{"guild_id": guild_id, "role": role_id}
+		)
+		if deleted_role:
+			await anti_ping_collection.delete_one(
+				{"guild_id": guild_id, "role": role_id}
+			)
+			self.bot.dispatch(
+				"modlog",
+				role.guild.id,
+				self.bot.user.id,
+				"Removed an Anti-Ping role",
+				f"Removed <@&{role_id}> as an Anti-Ping role because it was deleted.",
+			)
+	
+	@commands.Cog.listener()
+	async def on_message_edit(self, before: discord.Message, after: discord.Message):
+		if before.author.bot or not before.guild:
+			return
+		if before.content == after.content:
+			return
+
+		guild_id = str(before.guild.id)
+		data = anti_ping_collection.find({"guild_id": guild_id})
+
+		async for entry in data:
+			role_id = int(entry["role"])
+			bypass_role_id = entry.get("bypass_role")
+
+			role = before.guild.get_role(role_id)
+			bypass_role = before.guild.get_role(int(bypass_role_id)) if bypass_role_id else None
+
+			if bypass_role and bypass_role in before.author.roles:
+				continue
+
+			blocked = False
+			for user in after.mentions:
+				if role in user.roles:
+					blocked = True
+					break
+
+			if role in after.role_mentions:
+				blocked = True
+
+			if after.mention_everyone:
+				blocked = True
+
+			if blocked:
+				await after.delete()
+				embed = discord.Embed(
+					title="Anti-Ping",
+					description=f"You are not allowed to ping members with the role **{role.name}**." if not after.mention_everyone else "You are not allowed to use @everyone/@here.",
+					color=discord.Color.pink()
+				)
+				try:
+					embed.set_thumbnail(url=before.guild.icon.url)
+				except:
+					pass
+				embed.set_footer(text="Powered By Spectra", icon_url=self.bot.user.display_avatar.url)
+				await before.channel.send(
+					content=f"{before.author.mention}",
+					embed=embed,
+					delete_after=10
+				)
+				break
+			
 	@commands.hybrid_group(name="anti-ping")
 	async def anti_ping(self, ctx):
 		pass

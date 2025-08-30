@@ -147,6 +147,7 @@ async def on_ready():
 		await bot.load_extension("autorole.commands"); print("✅ | Loaded AutoRole Commands")
 		await bot.load_extension("reaction-roles.commands"); print("✅ | Loaded Reaction Role Commands")
 		await bot.load_extension("welcomemessage.commands"); print("✅ | Loaded Welcome Message Commands")
+		await bot.load_extension("tickets.commands"); print("✅ | Loaded Ticket Commands")
 		await bot.load_extension("manageroles.commands"); print("✅ | Loaded Manage Roles Commands")
 		await bot.load_extension("moderation.commands"); print("✅ | Loaded Moderation Commands")
 		await bot.load_extension("antispam.commands"); print("✅ | Loaded Anti-Spam Commands")

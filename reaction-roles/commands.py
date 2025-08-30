@@ -148,6 +148,14 @@ class ReactionRoleCommands(commands.Cog):
                 if r["role_id"] == str(role.id):
                     await ctx.send(f"Role {role.name} already configured.", ephemeral=True)
                     return
+                
+            if role.position >= ctx.guild.me.top_role.position:
+                await ctx.send("Cannot assign this role due to role hierarchy.", ephemeral=True)
+                return
+            
+            if role.position >= ctx.author.top_role.position and ctx.author != ctx.guild.owner:
+                await ctx.send("You cannot assign a role higher than or equal to your highest role.", ephemeral=True)
+                return
             
             roles.append({
                 "label": label,
@@ -211,6 +219,38 @@ class ReactionRoleCommands(commands.Cog):
                     await ctx.send("Invalid emoji. Use unicode or custom emoji.", ephemeral=True)
                     return
                 emoji_str = emoji
+
+            existing_messages = await reaction_roles_collection.distinct(
+                "message_id", {"guild_id": guild_id}
+            )
+
+            if len(existing_messages) >= 4:
+                if len(existing_messages) == 8:
+                    await ctx.send("You have reached the maximum of 8 reaction role messages.", ephemeral=True)
+                    return
+                
+                topgg_cog = self.bot.get_cog("TopGG")
+                if topgg_cog:
+                    has_voted = await topgg_cog.check_vote(ctx.author.id)
+                    if not has_voted:
+                        embed = discord.Embed(
+                            title="Vote Required!",
+                            description=(
+                                "Your server already has 4 reaction role messages configured.\n\n"
+                                "To add more, you need to vote for the bot on [Top.gg](https://top.gg/bot/1279512390756470836/vote).\n"
+                                "You can vote every 12 hours."
+                            ),
+                            color=discord.Color.orange()
+                        )
+                        button = discord.ui.Button(
+                            label="Vote Here!", url=f"https://top.gg/bot/{self.bot.user.id}/vote"
+                        )
+                        view = discord.ui.View()
+                        view.add_item(button)
+                        return await ctx.send(embed=embed, view=view, ephemeral=True)
+                if not topgg_cog:
+                    await ctx.send("We're having issues with TopGG at the moment, please check back later.", ephemeral=True)
+                    return
             
             existing = await reaction_roles_collection.find_one({
                 "guild_id": guild_id,
@@ -219,6 +259,14 @@ class ReactionRoleCommands(commands.Cog):
             })
             if existing:
                 await ctx.send("Reaction role already exists for this message and emoji.", ephemeral=True)
+                return
+            
+            if role.position >= ctx.guild.me.top_role.position:
+                await ctx.send("Cannot assign this role due to role hierarchy.", ephemeral=True)
+                return
+            
+            if role.position >= ctx.author.top_role.position and ctx.author != ctx.guild.owner:
+                await ctx.send("You cannot assign a role higher than or equal to your highest role.", ephemeral=True)
                 return
             
             try:
