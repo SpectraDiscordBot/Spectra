@@ -125,9 +125,10 @@ class ManageRoles(commands.Cog):
     @commands.bot_has_permissions(manage_roles=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def edit(self, ctx: commands.Context, role: discord.Role, name: str = None, color: str = None, mentionable: bool = None):
+        """
         topgg_cog = self.bot.get_cog("TopGG")
         if topgg_cog:
-            has_voted = await topgg_cog.check_vote(ctx.author.id)
+            has_voted = await topgg_cog.check_vote(str(ctx.author.id))
             if not has_voted:
                 embed = discord.Embed(
                     title="Vote Required!",
@@ -140,6 +141,7 @@ class ManageRoles(commands.Cog):
                 view = discord.ui.View()
                 view.add_item(button)
                 return await ctx.send(embed=embed, view=view)
+        """
         try:
             if name is not None:
                 await role.edit(name=name, reason=f"Edited by {ctx.author.name}")

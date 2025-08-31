@@ -225,6 +225,11 @@ class ReactionRoleCommands(commands.Cog):
             )
 
             if len(existing_messages) >= 4:
+                await ctx.send("You have reached the maximum of 4 reaction role messages.", ephemeral=True)
+                return
+
+            """
+            if len(existing_messages) >= 4:
                 if len(existing_messages) == 8:
                     await ctx.send("You have reached the maximum of 8 reaction role messages.", ephemeral=True)
                     return
@@ -251,7 +256,7 @@ class ReactionRoleCommands(commands.Cog):
                 if not topgg_cog:
                     await ctx.send("We're having issues with TopGG at the moment, please check back later.", ephemeral=True)
                     return
-            
+            """
             existing = await reaction_roles_collection.find_one({
                 "guild_id": guild_id,
                 "message_id": str(message_obj.id),
