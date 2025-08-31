@@ -48,7 +48,7 @@ class TopGG(commands.Cog):
 
 		except TypeError as te:
 			if "string indices must be integers" in str(te):
-				print(f"Vote check failed for user {user_id}: Likely internal error in topggpy/get_user_vote. "
+				print(f"Vote check failed for user {user_id}: Likely internal error in topggpy/get_user_vote."
 					f"The API response might have been unexpected (e.g., not JSON). Error: {te}")
 				return False
 			else:
