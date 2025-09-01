@@ -32,25 +32,26 @@ class Moderation(commands.Cog):
             await ctx.message.delete()
         except discord.HTTPException:
             pass
-        skipped = []
-        def check(message):
-            if message.created_at < discord.utils.utcnow() - datetime.timedelta(days=14):
-                skipped.append(message)
-                return False
-            return True
-        deleted = await ctx.channel.purge(limit=limit, check=check)
+
+        messages = [msg async for msg in ctx.channel.history(limit=limit)]
+        messages_to_delete = [m for m in messages if m.created_at > discord.utils.utcnow() - datetime.timedelta(days=14)]
+        skipped = [m for m in messages if m.created_at <= discord.utils.utcnow() - datetime.timedelta(days=14)]
+
+        if messages_to_delete:
+            await ctx.channel.delete_messages(messages_to_delete)
+        deleted_count = len(messages_to_delete)
         embed = discord.Embed(
             title="Purge Summary",
-            description=f"Purged {len(deleted)} messages from {ctx.channel.mention}",
+            description=f"Purged {deleted_count} messages from {ctx.channel.mention}",
             color=discord.Color.green(),
             timestamp=datetime.datetime.utcnow(),
         )
         embed.add_field(name="Deleted by", value=ctx.author.mention, inline=True)
         embed.add_field(name="Reason", value=reason or "No reason provided.", inline=False)
         if skipped:
-            skipped_preview = "\n".join([f"**{msg.author}**: {msg.content}" for msg in skipped[:5] if msg.content])
+            skipped_preview = "\n".join([f"**{msg.author}**: {discord.utils.escape_markdown((msg.content[:50] + "...") if len(msg.content) > 50 else msg.content)}" for msg in skipped[:5] if msg.content])
             embed.add_field(name="Skipped Messages (Older than 14 days)", value=skipped_preview or "No skipped messages.", inline=False)
-        self.bot.dispatch("modlog", ctx.guild.id, ctx.author.id, "Purge", f"Purged {len(deleted)} messages in {ctx.channel.mention}\nReason: {reason}")
+        self.bot.dispatch("modlog", ctx.guild.id, ctx.author.id, "Purge", f"Purged {deleted_count} messages in {ctx.channel.mention}\nReason: {reason}")
         try:
             await ctx.send(f"<:Checkmark:1326642406086410317>", embed=embed, ephemeral=True, delete_after=5)
         except discord.HTTPException:
