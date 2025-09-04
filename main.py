@@ -28,6 +28,31 @@ intents.message_content = True
 intents.members = True
 intents.reactions = True
 
+blacklist_cache = {}
+CACHE_TTL = 300
+
+async def is_blacklisted(id_: int):
+    cached = blacklist_cache.get(id_)
+    now = time.time()
+    if cached and cached[1] > now:
+        return cached[0]
+
+    doc = await blacklist_collection.find_one({"_id": id_})
+    is_bl = bool(doc)
+    blacklist_cache[id_] = (is_bl, now + CACHE_TTL)
+    return is_bl
+
+async def blacklist_check(ctx):
+    if await is_blacklisted(ctx.author.id):
+        return False
+
+    if ctx.guild and await is_blacklisted(ctx.guild.id):
+        await ctx.send("This server is blacklisted from using this bot.")
+        return False
+
+    return True
+
+"""
 async def blacklist_check(ctx):
 	user_blacklisted = await blacklist_collection.find_one({"_id": ctx.author.id})
 	server_blacklisted = await blacklist_collection.find_one(
@@ -40,7 +65,7 @@ async def blacklist_check(ctx):
 		await ctx.send("This server is blacklisted from using this bot.")
 		return False
 	return True
-
+"""
 
 def blacklist_check_decorator():
 	async def predicate(ctx):
@@ -139,7 +164,7 @@ async def on_ready():
 		await bot.load_extension("reports.commands"); print("✅ | Loaded Reports Commands")
 		await bot.load_extension("anti-ping.commands"); print("✅ | Loaded Anti-Ping Commands")
 		await bot.load_extension("owner-stuff.commands"); print("✅ | Loaded Owner Commands")
-		#await bot.load_extension("TopGG.topgg"); print("✅ | Loaded TopGG Commands")
+		await bot.load_extension("TopGG.topgg"); print("✅ | Loaded TopGG Commands")
 		await bot.load_extension("verification.commands"); print("✅ | Loaded Verification Commands")
 	except Exception as e:
 		print(e)
@@ -154,6 +179,8 @@ async def on_ready():
 @bot.event
 async def on_command_error(ctx, error):
 	if isinstance(error, commands.CommandNotFound):
+		pass
+	elif isinstance(error, commands.NotOwner):
 		pass
 	elif isinstance(error, commands.CommandOnCooldown):
 		msg = "**Still On Cooldown!** You may retry after {:.2f}s".format(
