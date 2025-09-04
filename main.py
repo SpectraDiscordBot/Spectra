@@ -15,7 +15,6 @@ from googleapiclient import discovery
 from humanfriendly import parse_timespan
 from discord.ext import tasks
 from db import *
-from utils.blacklist import blacklist_check
 
 # Load Dotenv
 
@@ -101,12 +100,6 @@ class ErrorButtons(discord.ui.View):
 			text="Spectra", icon_url="https://i.ibb.co/cKqBfp1/spectra.gif"
 		)
 		await interaction.response.send_message(embed=embed, ephemeral=True)
-
-
-@bot.before_invoke
-async def before_any_command(ctx):
-	if not await blacklist_check(ctx):
-		return
 
 
 # Bot Events
