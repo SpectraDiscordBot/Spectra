@@ -15,6 +15,7 @@ from googleapiclient import discovery
 from humanfriendly import parse_timespan
 from discord.ext import tasks
 from db import *
+from utils.blacklist import blacklist_check
 
 # Load Dotenv
 
@@ -27,30 +28,6 @@ intents.guilds = True
 intents.message_content = True
 intents.members = True
 intents.reactions = True
-
-blacklist_cache = {}
-CACHE_TTL = 300
-
-async def is_blacklisted(id_: int):
-    cached = blacklist_cache.get(id_)
-    now = time.time()
-    if cached and cached[1] > now:
-        return cached[0]
-
-    doc = await blacklist_collection.find_one({"_id": id_})
-    is_bl = bool(doc)
-    blacklist_cache[id_] = (is_bl, now + CACHE_TTL)
-    return is_bl
-
-async def blacklist_check(ctx):
-    if await is_blacklisted(ctx.author.id):
-        return False
-
-    if ctx.guild and await is_blacklisted(ctx.guild.id):
-        await ctx.send("This server is blacklisted from using this bot.")
-        return False
-
-    return True
 
 """
 async def blacklist_check(ctx):
@@ -66,12 +43,6 @@ async def blacklist_check(ctx):
 		return False
 	return True
 """
-
-def blacklist_check_decorator():
-	async def predicate(ctx):
-		return await blacklist_check(ctx)
-
-	return commands.check(predicate)
 
 
 async def get_prefix(Client, message):
@@ -135,7 +106,7 @@ class ErrorButtons(discord.ui.View):
 @bot.before_invoke
 async def before_any_command(ctx):
 	if not await blacklist_check(ctx):
-		raise commands.CheckFailure
+		return
 
 
 # Bot Events
