@@ -45,8 +45,7 @@ class AntiToxicity(commands.Cog):
     # Listener
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message.author.bot:
-            return
+        if not message.guild or not message.content: return
 
         guild_id = message.guild.id
         config = await self.collection.find_one({"_id": guild_id})
@@ -84,7 +83,7 @@ class AntiToxicity(commands.Cog):
                 dm_embed.set_thumbnail(url=self.bot.user.avatar.url)
             await asyncio.sleep(1)
             try:
-                await message.author.send(embed=dm_embed)
+                if not message.author.bot: await message.author.send(embed=dm_embed)
             except:
                 pass
             try:
