@@ -45,8 +45,11 @@ class AntiToxicity(commands.Cog):
     # Listener
     @commands.Cog.listener()
     async def on_message(self, message):
-        if not message.guild or not message.content: return
-        if message.author.guild_permissions.administrator: return
+        if not message.guild: return
+        if not message.content: return
+        member = message.guild.get_member(message.author.id)
+        if not member: return
+        if member.guild_permissions.administrator: return
 
         guild_id = message.guild.id
         config = await self.collection.find_one({"_id": guild_id})
@@ -93,7 +96,7 @@ class AntiToxicity(commands.Cog):
                     message.guild.id,
                     self.bot.user.id,
                     "Toxic Message Deleted",
-                    f"The Anti-Toxicity system has determined that a message sent by {message.author.mention} is toxic.\nToxicity Score: {toxicity_score}\nMessage Content: `{message.content}`",
+                    f"The Anti-Toxicity system has determined that a message sent by {member.mention} is toxic.\nToxicity Score: {toxicity_score}\nMessage Content: `{message.content}`",
                 )
             except Exception as e:
                 print(e)

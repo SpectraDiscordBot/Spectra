@@ -23,8 +23,7 @@ class AntiSpam(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if isinstance(message.channel, discord.channel.DMChannel):
-            return
+        if not message.guild: return
 
         antispam_guild = await antispam_collection.find_one(
             {"guild_id": message.guild.id}
