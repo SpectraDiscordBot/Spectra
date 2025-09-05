@@ -46,6 +46,7 @@ class AntiToxicity(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message):
         if not message.guild or not message.content: return
+        if message.author.guild_permissions.administrator: return
 
         guild_id = message.guild.id
         config = await self.collection.find_one({"_id": guild_id})
