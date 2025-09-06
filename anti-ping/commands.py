@@ -27,19 +27,21 @@ class AntiPing(commands.Cog):
 
 			blocked = False
 			for user in message.mentions:
+				if user == message.author:
+					continue
 				if role in user.roles:
 					blocked = True
 					break
 
-			if role in message.role_mentions:
+			if role in message.role_mentions and role not in message.author.roles:
 				blocked = True
 
 			if message.mention_everyone:
 				blocked = True
 
 			if blocked:
-				delete_messages = entry.get("delete_message")
-				if delete_messages:
+				delete_message = bool(entry.get("delete_message", True))
+				if delete_message:
 					await message.delete()
 				embed = discord.Embed(
 					title="Anti-Ping",
@@ -99,19 +101,21 @@ class AntiPing(commands.Cog):
 
 			blocked = False
 			for user in after.mentions:
+				if user == after.author:
+					continue
 				if role in user.roles:
 					blocked = True
 					break
 
-			if role in after.role_mentions:
+			if role in after.role_mentions and role not in after.author.roles:
 				blocked = True
 
 			if after.mention_everyone:
 				blocked = True
 
 			if blocked:
-				delete_messages = entry.get("delete_message")
-				if delete_messages:
+				delete_message = bool(entry.get("delete_message", True))
+				if delete_message:
 					await after.delete()
 				embed = discord.Embed(
 					title="Anti-Ping",
