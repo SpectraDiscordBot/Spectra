@@ -245,7 +245,7 @@ class Warning_Commands(commands.Cog):
 	@warnings.command(
 		name="clear", description="Clear all warnings of a user."
 	)
-	@commands.has_permissions(administrator=True)
+	@commands.has_permissions(moderate_members=True)
 	async def clear(self, ctx, user: discord.User):
 		if user.id == ctx.author.id:
 			await ctx.send("You cannot clear your own warnings.")
