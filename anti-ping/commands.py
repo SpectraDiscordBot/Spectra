@@ -38,7 +38,9 @@ class AntiPing(commands.Cog):
 				blocked = True
 
 			if blocked:
-				await message.delete()
+				delete_messages = entry.get("delete_message")
+				if delete_messages:
+					await message.delete()
 				embed = discord.Embed(
 					title="Anti-Ping",
 					description=f"You are not allowed to ping members with the role **{role.name}**." if not message.mention_everyone else "You are not allowed to use @everyone/@here.",
@@ -108,7 +110,9 @@ class AntiPing(commands.Cog):
 				blocked = True
 
 			if blocked:
-				await after.delete()
+				delete_messages = entry.get("delete_message")
+				if delete_messages:
+					await after.delete()
 				embed = discord.Embed(
 					title="Anti-Ping",
 					description=f"You are not allowed to ping members with the role **{role.name}**." if not after.mention_everyone else "You are not allowed to use @everyone/@here.",
@@ -132,8 +136,8 @@ class AntiPing(commands.Cog):
 	
 	@anti_ping.command(name="add", description="Add a role to the anti-ping list")
 	@commands.has_permissions(manage_roles=True)
-	@app_commands.describe(role="The role for anti-ping", bypass_role="They will be able to ping the role")
-	async def anti_ping_add(self, ctx: commands.Context, role: discord.Role, bypass_role: discord.Role = None):
+	@app_commands.describe(role="The role for anti-ping", bypass_role="They will be able to ping the role", delete_message="Delete the message if it has the role pinged")
+	async def anti_ping_add(self, ctx: commands.Context, role: discord.Role, bypass_role: discord.Role = None, delete_message: bool = True):
 		role_id = str(role.id)
 		bypass_role_id = None
 		if bypass_role is not None: bypass_role_id = str(bypass_role.id)
@@ -153,7 +157,7 @@ class AntiPing(commands.Cog):
 			await ctx.send("That Anti-Ping has already been set.", delete_after=10)
 			return
 		else:
-			await anti_ping_collection.insert_one({"guild_id": guild_id, "role": role_id, "bypass_role": bypass_role_id})
+			await anti_ping_collection.insert_one({"guild_id": guild_id, "role": role_id, "bypass_role": bypass_role_id, "delete_message": delete_message})
 			self.bot.dispatch(
 				"modlog",
 				ctx.guild.id,
