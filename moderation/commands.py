@@ -15,6 +15,13 @@ class Moderation(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    @staticmethod
+    def discord_timestamp(val, style="F"):
+        if isinstance(val, str):
+            dt = datetime.datetime.fromisoformat(val)
+        else:
+            dt = val
+        return f"<t:{int(dt.timestamp())}:{style}>"
 
     @commands.hybrid_command(name="purge", description="Purges messages from the channel.")
     @commands.has_permissions(manage_messages=True)
@@ -87,7 +94,7 @@ class Moderation(commands.Cog):
                 await cases_collection.update_one({"guild_id": str(guild_id)}, {"$set": {"cases": cases}})
                 return True
         return False
-
+        
     @commands.hybrid_command(name="case", description="View a moderation case.")
     @commands.has_permissions(moderate_members=True)
     async def case(self, ctx, case_id: int):
@@ -95,22 +102,33 @@ class Moderation(commands.Cog):
         if not doc or not doc.get("cases"):
             await ctx.send("No cases found.")
             return
+
         case = next((c for c in doc["cases"] if c["case_id"] == case_id), None)
         if not case:
             await ctx.send("Case not found.")
             return
+
         embed = discord.Embed(title=f"Case #{case['case_id']}", color=discord.Color.orange())
         embed.add_field(name="Type", value=case["type"])
         embed.add_field(name="Target", value=case["target"])
         embed.add_field(name="Moderator", value=case["moderator"])
         embed.add_field(name="Reason", value=case["reason"])
-        embed.add_field(name="Timestamp", value=case["timestamp"])
+        embed.add_field(name="Timestamp", value=self.discord_timestamp(case["timestamp"], style="F"))
+
         if case.get("revoked"):
             r = case["revoked"]
-            embed.add_field(name="Revoked", value=f"By <@{r['by']}> at {r['timestamp']}", inline=False)
+            embed.add_field(
+                name="Revoked",
+                value=f"By <@{r['by']}> at {self.discord_timestamp(r['timestamp'], style='F')}",
+                inline=False
+            )
+
         if case.get("edit_history"):
-            edits = "\n".join([f"By <@{h['editor_id']}> at {h['timestamp']}" for h in case["edit_history"]])
+            edits = "\n".join(
+                [f"By <@{h['editor_id']}> at {self.discord_timestamp(h['timestamp'], style='F')}" for h in case["edit_history"]]
+            )
             embed.add_field(name="Edit History", value=edits, inline=False)
+
         await ctx.send(embed=embed, ephemeral=True)
 
     @commands.hybrid_command(name="editcase", description="Edit a moderation case.")
