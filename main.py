@@ -170,7 +170,7 @@ async def on_command_error(ctx, error):
 		)
 	else:
 		embed = discord.Embed(
-			title="Error!", description="{}".format(error), color=0x2f3136()
+			title="Error!", description="{}".format(error), color=0x2f3136
 		)
 		embed.set_footer(
 			text="Spectra", icon_url="https://i.ibb.co/cKqBfp1/spectra.gif"
@@ -228,7 +228,7 @@ async def on_tree_error(
 			)
 	else:
 		embed = discord.Embed(
-			title="Error!", description="{}".format(error), color=discord.Color.red()
+			title="Error!", description="{}".format(error), color=0x2f3136
 		)
 		embed.set_footer(
 			text="Spectra",
