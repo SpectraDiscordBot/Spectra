@@ -86,6 +86,11 @@ class AutoRoleSetupButton(discord.ui.View):
 class ErrorButtons(discord.ui.View):
     def __init__(self, *, timeout=120):
         super().__init__(timeout=timeout)
+        self.add_item(discord.ui.Button(
+            label="Support Server",
+            style=discord.ButtonStyle.link,
+            url="https://discord.gg/fcPF66DubA"
+        ))
 
     @discord.ui.button(label="E-mail", style=discord.ButtonStyle.secondary)
     async def email(
@@ -100,12 +105,6 @@ class ErrorButtons(discord.ui.View):
             text="Spectra", icon_url="https://i.ibb.co/cKqBfp1/spectra.gif"
         )
         await interaction.response.send_message(embed=embed, ephemeral=True)
-
-    @discord.ui.button(label="Support Server", style=discord.ButtonStyle.link, url="https://discord.gg/fcPF66DubA")
-    async def support(
-        self, interaction: discord.Interaction, button: discord.ui.Button
-    ):
-        pass
 
 
 # Bot Events
