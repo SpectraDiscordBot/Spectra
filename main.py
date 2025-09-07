@@ -91,20 +91,11 @@ class ErrorButtons(discord.ui.View):
             style=discord.ButtonStyle.link,
             url="https://discord.gg/fcPF66DubA"
         ))
-
-    @discord.ui.button(label="E-mail", style=discord.ButtonStyle.secondary)
-    async def email(
-        self, interaction: discord.Interaction, button: discord.ui.Button
-    ):
-        embed = discord.Embed(
-            title="E-mail",
-            description="spectra.official@protonmail.com",
-            color=0x2f3136
-        )
-        embed.set_footer(
-            text="Spectra", icon_url="https://i.ibb.co/cKqBfp1/spectra.gif"
-        )
-        await interaction.response.send_message(embed=embed, ephemeral=True)
+        self.add_item(discord.ui.Button(
+            label="E-Mail",
+            style=discord.ButtonStyle.link,
+            url="https://spectrabot.pages.dev/mail.html"
+        ))
 
 
 # Bot Events
@@ -133,7 +124,7 @@ async def on_ready():
 		await bot.load_extension("reports.commands"); print("✅ | Loaded Reports Commands")
 		await bot.load_extension("anti-ping.commands"); print("✅ | Loaded Anti-Ping Commands")
 		await bot.load_extension("owner-stuff.commands"); print("✅ | Loaded Owner Commands")
-		await bot.load_extension("TopGG.topgg"); print("✅ | Loaded TopGG Commands")
+		#await bot.load_extension("TopGG.topgg"); print("✅ | Loaded TopGG Commands")
 		await bot.load_extension("verification.commands"); print("✅ | Loaded Verification Commands")
 	except Exception as e:
 		print(e)
@@ -149,7 +140,7 @@ async def on_ready():
 async def on_command_error(ctx, error):
 	if isinstance(error, commands.CommandNotFound):
 		pass
-	elif isinstance(error, commands.NotOwner):
+	# elif isinstance(error, commands.NotOwner):
 		pass
 	elif isinstance(error, commands.CommandOnCooldown):
 		msg = "**Still On Cooldown!** You may retry after {:.2f}s".format(
