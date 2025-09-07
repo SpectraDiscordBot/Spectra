@@ -84,22 +84,28 @@ class AutoRoleSetupButton(discord.ui.View):
 
 
 class ErrorButtons(discord.ui.View):
-	def __init__(self, *, timeout=120):
-		super().__init__(timeout=timeout)
+    def __init__(self, *, timeout=120):
+        super().__init__(timeout=timeout)
 
-	@discord.ui.button(label="Support Server", style=discord.ButtonStyle.secondary)
-	async def support(
-		self, interaction: discord.Interaction, button: discord.ui.Button
-	):
-		embed = discord.Embed(
-			title="Support Server",
-			description="E-mail: spectra.official@protonmail.com\n[Click here to join the support server.](https://discord.gg/fcPF66DubA)",
-			color=discord.Color.blue(),
-		)
-		embed.set_footer(
-			text="Spectra", icon_url="https://i.ibb.co/cKqBfp1/spectra.gif"
-		)
-		await interaction.response.send_message(embed=embed, ephemeral=True)
+    @discord.ui.button(label="E-mail", style=discord.ButtonStyle.secondary)
+    async def email(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
+        embed = discord.Embed(
+            title="E-mail",
+            description="spectra.official@protonmail.com",
+            color=0x2f3136
+        )
+        embed.set_footer(
+            text="Spectra", icon_url="https://i.ibb.co/cKqBfp1/spectra.gif"
+        )
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+
+    @discord.ui.button(label="Support Server", style=discord.ButtonStyle.link, url="https://discord.gg/fcPF66DubA")
+    async def support(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
+        pass
 
 
 # Bot Events
