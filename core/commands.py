@@ -110,15 +110,26 @@ class HelpButtons(discord.ui.View):
 		)
 		await interaction.response.send_message(embed=embed, ephemeral=True)
 
-	@discord.ui.button(label="Uptime", style=discord.ButtonStyle.primary)
+	@discord.ui.button(label="Uptime", style=discord.ButtonStyle.primary) 
 	async def uptime(self, interaction: discord.Interaction, button: discord.ui.Button):
 		startTime = getattr(self.bot, "start_time", None)
 		if not startTime:
 			await interaction.response.send_message("Start time not set yet.", ephemeral=True)
 			return
+
+		now = datetime.datetime.now(datetime.timezone.utc)
+		uptime_seconds = int((now - startTime).total_seconds())
+		start_unix = int(startTime.timestamp())
+
+		# >24h = full time <24h = full date should be formatted this time.
+		if uptime_seconds < 86400:
+			timestamp = f"<t:{start_unix}:R>"
+		else:
+			timestamp = f"<t:{start_unix}:F>"
+
 		embed = discord.Embed(
 			title="Uptime",
-			description=f"The bot has been up for {datetime.datetime.now() - startTime}.",
+			description=f"The bot has been online since {timestamp}",
 			color=discord.Color.pink(),
 		)
 		embed.set_footer(
