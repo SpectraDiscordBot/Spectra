@@ -110,21 +110,32 @@ class HelpButtons(discord.ui.View):
 		)
 		await interaction.response.send_message(embed=embed, ephemeral=True)
 
-	@discord.ui.button(label="Uptime", style=discord.ButtonStyle.primary)
-	async def uptime(self, interaction: discord.Interaction, button: discord.ui.Button):
-		startTime = getattr(self.bot, "start_time", None)
-		if not startTime:
-			await interaction.response.send_message("Start time not set yet.", ephemeral=True)
-			return
-		embed = discord.Embed(
-			title="Uptime",
-			description=f"The bot has been up for {datetime.datetime.now() - startTime}.",
-			color=discord.Color.pink(),
-		)
-		embed.set_footer(
-			text="Spectra", icon_url="https://i.ibb.co/cKqBfp1/spectra.gif"
-		)
-		await interaction.response.send_message(embed=embed, ephemeral=True)
+@discord.ui.button(label="Uptime", style=discord.ButtonStyle.primary)
+async def uptime(self, interaction: discord.Interaction, button: discord.ui.Button):
+    startTime = getattr(self.bot, "start_time", None)
+    if not startTime:
+        await interaction.response.send_message("Start time not set yet.", ephemeral=True)
+        return
+
+    now = datetime.datetime.now(datetime.timezone.utc)
+    uptime_seconds = int((now - startTime).total_seconds())
+    start_unix = int(startTime.timestamp())
+
+    # 86400 = 24h, after 24h sets to full date >24h = full time
+    if uptime_seconds < 86400:  # 24h
+        timestamp = f"<t:{start_unix}:R>"  # full time 
+    else:
+        timestamp = f"<t:{start_unix}:F>" # full date ( i think )
+
+    embed = discord.Embed(
+        title="Uptime",
+        description=f"Bot has been online since {timestamp}",
+        color=discord.Color.pink(),
+    )
+    embed.set_footer(
+        text="Spectra", icon_url="https://i.ibb.co/cKqBfp1/spectra.gif"
+    )
+    await interaction.response.send_message(embed=embed, ephemeral=True)
 
 class Core(commands.Cog):
 	def __init__(self, bot):
