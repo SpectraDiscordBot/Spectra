@@ -6,6 +6,7 @@ import datetime
 import aiohttp
 import os
 import topgg
+import itertools
 from discord.ext import commands
 from discord import Button, app_commands
 from discord.ui import View
@@ -54,11 +55,16 @@ async def get_prefix(Client, message):
 
 # Bot
 
+status_messages = itertools.cycle([
+    ">help | spectrabot.pages.dev",
+    "dynamic_guilds",
+    "dynamic_users"
+])
+
 bot = commands.Bot(
 	command_prefix=get_prefix,
 	intents=intents,
 	status=discord.Status.idle,
-	activity=discord.CustomActivity(name=">help | spectrabot.pages.dev"),
 	owner_ids=[856196104385986560, 998434044335374336],
 	case_insensitive=True,
 )
@@ -124,8 +130,9 @@ async def on_ready():
 		await bot.load_extension("reports.commands"); print("✅ | Loaded Reports Commands")
 		await bot.load_extension("anti-ping.commands"); print("✅ | Loaded Anti-Ping Commands")
 		await bot.load_extension("owner-stuff.commands"); print("✅ | Loaded Owner Commands")
-		#await bot.load_extension("TopGG.topgg"); print("✅ | Loaded TopGG Commands")
+		await bot.load_extension("TopGG.topgg"); print("✅ | Loaded TopGG Commands")
 		await bot.load_extension("verification.commands"); print("✅ | Loaded Verification Commands")
+		cycle_status.start(); print("✅ | Started Cycling Status")
 	except Exception as e:
 		print(e)
 		return
@@ -135,12 +142,21 @@ async def on_ready():
 
 	bot.ready = True
 
+@tasks.loop(seconds=7)
+async def cycle_status():
+    status = next(status_messages)
+    if status == "dynamic_guilds":
+        status = f"Managing {len(bot.guilds)} servers"
+    elif status == "dynamic_users":
+        status = f"Serving {len(bot.users)} users"
+
+    await bot.change_presence(activity=discord.CustomActivity(name=status))
 
 @bot.event
 async def on_command_error(ctx, error):
 	if isinstance(error, commands.CommandNotFound):
 		pass
-	# elif isinstance(error, commands.NotOwner):
+	elif isinstance(error, commands.NotOwner):
 		pass
 	elif isinstance(error, commands.CommandOnCooldown):
 		msg = "**Still On Cooldown!** You may retry after {:.2f}s".format(
