@@ -51,27 +51,23 @@ class CommandPaginator(discord.ui.View):
 			)
 		return embed
 
-	@discord.ui.button(label="Previous", style=discord.ButtonStyle.primary)
-	async def previous_page(
-		self, interaction: discord.Interaction, button: discord.ui.Button
-	):
+	@discord.ui.button(label="Previous", style=discord.ButtonStyle.primary, disabled=True)
+	async def previous_page(self, interaction: discord.Interaction, button: discord.ui.Button):
 		if self.current_page > 0:
 			self.current_page -= 1
-			self.update_buttons()
-			await interaction.response.edit_message(embed=self.get_embed(), view=self)
+		self.update_buttons()
+		await interaction.response.edit_message(embed=self.get_embed(), view=self)
 
 	@discord.ui.button(label="Next", style=discord.ButtonStyle.primary)
-	async def next_page(
-		self, interaction: discord.Interaction, button: discord.ui.Button
-	):
+	async def next_page(self, interaction: discord.Interaction, button: discord.ui.Button):
 		if (self.current_page + 1) * self.per_page < len(self.commands):
 			self.current_page += 1
-			self.update_buttons()
-			await interaction.response.edit_message(embed=self.get_embed(), view=self)
+		self.update_buttons()
+		await interaction.response.edit_message(embed=self.get_embed(), view=self)
 			
 
 class HelpButtons(discord.ui.View):
-	def __init__(self, bot,  *, timeout=120):
+	def __init__(self, bot,	 *, timeout=120):
 		super().__init__(timeout=timeout)
 		self.bot = bot
 
@@ -146,7 +142,7 @@ class HelpButtons(discord.ui.View):
 class Core(commands.Cog):
 	def __init__(self, bot):
 		self.bot = bot
-		self.bot.start_time = datetime.datetime.now()
+		self.bot.start_time = datetime.datetime.now(datetime.timezone.utc)
 
 	async def get_prefix(self, Client, message):
 		if not message.guild:
@@ -158,7 +154,7 @@ class Core(commands.Cog):
 	@commands.Cog.listener()
 	async def on_ready(self):
 		if not hasattr(self.bot, "start_time"):
-			self.bot.start_time = datetime.datetime.now()
+			self.bot.start_time = datetime.datetime.now(datetime.timezone.utc)
 
 	@commands.hybrid_command(name="help", description="Get help with the bot.")
 	@commands.cooldown(1, 15, commands.BucketType.user)
