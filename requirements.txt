@@ -3,7 +3,7 @@ python-dotenv
 humanfriendly
 emoji
 google-api-python-client
-topggpy
+git+https://github.com/null8626/python-sdk.git@v0-public
 motor
 pillow
 googletrans==4.0.0-rc1
