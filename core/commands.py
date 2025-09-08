@@ -9,6 +9,10 @@ class CommandPaginator(discord.ui.View):
 		self.commands = commands
 		self.per_page = per_page
 		self.current_page = 0
+		
+	def update_buttons(self):
+		self.previous_page.disabled = self.current_page == 0
+		self.next_page.disabled = (self.current_page + 1) * self.per_page >= len(self.commands)
 
 	def get_embed(self):
 		embed = discord.Embed(
@@ -53,6 +57,7 @@ class CommandPaginator(discord.ui.View):
 	):
 		if self.current_page > 0:
 			self.current_page -= 1
+			self.update_buttons()
 			await interaction.response.edit_message(embed=self.get_embed(), view=self)
 
 	@discord.ui.button(label="Next", style=discord.ButtonStyle.primary)
@@ -61,8 +66,9 @@ class CommandPaginator(discord.ui.View):
 	):
 		if (self.current_page + 1) * self.per_page < len(self.commands):
 			self.current_page += 1
+			self.update_buttons()
 			await interaction.response.edit_message(embed=self.get_embed(), view=self)
-
+			
 
 class HelpButtons(discord.ui.View):
 	def __init__(self, bot,  *, timeout=120):
