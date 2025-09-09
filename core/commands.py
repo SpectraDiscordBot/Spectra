@@ -70,6 +70,16 @@ class HelpButtons(discord.ui.View):
 	def __init__(self, bot,	 *, timeout=120):
 		super().__init__(timeout=timeout)
 		self.bot = bot
+		self.add_item(discord.ui.Button(
+			label="Support Server",
+			style=discord.ButtonStyle.link,
+			url="https://discord.gg/fcPF66DubA"
+		))
+		self.add_item(discord.ui.Button(
+			label="Documentation",
+			style=discord.ButtonStyle.link,
+			url="https://www.notion.so/spectra-docs/Introduction-17f36833aca1806bbd11cd5faa438fef"
+		))
 
 	@discord.ui.button(label="List of Commands", style=discord.ButtonStyle.primary)
 	async def first_page(
@@ -98,20 +108,6 @@ class HelpButtons(discord.ui.View):
 			embed=paginator.get_embed(), view=paginator, ephemeral=True
 		)
 
-	@discord.ui.button(label="Support Server", style=discord.ButtonStyle.primary)
-	async def support(
-		self, interaction: discord.Interaction, button: discord.ui.Button
-	):
-		embed = discord.Embed(
-			title="Support Server",
-			description="[Click here to join the support server.](https://discord.gg/fcPF66DubA)",
-			color=discord.Color.pink(),
-		)
-		embed.set_footer(
-			text="Spectra", icon_url="https://i.ibb.co/cKqBfp1/spectra.gif"
-		)
-		await interaction.response.send_message(embed=embed, ephemeral=True)
-
 	@discord.ui.button(label="Uptime", style=discord.ButtonStyle.primary) 
 	async def uptime(self, interaction: discord.Interaction, button: discord.ui.Button):
 		startTime = getattr(self.bot, "start_time", None)
@@ -132,7 +128,7 @@ class HelpButtons(discord.ui.View):
 		embed = discord.Embed(
 			title="Uptime",
 			description=f"The bot has been online since {timestamp}",
-			color=discord.Color.pink(),
+			color=discord.Color.pink()
 		)
 		embed.set_footer(
 			text="Spectra", icon_url="https://i.ibb.co/cKqBfp1/spectra.gif"
@@ -160,7 +156,10 @@ class Core(commands.Cog):
 	@commands.cooldown(1, 15, commands.BucketType.user)
 	async def help(self, ctx: commands.Context):
 		embed = discord.Embed(
-			title="Help", description="Get help with the bot.", color=discord.Color.pink()
+			title="Help Menu", description="Get assistance or information about Spectra.\n\n> List of Commands - View All of Spectra's Commands and Features.\n> Uptime - See How Long Spectra Has Been Up For.\n> Support Server - Spectra's Support Server If You Need Help\n> Documentation - View All of Spectra's Features and Uses", color=discord.Color.pink(), timestamp=datetime.datetime.now(datetime.timezone.utc)
+		)
+		embed.set_author(
+			name=f"Requested by {ctx.author}", icon_url=ctx.author.display_avatar.url
 		)
 		embed.set_footer(
 			text="Made with ❤ by brutiv & tyler.hers",
