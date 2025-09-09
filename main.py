@@ -100,7 +100,7 @@ class ErrorButtons(discord.ui.View):
         self.add_item(discord.ui.Button(
             label="E-Mail",
             style=discord.ButtonStyle.link,
-            url="https://spectrabot.pages.dev/mail.html"
+            url="https://spectrabot.pages.dev/mail"
         ))
 
 
