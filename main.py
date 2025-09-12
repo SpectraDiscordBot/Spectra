@@ -17,6 +17,11 @@ from humanfriendly import parse_timespan
 from discord.ext import tasks
 from db import *
 
+import json
+import inspect
+import typing
+import enum
+
 # Load Dotenv
 
 load_dotenv()
@@ -29,6 +34,7 @@ intents.message_content = True
 intents.members = True
 intents.reactions = True
 
+# Blacklists were removed
 """
 async def blacklist_check(ctx):
 	user_blacklisted = await blacklist_collection.find_one({"_id": ctx.author.id})
@@ -56,15 +62,14 @@ async def get_prefix(Client, message):
 # Bot
 
 status_messages = itertools.cycle([
-    ">help | spectrabot.pages.dev",
-    "dynamic_guilds",
-    "dynamic_users"
+	">help | spectrabot.pages.dev",
+	"dynamic_guilds",
+	"dynamic_users"
 ])
 
 bot = commands.Bot(
 	command_prefix=get_prefix,
 	intents=intents,
-	status=discord.Status.idle,
 	owner_ids=[856196104385986560, 998434044335374336],
 	case_insensitive=True,
 )
@@ -90,22 +95,21 @@ class AutoRoleSetupButton(discord.ui.View):
 
 
 class ErrorButtons(discord.ui.View):
-    def __init__(self, *, timeout=120):
-        super().__init__(timeout=timeout)
-        self.add_item(discord.ui.Button(
-            label="Support Server",
-            style=discord.ButtonStyle.link,
-            url="https://discord.gg/fcPF66DubA"
-        ))
-        self.add_item(discord.ui.Button(
-            label="E-Mail",
-            style=discord.ButtonStyle.link,
-            url="https://spectrabot.pages.dev/mail"
-        ))
+	def __init__(self, *, timeout=120):
+		super().__init__(timeout=timeout)
+		self.add_item(discord.ui.Button(
+			label="Support Server",
+			style=discord.ButtonStyle.link,
+			url="https://discord.gg/fcPF66DubA"
+		))
+		self.add_item(discord.ui.Button(
+			label="E-Mail",
+			style=discord.ButtonStyle.link,
+			url="https://spectrabot.pages.dev/mail"
+		))
 
 
 # Bot Events
-
 
 @bot.event
 async def on_ready():
@@ -116,6 +120,7 @@ async def on_ready():
 	print(f"✅ | {bot.user} Is Ready.")
 	print(f"✅ | Bot ID: {bot.user.id}")
 	try:
+		await bot.load_extension("jishaku"); print("✅ | Loaded Jishaku")
 		await bot.load_extension("core.commands"); print("✅ | Loaded Core Commands")
 		await bot.load_extension("autorole.commands"); print("✅ | Loaded AutoRole Commands")
 		await bot.load_extension("reaction-roles.commands"); print("✅ | Loaded Reaction Role Commands")
@@ -130,7 +135,7 @@ async def on_ready():
 		await bot.load_extension("reports.commands"); print("✅ | Loaded Reports Commands")
 		await bot.load_extension("anti-ping.commands"); print("✅ | Loaded Anti-Ping Commands")
 		await bot.load_extension("owner-stuff.commands"); print("✅ | Loaded Owner Commands")
-		await bot.load_extension("TopGG.topgg"); print("✅ | Loaded TopGG Commands")
+		#await bot.load_extension("TopGG.topgg"); print("✅ | Loaded TopGG Commands")
 		await bot.load_extension("verification.commands"); print("✅ | Loaded Verification Commands")
 		cycle_status.start(); print("✅ | Started Cycling Status")
 	except Exception as e:
@@ -142,15 +147,15 @@ async def on_ready():
 
 	bot.ready = True
 
-@tasks.loop(seconds=7)
+@tasks.loop(seconds=10)
 async def cycle_status():
-    status = next(status_messages)
-    if status == "dynamic_guilds":
-        status = f"Managing {len(bot.guilds)} servers"
-    elif status == "dynamic_users":
-        status = f"Serving {len(bot.users)} users"
+	status = next(status_messages)
+	if status == "dynamic_guilds":
+		status = f">help | Managing {len(bot.guilds)} servers"
+	elif status == "dynamic_users":
+		status = f">help | Serving {len(bot.users)} users"
 
-    await bot.change_presence(activity=discord.CustomActivity(name=status))
+	await bot.change_presence(activity=discord.CustomActivity(name=status))
 
 @bot.event
 async def on_command_error(ctx, error):

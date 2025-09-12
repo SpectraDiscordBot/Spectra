@@ -11,3 +11,5 @@ __pycache__/
 Bot.zip
 ban-appeals/
 spectra-venv/
+export_slash_paylod.py
+slash_payload.json
