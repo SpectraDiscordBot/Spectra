@@ -35,9 +35,11 @@ class CommandPaginator(discord.ui.View):
 			if command.name == "status":
 				continue
 			if command.name == "blacklist":
-				return
+				continue
 			if command.name == "unblacklist":
-				return
+				continue
+			if command.name == "jishaku":
+				continue
 
 			aliases = (
 				", ".join(command.aliases)
@@ -45,8 +47,8 @@ class CommandPaginator(discord.ui.View):
 				else "None"
 			)
 			embed.add_field(
-				name=f"{command.name}",
-				value=command.description + f"\nAliases: {aliases}",
+				name=f">{command.name}",
+				value=command.description + f"\nAliases: >{aliases}",
 				inline=False,
 			)
 		return embed
