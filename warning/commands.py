@@ -86,7 +86,7 @@ class Warning_Commands(commands.Cog):
 				"user_id": str(user.id),
 				"reason": reason,
 				"issued_by": str(ctx.author.id),
-				"issued_at": str(datetime.datetime.utcnow()),
+				"issued_at": datetime.datetime.utcnow(),
 				"case_number": case_id,
 			}
 		)
@@ -190,7 +190,7 @@ class Warning_Commands(commands.Cog):
 		)
 		warn_log.add_field(
 			name="Revoked At:",
-			value=f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+			value=discord.utils.format_dt(discord.utils.utcnow(), "F"),
 			inline=False,
 		)
 
@@ -234,9 +234,18 @@ class Warning_Commands(commands.Cog):
 		)
 		embed.set_footer(text="Spectra")
 		async for warning in cursor:
+			issued_at = warning["issued_at"]
+			if isinstance(issued_at, str):
+				try:
+					issued_at = datetime.datetime.fromisoformat(issued_at)
+				except ValueError:
+					try:
+						issued_at = datetime.datetime.strptime(issued_at, "%Y-%m-%d %H:%M:%S.%f")
+					except ValueError:
+						issued_at = datetime.datetime.strptime(issued_at, "%Y-%m-%d %H:%M:%S")
 			embed.add_field(
 				name=f"Case #{warning['case_number']}",
-				value=f"Reason: {warning['reason']}\nIssued by: <@{warning['issued_by']}>\nIssued at: {warning['issued_at']}",
+				value=f"Reason: {warning['reason']}\nIssued by: <@{warning['issued_by']}>\nIssued at: {discord.utils.format_dt(issued_at)}",
 				inline=False,
 			)
 
@@ -281,7 +290,7 @@ class Warning_Commands(commands.Cog):
 		)
 		warn_log.add_field(
 			name="Cleared At:",
-			value=f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+			value=discord.utils.format_dt(discord.utils.utcnow(), "F"),
 			inline=False,
 		)
 
