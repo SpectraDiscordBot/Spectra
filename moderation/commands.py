@@ -140,7 +140,7 @@ class Moderation(commands.Cog):
         else:
             await ctx.send("Case not found.")
 
-    @commands.hybrid_command(name="mute", description="Mute a user.")
+    @commands.hybrid_command(name="mute", description="Mute a user.", aliases=["timeout"])
     @commands.has_permissions(moderate_members=True)
     @commands.bot_has_permissions(moderate_members=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
@@ -153,7 +153,7 @@ class Moderation(commands.Cog):
             return
         try:
             if user.top_role > ctx.author.top_role:
-                await ctx.send("You cannot ban this user.")
+                await ctx.send("You cannot mute this user.")
                 return
         except:
             pass
@@ -188,7 +188,7 @@ class Moderation(commands.Cog):
             await ctx.send("I do not have permission to mute users.")
             print(e)
 
-    @commands.hybrid_command(name="unmute", description="Unmute a user.")
+    @commands.hybrid_command(name="unmute", description="Unmute a user.", aliases=["untimeout"])
     @commands.has_permissions(moderate_members=True)
     @commands.bot_has_permissions(moderate_members=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
@@ -204,7 +204,7 @@ class Moderation(commands.Cog):
             return
         try:
             if user.top_role > ctx.author.top_role:
-                await ctx.send("You cannot ban this user.")
+                await ctx.send("You cannot unmute this user.")
                 return
         except:
             pass
