@@ -230,7 +230,7 @@ class Warning_Commands(commands.Cog):
 		embed = discord.Embed(
 			title=f"<:Checkmark:1326642406086410317> Warnings of {user.name}",
 			description="The following are the warnings of the user.",
-			color=discord.Color.blue(),
+			color=discord.Color.pink(),
 		)
 		embed.set_footer(text="Spectra")
 		async for warning in cursor:
