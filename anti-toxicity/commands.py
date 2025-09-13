@@ -77,7 +77,7 @@ class AntiToxicity(commands.Cog):
             )
             dm_embed.add_field(
                 name="Issued At",
-                value=f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+                value=discord.utils.format_dt(discord.utils.utcnow(), "F"),
                 inline=False,
             )
             dm_embed.set_footer(text="Anti-Toxicity", icon_url=self.bot.user.avatar.url)
