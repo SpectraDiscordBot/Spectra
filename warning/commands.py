@@ -102,7 +102,7 @@ class Warning_Commands(commands.Cog):
 		warn_log.add_field(name="Issued By:", value=f"<@{ctx.author.id}>", inline=False)
 		warn_log.add_field(
 			name="Issued At:",
-			value=f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+			value=discord.utils.format_dt(discord.utils.utcnow(), "F"),
 			inline=False,
 		)
 		try:

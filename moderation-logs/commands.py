@@ -36,7 +36,7 @@ class ModLog(commands.Cog):
             )
             embed.add_field(
                 name="Issued at",
-                value=f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+                value=discord.utils.format_dt(discord.utils.utcnow(), "F"),
             )
             try:
                 embed.set_thumbnail(url=guild.icon.url)
