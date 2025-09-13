@@ -106,11 +106,15 @@ class Notes(commands.Cog):
 	@commands.has_permissions(moderate_members=True)
 	async def list_notes(self, ctx: commands.Context, member: discord.Member = None):
 		class notePaginator(View):
-			def __init__(self, notes, per_page=20):
+			def __init__(self, notes, per_page=1):
 				super().__init__(timeout=60)
 				self.notes = notes
 				self.per_page = per_page
 				self.current_page = 0
+				
+			def update_buttons(self):
+				self.previous_page.disabled = self.current_page == 0
+				self.next_page.disabled = (self.current_page + 1) * self.per_page >= len(self.notes)
 
 			def get_embed(self):
 				embed = discord.Embed(
@@ -131,20 +135,23 @@ class Notes(commands.Cog):
 							if member_obj
 							else f"Unknown Member ({note['member_id']})"
 						),
-						value=f'Note: {note["note"]}\nTimestamp: {note["timestamp"].strftime("%Y-%m-%d %H:%M:%S")}\nNote ID: {note["note_id"]}',
+						value=f'Note: {note["note"]}\nTimestamp: {discord.utils.format_dt(note["timestamp"], "F")}\nNote ID: `{note["note_id"]}`',
 						inline=False,
 					)
 				return embed
 
-			@discord.ui.button(label="Previous", style=discord.ButtonStyle.primary)
+			@discord.ui.button(label="Previous", style=discord.ButtonStyle.primary, disabled=True)
 			async def previous_page(
 				self, interaction: discord.Interaction, button: discord.ui.Button
 			):
 				if self.current_page > 0:
 					self.current_page -= 1
-					await interaction.response.edit_message(
-						embed=self.get_embed(), view=self
-					)
+					
+				self.update_buttons()
+				
+				await interaction.response.edit_message(
+					embed=self.get_embed(), view=self
+				)
 
 			@discord.ui.button(label="Next", style=discord.ButtonStyle.primary)
 			async def next_page(
@@ -152,9 +159,12 @@ class Notes(commands.Cog):
 			):
 				if (self.current_page + 1) * self.per_page < len(self.notes):
 					self.current_page += 1
-					await interaction.response.edit_message(
-						embed=self.get_embed(), view=self
-					)
+				
+				self.update_buttons()
+				
+				await interaction.response.edit_message(
+					embed=self.get_embed(), view=self
+				)
 
 		if member is None:
 			notes_cursor = note_collection.find({"guild_id": str(ctx.guild.id)})
