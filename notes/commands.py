@@ -131,7 +131,7 @@ class Notes(commands.Cog):
 							if member_obj
 							else f"Unknown Member ({note['member_id']})"
 						),
-						value=f'Note: {note["note"]}\nTimestamp: {note["timestamp"].strftime("%Y-%m-%d %H:%M:%S")}\nNote ID: {note["note_id"]}',
+						value=f'Note: {note["note"]}\nTimestamp: {discord.utils.format_dt(note["timestamp"], "F")}\nNote ID:\n``{note["note_id"]}``',
 						inline=False,
 					)
 				return embed
