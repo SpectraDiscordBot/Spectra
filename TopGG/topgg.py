@@ -13,7 +13,7 @@ class TopGG(commands.Cog):
 		self.token = os.environ.get("TOP_GG")
 		self.webhook_auth = os.environ.get("WEBHOOK_AUTH")
 		self.topggpy = topgg.Client(self.token)
-		self.webhooks = topgg.Webhooks(self.webhook_auth, 6350)
+		self.webhooks = topgg.Webhooks(self.webhook_auth, 6124)
 		self.webhooks.on_vote("/dblwebhook")(self.voted)
 		self.bot.loop.create_task(self.start_webhooks())
 		self.topggpy.autopost_retrieval(self.get_server_count)
