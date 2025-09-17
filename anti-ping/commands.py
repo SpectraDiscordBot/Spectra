@@ -20,7 +20,7 @@ class AntiPing(commands.Cog):
 		guild_id = str(message.guild.id)
 		data = self.cache.get(guild_id)
 
-		async for entry in data:
+		for entry in data:
 			role_id = int(entry["role"])
 			bypass_role_id = entry.get("bypass_role")
 
@@ -96,7 +96,7 @@ class AntiPing(commands.Cog):
 		guild_id = str(before.guild.id)
 		data = self.cache.get(guild_id)
 
-		async for entry in data:
+		for entry in data:
 			role_id = int(entry["role"])
 			bypass_role_id = entry.get("bypass_role")
 
