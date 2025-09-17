@@ -6,6 +6,11 @@ from db import anti_ping_collection
 class AntiPing(commands.Cog):
 	def __init__(self, bot):
 		self.bot = bot
+		self.cache = {}
+		
+	async def load_guild_roles(self, guild_id):
+		data = await anti_ping_collection.find({"guild_id": str(guild_id)}).to_list(length=None)
+		self.cache[str(guild_id)] = [int(d["role"]) for d in data]
 
 	@commands.Cog.listener()
 	async def on_message(self, message: discord.Message):
@@ -13,7 +18,7 @@ class AntiPing(commands.Cog):
 			return
 
 		guild_id = str(message.guild.id)
-		data = anti_ping_collection.find({"guild_id": guild_id})
+		data = self.cache.get(guild_id)
 
 		async for entry in data:
 			role_id = int(entry["role"])
@@ -78,6 +83,8 @@ class AntiPing(commands.Cog):
 				"Removed an Anti-Ping role",
 				f"Removed <@&{role_id}> as an Anti-Ping role because it was deleted.",
 			)
+			await self.load_guild_roles(role.guild.id)
+		
 	
 	@commands.Cog.listener()
 	async def on_message_edit(self, before: discord.Message, after: discord.Message):
@@ -87,7 +94,7 @@ class AntiPing(commands.Cog):
 			return
 
 		guild_id = str(before.guild.id)
-		data = anti_ping_collection.find({"guild_id": guild_id})
+		data = self.cache.get(guild_id)
 
 		async for entry in data:
 			role_id = int(entry["role"])
@@ -173,6 +180,7 @@ class AntiPing(commands.Cog):
 				f"<:Checkmark:1326642406086410317> {role.name} has been successfully added.",
 				ephemeral=True
 			)
+			await self.load_guild_roles(ctx.guild.id)
 
 	@anti_ping.command(name="remove", description="Remove a role from the anti-ping list")
 	@commands.has_permissions(manage_roles=True)
@@ -199,8 +207,12 @@ class AntiPing(commands.Cog):
 				f"<:Checkmark:1326642406086410317> {role.name} has been successfully removed.",
 				ephemeral=True,
 			)
+			await self.load_guild_roles(ctx.guild.id)
 		else:
 			await ctx.send("That Anti-Ping role has not been set.", delete_after=10)
 
 async def setup(bot):
-	await bot.add_cog(AntiPing(bot))
+	cog = AntiPing(bot)
+	for guild in bot.guilds:
+		await cog.load_guild_roles(guild.id)
+	await bot.add_cog(cog)
