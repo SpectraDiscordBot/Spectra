@@ -102,6 +102,18 @@ class AutoRole_Commands(commands.Cog):
 		else:
 			await ctx.send("That AutoRole has not been set.", delete_after=10)
 
+	@autorole.command(name="list", description="List all auto roles in the server.")
+	async def autorole_list(self, ctx):
+		roles = self.cache.get(str(ctx.guild.id), [])
+		if roles:
+			embed = discord.Embed(
+				title="Auto Roles",
+				description="\n".join([ctx.guild.get_role(r).mention for r in roles])
+			)
+			await ctx.send(embed=embed, ephemeral=True)
+		else:
+			await ctx.send("No auto roles have been set.", ephemeral=True)
+
 	@commands.Cog.listener()
 	async def on_member_join(self, member):
 		roles = self.cache.get(str(member.guild.id), [])
