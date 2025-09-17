@@ -10,7 +10,7 @@ class AntiPing(commands.Cog):
 		
 	async def load_guild_roles(self, guild_id):
 		data = await anti_ping_collection.find({"guild_id": str(guild_id)}).to_list(length=None)
-		self.cache[str(guild_id)] = [int(d["role"]) for d in data]
+		self.cache[str(guild_id)] = data
 
 	@commands.Cog.listener()
 	async def on_message(self, message: discord.Message):
@@ -18,7 +18,7 @@ class AntiPing(commands.Cog):
 			return
 
 		guild_id = str(message.guild.id)
-		data = self.cache.get(guild_id)
+		data = self.cache.get(guild_id, [])
 
 		for entry in data:
 			role_id = int(entry["role"])
@@ -94,7 +94,7 @@ class AntiPing(commands.Cog):
 			return
 
 		guild_id = str(before.guild.id)
-		data = self.cache.get(guild_id)
+		data = self.cache.get(guild_id, [])
 
 		for entry in data:
 			role_id = int(entry["role"])
@@ -201,7 +201,7 @@ class AntiPing(commands.Cog):
 				ctx.guild.id,
 				ctx.author.id,
 				"Removed an Anti-Ping role",
-				f"Removed <@&{anti_ping_role["role"]}> as an Anti-Ping role.",
+				f'Removed <@&{anti_ping_role["role"]}> as an Anti-Ping role.',
 			)
 			await ctx.send(
 				f"<:Checkmark:1326642406086410317> {role.name} has been successfully removed.",
