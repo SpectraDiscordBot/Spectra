@@ -51,12 +51,16 @@ async def blacklist_check(ctx):
 """
 
 
-async def get_prefix(Client, message):
+async def get_prefix(client, message):
 	if not message.guild:
 		return ">"
-
-	prefix_data = await custom_prefix_collection.find_one({"guild_id": str(message.guild.id)})
-	return prefix_data["prefix"] if prefix_data else ">"
+	gid = str(message.guild.id)
+	if gid in client.prefix_cache:
+		return client.prefix_cache[gid]
+	data = await custom_prefix_collection.find_one({"guild_id": gid})
+	prefix = data["prefix"] if data else ">"
+	client.prefix_cache[gid] = prefix
+	return prefix
 
 
 # Bot
@@ -70,11 +74,11 @@ status_messages = itertools.cycle([
 bot = commands.Bot(
 	command_prefix=get_prefix,
 	intents=intents,
-	owner_ids={856196104385986560, 998434044335374336, 1362053982444454119},
+	owner_ids=[856196104385986560, 998434044335374336, 1362053982444454119],
 	case_insensitive=True,
 )
-
 bot.remove_command("help")
+bot.prefix_cache = {}
 
 
 # Classes
@@ -120,11 +124,15 @@ async def on_ready():
 	print(f"✅ | {bot.user} Is Ready.")
 	print(f"✅ | Bot ID: {bot.user.id}")
 	try:
+		bot.prefix_cache.clear()
+		async for doc in custom_prefix_collection.find({}, {"guild_id": 1, "prefix": 1}):
+			bot.prefix_cache[doc["guild_id"]] = doc["prefix"]
 		await bot.load_extension("jishaku"); print("✅ | Loaded Jishaku")
 		await bot.load_extension("core.commands"); print("✅ | Loaded Core Commands")
 		await bot.load_extension("autorole.commands"); print("✅ | Loaded AutoRole Commands")
 		await bot.load_extension("reaction-roles.commands"); print("✅ | Loaded Reaction Role Commands")
 		await bot.load_extension("welcomemessage.commands"); print("✅ | Loaded Welcome Message Commands")
+		await bot.load_extension("ban-appeals.commands"); print("✅ | Loaded Ban Appeals Commands")
 		await bot.load_extension("manageroles.commands"); print("✅ | Loaded Manage Roles Commands")
 		await bot.load_extension("moderation.commands"); print("✅ | Loaded Moderation Commands")
 		await bot.load_extension("antispam.commands"); print("✅ | Loaded Anti-Spam Commands")
@@ -135,7 +143,7 @@ async def on_ready():
 		await bot.load_extension("reports.commands"); print("✅ | Loaded Reports Commands")
 		await bot.load_extension("anti-ping.commands"); print("✅ | Loaded Anti-Ping Commands")
 		await bot.load_extension("owner-stuff.commands"); print("✅ | Loaded Owner Commands")
-		#await bot.load_extension("TopGG.topgg"); print("✅ | Loaded TopGG Commands")
+		await bot.load_extension("TopGG.topgg"); print("✅ | Loaded TopGG Commands")
 		await bot.load_extension("verification.commands"); print("✅ | Loaded Verification Commands")
 		cycle_status.start(); print("✅ | Started Cycling Status")
 	except Exception as e:

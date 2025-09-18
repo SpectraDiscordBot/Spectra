@@ -181,37 +181,32 @@ class Core(commands.Cog):
 	@commands.has_permissions(manage_guild=True)
 	@commands.cooldown(1, 5)
 	async def set_prefix(self, ctx: commands.Context, prefix: str):
-		if len(str(prefix)) > 3:
-			await ctx.send(
-				"Prefix must be between 1 and 3 characters long.", ephemeral=True
-			)
-			return
-		if len(str(prefix)) < 1:
-			await ctx.send("Prefix must be at least 1 character long.", ephemeral=True)
+		if not 1 <= len(prefix) <= 3:
+			await ctx.send("Prefix must be 1–3 characters.", ephemeral=True)
 			return
 
-		prefixes = await custom_prefix_collection.find_one({"guild_id": str(ctx.guild.id)})
-		if prefixes:
-			prefixes["prefix"] = prefix
-			await custom_prefix_collection.update_one(
-				{"guild_id": str(ctx.guild.id)}, {"$set": prefixes}
+		gid = str(ctx.guild.id)
+
+		await custom_prefix_collection.update_one(
+			{"guild_id": gid},
+			{"$set": {"prefix": prefix}},
+			upsert=True
+		)
+
+		ctx.bot.prefix_cache[gid] = prefix
+
+		try:
+			self.bot.dispatch(
+				"modlog",
+				ctx.guild.id,
+				ctx.author.id,
+				"Set a new prefix",
+				f"Set prefix to {prefix} for this server.",
 			)
-			await ctx.send(f"Prefix set to `{prefix}` for this server.")
-		else:
-			await custom_prefix_collection.insert_one(
-				{"guild_id": str(ctx.guild.id), "prefix": prefix}
-			)
-			try:
-				self.bot.dispatch(
-					"modlog",
-					ctx.guild.id,
-					ctx.author.id,
-					"Set a new prefix",
-					f"Set prefix to {prefix} for this server.",
-				)
-			except Exception as e:
-				print(e)
-			await ctx.send(f"Prefix set to `{prefix}` for this server.")
+		except Exception as e:
+			print(e)
+
+		await ctx.send(f"Prefix set to `{prefix}` for this server.")
 
 
 	@commands.hybrid_command(name="vote", description="Vote for Spectra!")
