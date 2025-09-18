@@ -73,7 +73,7 @@ status_messages = itertools.cycle([
 	"dynamic_users"
 ])
 
-bot = commands.Bot(
+bot = commands.AutoShardedBot(
 	command_prefix=get_prefix,
 	intents=intents,
 	owner_ids=[856196104385986560, 998434044335374336, 1362053982444454119],
