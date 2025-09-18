@@ -52,15 +52,17 @@ async def blacklist_check(ctx):
 
 
 async def get_prefix(client, message):
-	if not message.guild:
-		return ">"
-	gid = str(message.guild.id)
-	if gid in client.prefix_cache:
-		return client.prefix_cache[gid]
-	data = await custom_prefix_collection.find_one({"guild_id": gid})
-	prefix = data["prefix"] if data else ">"
-	client.prefix_cache[gid] = prefix
-	return prefix
+    if not hasattr(client, "prefix_cache"):
+        client.prefix_cache = {}
+    if not message.guild:
+        return ">"
+    gid = str(message.guild.id)
+    if gid in client.prefix_cache:
+        return client.prefix_cache[gid]
+    data = await custom_prefix_collection.find_one({"guild_id": gid})
+    prefix = data["prefix"] if data else ">"
+    client.prefix_cache[gid] = prefix
+    return prefix
 
 
 # Bot
