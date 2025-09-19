@@ -48,7 +48,7 @@ class CommandPaginator(discord.ui.View):
 			)
 			embed.add_field(
 				name=f">{command.name}",
-				value=command.description + f"\nAliases: >{aliases}",
+				value=command.description + f"\nAliases: {aliases}",
 				inline=False,
 			)
 		return embed
