@@ -97,7 +97,7 @@ class Bot(commands.AutoShardedBot):
 			await self.load_extension("autorole.commands"); print("✅ | Loaded AutoRole Commands")
 			await self.load_extension("reaction-roles.commands"); print("✅ | Loaded Reaction Role Commands")
 			await self.load_extension("welcomemessage.commands"); print("✅ | Loaded Welcome Message Commands")
-			await self.load_extension("ban-appeals.commands"); print("✅ | Loaded Ban Appeals Commands")
+			# await self.load_extension("ban-appeals.commands"); print("✅ | Loaded Ban Appeals Commands") | Later :)
 			await self.load_extension("manageroles.commands"); print("✅ | Loaded Manage Roles Commands")
 			await self.load_extension("moderation.commands"); print("✅ | Loaded Moderation Commands")
 			await self.load_extension("antispam.commands"); print("✅ | Loaded Anti-Spam Commands")
