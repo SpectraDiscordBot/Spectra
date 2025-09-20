@@ -1,13 +1,11 @@
 import datetime
 import discord
-import os
-import motor.motor_asyncio
 from discord.ext import commands
+from discord import app_commands
 from dotenv import load_dotenv
-from db import *
+from db import cases_collection, warning_collection
 
 load_dotenv()
-
 
 class Warning_Commands(commands.Cog):
 	async def _revoke_case(self, guild_id, case_id, revoker_id):
@@ -39,32 +37,36 @@ class Warning_Commands(commands.Cog):
 	def __init__(self, bot):
 		self.bot = bot
 
-	@commands.hybrid_group(name="warnings")
+	@commands.hybrid_group(name="warnings", description="Commands for managing warnings.")
 	async def warnings(self, ctx):
 		pass
 
-	@warnings.command(
-		name="issue", description="Issue a warning.", aliases=["warn"]
+	@commands.hybrid_command(
+		name="warn", description="Issue a warning."
 	)
 	@commands.cooldown(1, 5, type=commands.BucketType.user)
 	@commands.has_permissions(moderate_members=True)
+	@app_commands.describe(
+        user="The user to warn.",
+        reason="The reason for the warning."
+    )
 	async def issue_warning(
 		self, ctx, user: discord.User, *, reason: str = "No Reason Provided"
 	):
 		if user.id in [ctx.author.id, self.bot.user.id]:
-			await ctx.send("You cannot warn yourself or the bot.")
+			await ctx.send(embed=discord.Embed(description="You cannot warn yourself or the bot."))
 			return
 
-		msg = await ctx.send("Loading, please wait...")
+		msg = await ctx.send(embed=discord.Embed(description="Loading, please wait..."), ephemeral=True)
 
 		member = discord.utils.get(ctx.guild.members, id=user.id)
 		if not member or member.top_role >= ctx.author.top_role:
-			await msg.edit(content="You cannot warn this user.")
+			await msg.edit(embed=discord.Embed(description="You cannot warn this user."))
 			return
 
 		data = await warning_collection.find_one({"guild_id": str(ctx.guild.id), "logs_channel": {"$exists": True}})
 		if not data:
-			await msg.edit(content="No warning system has been set up.")
+			await msg.edit(embed=discord.Embed(description="No warning system has been set up."))
 			return
 
 		case_id = await self._get_next_case_id(ctx.guild.id)
@@ -93,7 +95,6 @@ class Warning_Commands(commands.Cog):
 		warn_log = discord.Embed(
 			title=f"Warning issued to {user.name}",
 			description="",
-			color=discord.Color.pink(),
 		)
 		warn_log.add_field(
 			name="Case Number:", value=f"CASE #{case_id}", inline=False
@@ -111,14 +112,14 @@ class Warning_Commands(commands.Cog):
 			pass
 		warn_log.set_footer(text="Warning System")
 		await msg.edit(
-			content=f"<:Checkmark:1326642406086410317> `[CASE #{case_id}]` Warning issued to {user.mention} for `{reason}`."
+			embed=discord.Embed(description=f"<:Checkmark:1326642406086410317> `[CASE #{case_id}]` Warning issued to {user.mention} for `{reason}`.")
 		)
 		try:
 			await logs_channel.send(embed=warn_log)
 		except:
 			pass
 		try:
-			dm_embed = discord.Embed(title="Warned", description=f"You have been warned in **{ctx.guild.name}**", color=discord.Colour.pink())
+			dm_embed = discord.Embed(title="Warning", description=f"You have been warned in **{ctx.guild.name}**", color=discord.Colour.red())
 			dm_embed.add_field(name="Reason:", value=reason, inline=False)
 			dm_embed.add_field(name="Case Number:", value=f"CASE #{case_id}", inline=False)
 			await user.send(
@@ -134,39 +135,42 @@ class Warning_Commands(commands.Cog):
 	)
 	@commands.cooldown(1, 5, type=commands.BucketType.user)
 	@commands.has_permissions(moderate_members=True)
+	@app_commands.describe(
+        case_number="The case number of the warning to revoke."
+    )
 	async def revoke_warning(self, ctx, case_number: int):
 
 		data = await warning_collection.find_one({"guild_id": str(ctx.guild.id), "logs_channel": {"$exists": True}})
 		if not data:
-			await ctx.send(content="No warning system has been set up.")
+			await ctx.send(embed=discord.Embed(description="No warning system has been set up."), ephemeral=True)
 			return
 		
 		warning = await warning_collection.find_one(
 			{"guild_id": str(ctx.guild.id), "case_number": case_number}
 		)
 		if not warning:
-			await ctx.send("This warning does not exist.", ephemeral=True)
+			await ctx.send(embed=discord.Embed(description="This warning does not exist."), ephemeral=True)
 			return
 		
 		try:
 			user = discord.utils.get(ctx.guild.members, id=int(warning["user_id"]))
 		except:
-			await ctx.send("Couldn't find the user in the warning.")
+			await ctx.send(embed=discord.Embed(description="Couldn't find the user in the warning."), ephemeral=True)
 			return
 
 		member = discord.utils.get(ctx.guild.members, id=user.id)
 		if not member:
-			await ctx.send("Couldn't find the user in the warning.")
+			await ctx.send(embed=discord.Embed(description="Couldn't find the user in the warning."), ephemeral=True)
 			return
 		if member.top_role >= ctx.author.top_role:
-			await ctx.send("You cannot unwarn this user.")
+			await ctx.send(embed=discord.Embed(description="You cannot unwarn this user."), ephemeral=True)
 			return
 
 		if user.id == ctx.author.id:
-			await ctx.send("You cannot revoke a warning from yourself.")
+			await ctx.send(embed=discord.Embed(description="You cannot revoke a warning from yourself."), ephemeral=True)
 			return
 		if user.id == self.bot.user.id:
-			await ctx.send("I cannot revoke a warning from myself.")
+			await ctx.send(embed=discord.Embed(description="I cannot revoke a warning from myself."), ephemeral=True)
 			return
 
 		await warning_collection.delete_one(
@@ -180,7 +184,6 @@ class Warning_Commands(commands.Cog):
 		warn_log = discord.Embed(
 			title=f"Warning revoked from {user.name}",
 			description="",
-			color=discord.Color.pink(),
 		)
 		warn_log.add_field(
 			name="Case Number:", value=f"CASE #{case_number}", inline=False
@@ -201,7 +204,7 @@ class Warning_Commands(commands.Cog):
 
 		warn_log.set_footer(text="Warning System")
 		await ctx.send(
-			f"<:Checkmark:1326642406086410317> `[CASE #{case_number}]` Warning revoked from {user.mention}."
+			embed=discord.Embed(description=f"<:Checkmark:1326642406086410317> `[CASE #{case_number}]` Warning revoked from {user.mention}."), ephemeral=True
 		)
 		try:
 			await ctx.guild.get_channel(int(data["logs_channel"])).send(embed=warn_log)
@@ -215,13 +218,16 @@ class Warning_Commands(commands.Cog):
 	)
 	@commands.cooldown(1, 5, type=commands.BucketType.user)
 	@commands.has_permissions(moderate_members=True)
+	@app_commands.describe(
+        user="The user to list warnings for. Defaults to yourself."
+    )
 	async def list_warnings(self, ctx, user: discord.User = None):
 		if user is None:
 			user = ctx.author
 
 		data = await warning_collection.find_one({"guild_id": str(ctx.guild.id), "logs_channel": {"$exists": True}})
 		if not data:
-			await ctx.send(content="No warning system has been set up.")
+			await ctx.send(embed=discord.Embed(description="No warning system has been set up."), ephemeral=True)
 			return
 
 		cursor = warning_collection.find(
@@ -230,7 +236,6 @@ class Warning_Commands(commands.Cog):
 		embed = discord.Embed(
 			title=f"<:Checkmark:1326642406086410317> Warnings of {user.name}",
 			description="The following are the warnings of the user.",
-			color=discord.Color.pink(),
 		)
 		embed.set_footer(text="Spectra")
 		async for warning in cursor:
@@ -249,32 +254,35 @@ class Warning_Commands(commands.Cog):
 				inline=False,
 			)
 
-		await ctx.send(embed=embed)
+		await ctx.send(embed=embed, ephemeral=True)
 
 	@warnings.command(
 		name="clear", description="Clear all warnings of a user."
 	)
 	@commands.has_permissions(moderate_members=True)
+	@app_commands.describe(
+        user="The user to clear warnings for."
+    )
 	async def clear(self, ctx, user: discord.User):
 		if user.id == ctx.author.id:
-			await ctx.send("You cannot clear your own warnings.")
+			await ctx.send(embed=discord.Embed(description="You cannot clear your own warnings."), ephemeral=True)
 			return
 		if user.id == self.bot.user.id:
-			await ctx.send("I cannot clear my own warnings.")
+			await ctx.send(embed=discord.Embed(description="I cannot be warned in the first place"), ephemeral=True)
 			return
 		
 		member = discord.utils.get(ctx.guild.members, id=user.id)
 		if not member:
-			await ctx.send("Couldn't find the user in the warning.")
+			await ctx.send(embed=discord.Embed(description="Couldn't find the user in the warning."), ephemeral=True)
 			return
 		if member.top_role >= ctx.author.top_role:
-			await ctx.send("You cannot warn this user.")
+			await ctx.send(embed=discord.Embed(description="You cannot warn this user."), ephemeral=True)
 			return
 		
 
 		data = await warning_collection.find_one({"guild_id": str(ctx.guild.id), "logs_channel": {"$exists": True}})
 		if not data:
-			await ctx.send(content="No warning system has been set up.")
+			await ctx.send(embed=discord.Embed(description="No warning system has been set up."), ephemeral=True)
 			return
 
 		await warning_collection.delete_many(
@@ -283,7 +291,6 @@ class Warning_Commands(commands.Cog):
 		warn_log = discord.Embed(
 			title=f"Warnings cleared from {user.name}",
 			description="",
-			color=discord.Color.pink(),
 		)
 		warn_log.add_field(
 			name="Cleared By:", value=f"<@{ctx.author.id}>", inline=False
@@ -301,7 +308,7 @@ class Warning_Commands(commands.Cog):
 
 		warn_log.set_footer(text="Warning System")
 		await ctx.send(
-			f"<:Checkmark:1326642406086410317> Warnings of {user.mention} have been cleared."
+			embed=discord.Embed(description=f"<:Checkmark:1326642406086410317> Warnings of {user.mention} have been cleared."), ephemeral=True
 		)
 		try:
 			await ctx.guild.get_channel(int(data["logs_channel"])).send(embed=warn_log)
@@ -310,11 +317,14 @@ class Warning_Commands(commands.Cog):
 
 	@warnings.command(name="setup", description="Setup warning system.")
 	@commands.has_permissions(manage_guild=True)
+	@app_commands.describe(
+        channel="The channel to send warning logs to."
+    )
 	async def setup(self, ctx, channel: discord.TextChannel):
 		guild_id = str(ctx.guild.id)
 		data = await warning_collection.find_one({"guild_id": str(ctx.guild.id), "logs_channel": {"$exists": True}})
 		if data:
-			await ctx.send(content="Warnings have already been setup.", ephemeral=True)
+			await ctx.send(embed=discord.Embed(description="Warnings have already been setup.", ephemeral=True))
 			return
 		else:
 			await warning_collection.insert_one(
@@ -323,12 +333,11 @@ class Warning_Commands(commands.Cog):
 			embed = discord.Embed(
 				title="Warning System",
 				description="Warning System has been set.",
-				color=discord.Color.blue(),
 			)
 			embed.set_thumbnail(url=self.bot.user.avatar.url)
 			embed.add_field(name="Set By:", value=ctx.author.mention, inline=False)
 			await ctx.send(
-				"<:switch_on:1326648555414224977> Warning System has been set."
+				embed=discord.Embed(description="<:switch_on:1326648555414224977> Warning System has been set."), ephemeral=True
 			)
 			try:
 				self.bot.dispatch(
@@ -353,11 +362,11 @@ class Warning_Commands(commands.Cog):
 		guild_id = str(ctx.guild.id)
 		data = await warning_collection.find_one({"guild_id": str(ctx.guild.id), "logs_channel": {"$exists": True}})
 		if not data:
-			await ctx.send(content="No warning system has been set up.", ephemeral=True)
+			await ctx.send(embed=discord.Embed(description="No warning system has been set up.", ephemeral=True))
 			return
 		await warning_collection.delete_many({"guild_id": guild_id})
 		await ctx.send(
-			"<:switch_off:1326648782393180282> Warning System has been disabled.",
+			embed=discord.Embed(description="<:switch_off:1326648782393180282> Warning System has been disabled."),
 			ephemeral=True,
 		)
 		try:

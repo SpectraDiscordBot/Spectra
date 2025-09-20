@@ -27,13 +27,14 @@ class Moderation(commands.Cog):
     @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(manage_messages=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
+    @app_commands.describe(limit="Number of messages to purge (1-100)", reason="Reason for purging messages")
     async def purge(self, ctx, limit: int = 5, *, reason: str = None):
         await ctx.defer(ephemeral=True)
         if limit > 100:
-            await ctx.send("Currently, you can only delete up to 100 messages.", ephemeral=True)
+            await ctx.send(embed=discord.Embed(description="Currently, you can only delete up to 100 messages.", ephemeral=True))
             return
         if limit < 1:
-            await ctx.send("Please specify a number between 1 and 100.", ephemeral=True)
+            await ctx.send(embed=discord.Embed(description="Please specify a number between 1 and 100.", ephemeral=True))
             return
         try:
             await ctx.message.delete()
@@ -50,7 +51,6 @@ class Moderation(commands.Cog):
         embed = discord.Embed(
             title="Purge Summary",
             description=f"Purged {deleted_count} messages from {ctx.channel.mention}",
-            color=discord.Color.green(),
             timestamp=datetime.datetime.utcnow(),
         )
         embed.add_field(name="Deleted by", value=ctx.author.mention, inline=True)
@@ -97,18 +97,19 @@ class Moderation(commands.Cog):
         
     @commands.hybrid_command(name="case", description="View a moderation case.")
     @commands.has_permissions(moderate_members=True)
+    @app_commands.describe(case_id="The ID of the case to view")
     async def case(self, ctx, case_id: int):
         doc = await cases_collection.find_one({"guild_id": str(ctx.guild.id)})
         if not doc or not doc.get("cases"):
-            await ctx.send("No cases found.")
+            await ctx.send(embed=discord.Embed(description="No cases found."), ephemeral=True)
             return
 
         case = next((c for c in doc["cases"] if c["case_id"] == case_id), None)
         if not case:
-            await ctx.send("Case not found.")
+            await ctx.send(embed=discord.Embed(description="Case not found."), ephemeral=True)
             return
 
-        embed = discord.Embed(title=f"Case #{case['case_id']}", color=discord.Color.orange())
+        embed = discord.Embed(title=f"Case #{case['case_id']}")
         embed.add_field(name="Type", value=case["type"])
         embed.add_field(name="Target", value=case["target"])
         embed.add_field(name="Moderator", value=case["moderator"])
@@ -133,37 +134,42 @@ class Moderation(commands.Cog):
 
     @commands.hybrid_command(name="editcase", description="Edit a moderation case.")
     @commands.has_permissions(moderate_members=True)
+    @app_commands.describe(case_id="The ID of the case to edit", reason="The new reason for the case")
     async def editcase(self, ctx, case_id: int, *, reason: str):
         ok = await self._edit_case(ctx.guild.id, case_id, ctx.author.id, {"reason": reason})
         if ok:
-            await ctx.send(f"<:Checkmark:1326642406086410317> Case #{case_id} updated.")
+            await ctx.send(embed=discord.Embed(description=f"<:Checkmark:1326642406086410317> Case #{case_id} updated."), ephemeral=True)
         else:
-            await ctx.send("Case not found.")
+            await ctx.send(embed=discord.Embed(description="Case not found.", ephemeral=True))
 
     @commands.hybrid_command(name="mute", description="Mute a user.", aliases=["timeout"])
     @commands.has_permissions(moderate_members=True)
     @commands.bot_has_permissions(moderate_members=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
+    @app_commands.describe(user="The user to mute", time="Duration of the mute (e.g., 10m, 1h, 1d)", reason="Reason for the mute")
     async def mute(self, ctx, user: discord.Member, time: str, *, reason: str):
         if user.id == ctx.author.id:
-            await ctx.send("You cannot mute yourself.")
+            await ctx.send(embed=discord.Embed(description="You cannot mute yourself."), ephemeral=True)
             return
         if user.id == self.bot.user.id:
-            await ctx.send("I cannot mute myself.")
+            await ctx.send(embed=discord.Embed(description="I cannot mute myself."), ephemeral=True)
             return
         try:
-            if user.top_role > ctx.author.top_role:
-                await ctx.send("You cannot mute this user.")
+            if user.top_role.position >= ctx.author.top_role.position:
+                await ctx.send(embed=discord.Embed(description="You cannot mute this user."), ephemeral=True)
+                return
+            if user.top_role.position >= ctx.guild.me.top_role.position:
+                await ctx.send(embed=discord.Embed(description="I cannot mute this user."), ephemeral=True)
                 return
         except:
             pass
         try:
             duration = parse_timespan(time)
         except InvalidTimespan:
-            await ctx.send("Invalid time.")
+            await ctx.send(embed=discord.Embed(description="Invalid time."), ephemeral=True)
             return
         if user.is_timed_out():
-            await ctx.send(f"{user.mention} is already muted.")
+            await ctx.send(embed=discord.Embed(description=f"{user.mention} is already muted."), ephemeral=True)
             return
         try:
             case_id = await self._get_next_case_id(ctx.guild.id)
@@ -179,62 +185,70 @@ class Moderation(commands.Cog):
             }
             await self._add_case(ctx.guild.id, case_obj)
             self.bot.dispatch("modlog", ctx.guild.id, ctx.author.id, "Mute", f"[#{case_id}] Muted {user.mention} with reason: {reason}")
-            await ctx.send(f"<:Checkmark:1326642406086410317> [#{case_id}] Muted {user.mention} for `{time}`.")
+            await ctx.send(embed=discord.Embed(description=f"<:Checkmark:1326642406086410317> [#{case_id}] Muted {user.mention} for `{time}`."), ephemeral=True)
             try:
-                await user.send(f"[#{case_id}] You have been muted in **{ctx.guild.name}** for: `{reason}`.")
+                await user.send(embed=discord.Embed(description=f"[#{case_id}] You have been muted in **{ctx.guild.name}** for: `{reason}`.", color=discord.Color.red()))
             except:
                 pass
         except Exception as e:
-            await ctx.send("I do not have permission to mute users.")
+            await ctx.send(embed=discord.Embed(description="I do not have permission to mute that user."), ephemeral=True)
             print(e)
 
     @commands.hybrid_command(name="unmute", description="Unmute a user.", aliases=["untimeout"])
     @commands.has_permissions(moderate_members=True)
     @commands.bot_has_permissions(moderate_members=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
+    @app_commands.describe(user="The user to unmute")
     async def unmute(self, ctx, user: discord.Member):
         if user.id == ctx.author.id:
-            await ctx.send("You cannot unmute yourself.")
+            await ctx.send(embed=discord.Embed(description="You cannot unmute yourself."), ephemeral=True)
             return
         if user.id == self.bot.user.id:
-            await ctx.send("I cannot unmute myself.")
+            await ctx.send(embed=discord.Embed(description="I cannot unmute myself."), ephemeral=True)
             return
         if not user.is_timed_out():
-            await ctx.send(f"{user.mention} is not muted.")
+            await ctx.send(embed=discord.Embed(description=f"{user.mention} is not muted."), ephemeral=True)
             return
         try:
-            if user.top_role > ctx.author.top_role:
-                await ctx.send("You cannot unmute this user.")
+            if user.top_role.position >= ctx.author.top_role.position:
+                await ctx.send(embed=discord.Embed(description="You cannot unmute this user."), ephemeral=True)
+                return
+            if user.top_role.position >= ctx.guild.me.top_role.position:
+                await ctx.send(embed=discord.Embed(description="I cannot unmute this user."), ephemeral=True)
                 return
         except:
             pass
         try:
             await user.timeout(None)
             self.bot.dispatch("modlog", ctx.guild.id, ctx.author.id, "Unmute", f"Unmuted {user.mention}")
-            await ctx.send(f"<:Checkmark:1326642406086410317> Unmuted {user.mention}.")
+            await ctx.send(embed=discord.Embed(description=f"<:Checkmark:1326642406086410317> Unmuted {user.mention}."), ephemeral=True)
         except Exception as e:
-            await ctx.send("I do not have permission to unmute users.")
+            await ctx.send(embed=discord.Embed(description="I do not have permission to unmute that user."))
             print(e)
 
     @commands.hybrid_command(name="ban", description="Ban a user.")
     @commands.has_permissions(ban_members=True)
     @commands.bot_has_permissions(ban_members=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
+    @app_commands.describe(user="The user to ban", delete_message_days="Number of days to delete messages", reason="Reason for the ban")
     async def ban(self, ctx, user: discord.User, delete_message_days: int, *, reason: str = "No Reason Provided"):
         if user.id == ctx.author.id:
-            await ctx.send("You cannot ban yourself.")
+            await ctx.send(embed=discord.Embed(description="You cannot ban yourself."), ephemeral=True)
             return
         if user.id == self.bot.user.id:
-            await ctx.send("I cannot ban myself.")
+            await ctx.send(embed=discord.Embed(description="I cannot ban myself."), ephemeral=True)
             return
         try:
-            if user.top_role > ctx.author.top_role:
-                await ctx.send("You cannot ban this user.")
+            if user.top_role.position >= ctx.author.top_role.position:
+                await ctx.send(embed=discord.Embed(description="You cannot ban this user."), ephemeral=True)
+                return
+            if user.top_role.position >= ctx.guild.me.top_role.position:
+                await ctx.send(embed=discord.Embed(description="I cannot ban this user."), ephemeral=True)
                 return
         except:
             pass
         if delete_message_days > 7:
-            await ctx.send("Number of days to delete messages cannot be more than 7, or a week.")
+            await ctx.send(embed=discord.Embed(description="Number of days to delete messages cannot be more than 7, or a week."), ephemeral=True)
             return
         try:
             case_id = await self._get_next_case_id(ctx.guild.id)
@@ -250,24 +264,32 @@ class Moderation(commands.Cog):
             }
             await self._add_case(ctx.guild.id, case_obj)
             self.bot.dispatch("modlog", ctx.guild.id, ctx.author.id, "Ban", f"[#{case_id}]Banned {user.mention} with reason: {reason}")
-            await ctx.send(f"<:Checkmark:1326642406086410317> [#{case_id}] Banned {user.mention}.")
+            await ctx.send(embed=discord.Embed(description=f"<:Checkmark:1326642406086410317> [#{case_id}] Banned {user.mention}."), ephemeral=True)
+            try:
+                await user.send(embed=discord.Embed(description=f"[#{case_id}] You have been banned from **{ctx.guild.name}** for: `{reason}`.", color=discord.Color.red()))
+            except:
+                pass
         except Exception as e:
-            await ctx.send("I do not have permission to ban users.")
+            await ctx.send(embed=discord.Embed(description="I do not have permission to ban that user."), ephemeral=True)
             print(e)
 
     @commands.hybrid_command(name="kick", description="Kick a user.")
     @commands.has_permissions(kick_members=True)
     @commands.bot_has_permissions(kick_members=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
+    @app_commands.describe(user="The user to kick", reason="Reason for the kick")
     async def kick(self, ctx, user: discord.Member, *, reason: str = "No Reason Provided"):
         if user.id == ctx.author.id:
-            await ctx.send("You cannot kick yourself.")
+            await ctx.send(embed=discord.Embed(description="You cannot kick yourself."), ephemeral=True)
             return
         if user.id == self.bot.user.id:
-            await ctx.send("I cannot kick myself.")
+            await ctx.send(embed=discord.Embed(description="I cannot kick myself."), ephemeral=True)
             return
-        if user.top_role > ctx.author.top_role:
-            await ctx.send("You cannot kick this user.")
+        if user.top_role.position >= ctx.author.top_role.position:
+            await ctx.send(embed=discord.Embed(description="You cannot kick this user."), ephemeral=True)
+            return
+        if user.top_role.position >= ctx.guild.me.top_role.position:
+            await ctx.send(embed=discord.Embed(description="I cannot kick this user."), ephemeral=True)
             return
         try:
             case_id = await self._get_next_case_id(ctx.guild.id)
@@ -283,15 +305,20 @@ class Moderation(commands.Cog):
             }
             await self._add_case(ctx.guild.id, case_obj)
             self.bot.dispatch("modlog", ctx.guild.id, ctx.author.id, "Kick", f"[#{case_id}] Kicked {user.mention} with reason: {reason}")
-            await ctx.send(f"<:Checkmark:1326642406086410317> [#{case_id}] Kicked {user.mention}.")
+            await ctx.send(embed=discord.Embed(description=f"<:Checkmark:1326642406086410317> [#{case_id}] Kicked {user.mention}."), ephemeral=True)
+            try:
+                await user.send(embed=discord.Embed(description=f"[#{case_id}] You have been kicked from **{ctx.guild.name}** for: `{reason}`.", color=discord.Color.red()))
+            except:
+                pass
         except Exception as e:
-            await ctx.send("I do not have permission to kick users.")
+            await ctx.send("I do not have permission to kick users.", ephemeral=True)
             print(e)
 
     @commands.hybrid_command(name="unban", description="Unban a user.")
     @commands.has_permissions(ban_members=True)
     @commands.bot_has_permissions(ban_members=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
+    @app_commands.describe(user="The user to unban")
     async def unban(self, ctx, user: discord.User):
         try:
             await ctx.guild.unban(
@@ -304,9 +331,9 @@ class Moderation(commands.Cog):
                 "Unban",
                 f"Unbanned `{user.name} [{user.id}]`",
             )
-            await ctx.send(f"<:Checkmark:1326642406086410317> Unbanned user `{user.name}`.")
+            await ctx.send(embed=discord.Embed(description=f"<:Checkmark:1326642406086410317> Unbanned user `{user.name}`."), ephemeral=True)
         except Exception as e:
-            await ctx.send("I do not have permission to unban users.")
+            await ctx.send(embed=discord.Embed(description="I do not have permission to unban users."), ephemeral=True)
             print(e)
 
     @commands.hybrid_command(
@@ -315,12 +342,13 @@ class Moderation(commands.Cog):
     @commands.has_permissions(manage_channels=True)
     @commands.bot_has_permissions(manage_channels=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
+    @app_commands.describe(seconds="The slowmode delay in seconds", channel="The channel to set slowmode in (defaults to current channel)")
     async def slowmode(self, ctx, seconds: int, channel: discord.TextChannel = None):
         if not channel:
             channel = ctx.channel
         try:
             await channel.edit(slowmode_delay=seconds)
-            await ctx.send(f"<:Checkmark:1326642406086410317> Set slowmode in {channel.mention} to {seconds} seconds.")
+            await ctx.send(embed=discord.Embed(description=f"<:Checkmark:1326642406086410317> Set slowmode in {channel.mention} to {seconds} seconds."), ephemeral=True)
             self.bot.dispatch(
                 "modlog",
                 ctx.guild.id,
@@ -329,7 +357,7 @@ class Moderation(commands.Cog):
                 f"Set slowmode in #{channel.name} to {seconds} seconds",
             )
         except:
-            await ctx.send("It seems I do not have permission to set slowmode.")
+            await ctx.send(embed=discord.Embed(description="It seems I do not have permission to set slowmode."), ephemeral=True)
             return
 
 async def setup(bot):
