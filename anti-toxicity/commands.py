@@ -41,6 +41,14 @@ class AntiToxicity(commands.Cog):
     def __init__(self, bot):
         self.bot = bot        
         self.collection = toxicity_collection
+        self.cache = {}
+
+    async def load_guild_config(self, guild_id):
+        config = await self.collection.find_one({"_id": guild_id})
+        if config:
+            self.cache[guild_id] = config
+        else:
+            self.cache[guild_id] = {"enabled": False, "threshold": 0.7}
 
     # Listener
     @commands.Cog.listener()
@@ -52,13 +60,13 @@ class AntiToxicity(commands.Cog):
         if member.guild_permissions.administrator: return
 
         guild_id = message.guild.id
-        config = await self.collection.find_one({"_id": guild_id})
+        config = self.cache.get(guild_id)
 
         if not config or not config.get("enabled", False):
             return
 
         threshold = config.get("threshold", 0.7)
-        toxicity_score = analyze_toxicity(message.content)
+        toxicity_score = await asyncio.to_thread(analyze_toxicity, message.content)
         if toxicity_score == -1:
             return
 
@@ -133,6 +141,7 @@ class AntiToxicity(commands.Cog):
             color=discord.Colour.pink(),
         )
         await ctx.send(embed=embed, ephemeral=True)
+        await self.load_guild_config(guild_id)
 
     @anti_toxicity.command(
         name="disable", description="Disable the anti-toxicity system"
@@ -160,6 +169,7 @@ class AntiToxicity(commands.Cog):
             color=discord.Colour.pink(),
         )
         await ctx.send(embed=embed, ephemeral=True)
+        await self.load_guild_config(guild_id)
 
     @anti_toxicity.command(
         name="configure", description="Set the toxicity threshold"
@@ -193,7 +203,11 @@ class AntiToxicity(commands.Cog):
             color=discord.Colour.pink(),
         )
         await ctx.send(embed=embed, ephemeral=True)
+        await self.load_guild_config(guild_id)
 
 
 async def setup(bot):
-    await bot.add_cog(AntiToxicity(bot))
+    cog = AntiToxicity(bot)
+    for guild in bot.guilds:
+        await cog.load_guild_config(guild.id)
+    await bot.add_cog(cog)
