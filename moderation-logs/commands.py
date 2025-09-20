@@ -28,7 +28,6 @@ class ModLog(commands.Cog):
             embed = discord.Embed(
                 title=f"{action}",
                 description=f"<:modshield:1325613380945444864> {message}",
-                color=discord.Color.yellow(),
             )
             taker = self.bot.get_user(action_taker)
             embed.add_field(
