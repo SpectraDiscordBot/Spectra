@@ -156,6 +156,7 @@ class ManageRoles(commands.Cog):
     @manage_roles.command(name="info", description="Get information about a role.")
     @app_commands.describe(role="The role you want to get information about.")
     @commands.cooldown(1, 5, commands.BucketType.user)
+    @commands.has_permissions(manage_roles=True)
     async def roleinfo(self, ctx: commands.Context, role: discord.Role):
         try:
             embed = discord.Embed(
@@ -188,6 +189,7 @@ class ManageRoles(commands.Cog):
     @manage_roles.command(name="members", description="List members with a specific role.")
     @app_commands.describe(role="The role you want to list members for.")
     @commands.cooldown(1, 5, commands.BucketType.user)
+    @commands.has_permissions(manage_roles=True)
     async def rolemembers(self, ctx: commands.Context, role: discord.Role):
         class PaginatedRoles(discord.ui.View):
             def __init__(self, roles, **kwargs):
