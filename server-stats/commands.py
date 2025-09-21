@@ -53,7 +53,9 @@ class ServerStats(commands.Cog):
             count = len([t for t in guild.threads])
 
         display_name = self.get_counter_display_name(counter_type, custom_name)
-        await channel.edit(name=f"{display_name}: {count}", reason="Updating server stats counter")
+        try: await channel.edit(name=f"{display_name}: {count}", reason="Updating server stats counter")
+        except Exception as e:
+            print(f"Failed to update counter channel name: {e}")
 
     @tasks.loop(seconds=20)
     async def periodic_update(self):
@@ -262,10 +264,7 @@ class ServerStats(commands.Cog):
         counter["custom_name"] = new_name
         await server_stats_collection.update_one({"guild_id": guild_id}, {"$set": {"counters": counters}})
         await self.load_guild_config(guild_id)
-        
-        channel = ctx.guild.get_channel(counter['channel_id'])
-        if channel:
-            await channel.edit(name=f"{new_name}: {counter.get('count', 0)}")
+        await self.update_counter(ctx.guild, counter_type, counter['channel_id'], new_name)
             
         await ctx.send(embed=discord.Embed(description=f"<:Checkmark:1326642406086410317> Counter renamed to {new_name}."), ephemeral=True)
         self.bot.dispatch(
