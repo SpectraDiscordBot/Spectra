@@ -99,7 +99,6 @@ class Report_Commands(commands.Cog):
 		embed = discord.Embed(
 			title="New Report",
 			description=f"{ctx.author.mention} has reported {user.mention}",
-			color=discord.Colour.pink(),
 		)
 		embed.add_field(
 			name="User", value=f"{user.mention} `({user.name})`", inline=False
