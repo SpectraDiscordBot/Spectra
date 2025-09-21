@@ -40,6 +40,8 @@ class CommandPaginator(discord.ui.View):
 				continue
 			if command.name == "jishaku":
 				continue
+			if command.name == "restart":
+				continue
 
 			aliases = (
 				", ".join(command.aliases)
