@@ -65,7 +65,7 @@ class ServerStats(commands.Cog):
                 continue
             counters = config.get("counters", [])
             for counter in counters:
-                await asyncio.sleep(1)  # To avoid hitting rate limits because Discord likes being a lil bitch
+                await asyncio.sleep(1)
                 await self.update_counter(
                     guild, 
                     counter["type"], 
@@ -293,7 +293,10 @@ class ServerStats(commands.Cog):
 
 async def setup(bot):
     cog = ServerStats(bot)
-    for guild in bot.guilds:
-        await cog.load_guild_config(guild.id)
+
+    async for config in server_stats_collection.find():
+        guild_id = config["guild_id"]
+        cog.cache[guild_id] = config
+    
     cog.periodic_update.start()
     await bot.add_cog(cog)
