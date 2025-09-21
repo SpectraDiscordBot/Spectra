@@ -176,6 +176,7 @@ class AntiToxicity(commands.Cog):
     )
     @commands.has_permissions(manage_guild=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
+    @app_commands.describe(threshold="Toxicity threshold between 0 and 1")
     async def configure(self, ctx, threshold: float):
         if not 0 <= threshold <= 1:
             await ctx.reply(

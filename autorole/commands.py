@@ -77,6 +77,7 @@ class AutoRole_Commands(commands.Cog):
 	@autorole.command(name="remove", description="Remove an auto role.")
 	@commands.has_permissions(manage_roles=True)
 	@commands.cooldown(1, 5, commands.BucketType.user)
+	@app_commands.describe(auto_role="The role you want to remove from auto roles.")
 	async def autorole_remove(self, ctx, auto_role: discord.Role):
 		guild_id = str(ctx.guild.id)
 		autorole = await autorole_collection.find_one(

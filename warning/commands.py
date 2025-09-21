@@ -47,9 +47,9 @@ class Warning_Commands(commands.Cog):
 	@commands.cooldown(1, 5, type=commands.BucketType.user)
 	@commands.has_permissions(moderate_members=True)
 	@app_commands.describe(
-        user="The user to warn.",
-        reason="The reason for the warning."
-    )
+		user="The user to warn.",
+		reason="The reason for the warning."
+	)
 	async def issue_warning(
 		self, ctx, user: discord.User, *, reason: str = "No Reason Provided"
 	):
@@ -136,8 +136,8 @@ class Warning_Commands(commands.Cog):
 	@commands.cooldown(1, 5, type=commands.BucketType.user)
 	@commands.has_permissions(moderate_members=True)
 	@app_commands.describe(
-        case_number="The case number of the warning to revoke."
-    )
+		case_number="The case number of the warning to revoke."
+	)
 	async def revoke_warning(self, ctx, case_number: int):
 
 		data = await warning_collection.find_one({"guild_id": str(ctx.guild.id), "logs_channel": {"$exists": True}})
@@ -219,8 +219,8 @@ class Warning_Commands(commands.Cog):
 	@commands.cooldown(1, 5, type=commands.BucketType.user)
 	@commands.has_permissions(moderate_members=True)
 	@app_commands.describe(
-        user="The user to list warnings for. Defaults to yourself."
-    )
+		user="The user to list warnings for. Defaults to yourself."
+	)
 	async def list_warnings(self, ctx, user: discord.User = None):
 		if user is None:
 			user = ctx.author
@@ -261,8 +261,8 @@ class Warning_Commands(commands.Cog):
 	)
 	@commands.has_permissions(moderate_members=True)
 	@app_commands.describe(
-        user="The user to clear warnings for."
-    )
+		user="The user to clear warnings for."
+	)
 	async def clear(self, ctx, user: discord.User):
 		if user.id == ctx.author.id:
 			await ctx.send(embed=discord.Embed(description="You cannot clear your own warnings."), ephemeral=True)
@@ -318,8 +318,8 @@ class Warning_Commands(commands.Cog):
 	@warnings.command(name="setup", description="Setup warning system.")
 	@commands.has_permissions(manage_guild=True)
 	@app_commands.describe(
-        channel="The channel to send warning logs to."
-    )
+		channel="The channel to send warning logs to."
+	)
 	async def setup(self, ctx, channel: discord.TextChannel):
 		guild_id = str(ctx.guild.id)
 		data = await warning_collection.find_one({"guild_id": str(ctx.guild.id), "logs_channel": {"$exists": True}})

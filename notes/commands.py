@@ -1,11 +1,10 @@
 import datetime
 import discord
-import os
 import uuid
 from discord.ext import commands
+from discord import app_commands
 from dotenv import load_dotenv
 from discord.ui import View
-from motor.motor_asyncio import AsyncIOMotorClient
 from db import *
 
 load_dotenv()
@@ -26,6 +25,7 @@ class Notes(commands.Cog):
 		name="add", description="Leave a note for a user, e.g. known troll."
 	)
 	@commands.has_permissions(moderate_members=True)
+	@app_commands.describe(member="The member you want to leave a note for.", note="The note you want to leave.")
 	async def add_note(self, ctx: commands.Context, member: discord.Member, *, note: str):
 		try:
 			note_id = str(uuid.uuid4())
@@ -67,6 +67,7 @@ class Notes(commands.Cog):
 		name="remove", description="Remove a note from a user"
 	)
 	@commands.has_permissions(moderate_members=True)
+	@app_commands.describe(note_id="The ID of the note you want to remove.")
 	async def remove_note(self, ctx: commands.Context, note_id: str):
 		try:
 			result = await note_collection.delete_one(
@@ -103,7 +104,9 @@ class Notes(commands.Cog):
 		name="list",
 		description="List notes of a user, or of the whole server",
 	)
+	@commands.cooldown(1, 5, commands.BucketType.user)
 	@commands.has_permissions(moderate_members=True)
+	@app_commands.describe(member="The member you want to list notes for. Leave empty to list all notes in the server.")
 	async def list_notes(self, ctx: commands.Context, member: discord.Member = None):
 		class notePaginator(View):
 			def __init__(self, notes, per_page=1):
