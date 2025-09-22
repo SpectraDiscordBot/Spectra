@@ -136,6 +136,6 @@ class AutoRole_Commands(commands.Cog):
 
 async def setup(bot):
 	cog = AutoRole_Commands(bot)
-	for guild in bot.guilds:
-		await cog.load_guild_roles(guild.id)
+	async for config in autorole_collection.find():
+		await cog.load_guild_roles(int(config["guild_id"]))
 	await bot.add_cog(cog)

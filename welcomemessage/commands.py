@@ -373,6 +373,6 @@ class WelcomeMessage_Commands(commands.Cog):
 
 async def setup(bot):
 	cog = WelcomeMessage_Commands(bot)
-	for guild in bot.guilds:
-		await cog.load_guild_welcome(guild.id)
+	async for config in welcome_messages_collection.find():
+		await cog.load_guild_welcome(int(config["guild_id"]))
 	await bot.add_cog(cog)
