@@ -110,7 +110,9 @@ class AutoRole_Commands(commands.Cog):
 		if roles:
 			embed = discord.Embed(
 				title="Auto Roles",
-				description="\n".join([ctx.guild.get_role(r).mention for r in roles])
+				description="\n".join(
+					[ctx.guild.get_role(r["role_id"]).mention for r in roles if ctx.guild.get_role(r["role_id"])]
+				)
 			)
 			await ctx.send(embed=embed, ephemeral=True)
 		else:
@@ -119,11 +121,13 @@ class AutoRole_Commands(commands.Cog):
 	@commands.Cog.listener()
 	async def on_member_join(self, member):
 		roles_data = self.cache.get(str(member.guild.id), [])
-		roles_to_add = [
-			role for r in roles_data
-			if (not r.get("ignore_bots", False) or not member.bot)
-			if (role := member.guild.get_role(r["role_id"])) is not None
-		]
+		roles_to_add = []
+		for r in roles_data:
+			if r.get("ignore_bots", False) and member.bot:
+				continue
+			role = member.guild.get_role(r["role_id"])
+			if role:
+				roles_to_add.append(role)
 
 		if roles_to_add:
 			try:
