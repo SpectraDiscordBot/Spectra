@@ -1,17 +1,7 @@
-import asyncio
-import datetime
-from email import utils
 import discord
-import os
 from discord.ext import commands
-from discord import app_commands, utils
-from dotenv import load_dotenv
-from pymongo import MongoClient
-from humanfriendly import parse_timespan, InvalidTimespan
+from discord import app_commands
 from db import report_collection
-
-load_dotenv()
-
 
 class Report_Commands(commands.Cog):
 	def __init__(self, bot):
