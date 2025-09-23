@@ -1,4 +1,5 @@
 import discord
+import asyncio
 from discord.ext import commands
 from discord import app_commands
 from db import anti_ping_collection
@@ -213,6 +214,6 @@ class AntiPing(commands.Cog):
 
 async def setup(bot):
 	cog = AntiPing(bot)
-	for guild in bot.guilds:
-		await cog.load_guild_roles(guild.id)
+	configs = await anti_ping_collection.find().to_list(length=None)
+	await asyncio.gather(*[cog.load_guild_roles(int(c["guild_id"])) for c in configs])
 	await bot.add_cog(cog)

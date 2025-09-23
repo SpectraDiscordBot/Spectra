@@ -1,5 +1,5 @@
 import discord
-import os
+import asyncio
 from discord.ext import commands
 from discord import app_commands
 from discord.ui import Modal, TextInput
@@ -373,6 +373,6 @@ class WelcomeMessage_Commands(commands.Cog):
 
 async def setup(bot):
 	cog = WelcomeMessage_Commands(bot)
-	async for config in welcome_messages_collection.find():
-		await cog.load_guild_welcome(int(config["guild_id"]))
+	configs = await welcome_messages_collection.find().to_list(length=None)
+	await asyncio.gather(*[cog.load_guild_welcome(int(c["guild_id"])) for c in configs])
 	await bot.add_cog(cog)

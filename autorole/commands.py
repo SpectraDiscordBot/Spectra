@@ -1,10 +1,9 @@
 import discord
-import os
+import asyncio
 from discord.ext import commands
 from discord import app_commands
 from dotenv import load_dotenv
-from motor.motor_asyncio import AsyncIOMotorClient
-from db import *
+from db import autorole_collection
 
 load_dotenv()
 
@@ -119,20 +118,12 @@ class AutoRole_Commands(commands.Cog):
 
 	@commands.Cog.listener()
 	async def on_member_join(self, member):
-		if member.bot:
-			roles_data = self.cache.get(str(member.guild.id), [])
-			roles_to_add = [
-				member.guild.get_role(r["role_id"])
-				for r in roles_data
-				if not r["ignore_bots"] and member.guild.get_role(r["role_id"]) is not None
-			]
-		else:
-			roles_data = self.cache.get(str(member.guild.id), [])
-			roles_to_add = [
-				member.guild.get_role(r["role_id"])
-				for r in roles_data
-				if member.guild.get_role(r["role_id"]) is not None
-			]
+		roles_data = self.cache.get(str(member.guild.id), [])
+		roles_to_add = [
+			role for r in roles_data
+			if (not r.get("ignore_bots", False) or not member.bot)
+			if (role := member.guild.get_role(r["role_id"])) is not None
+		]
 
 		if roles_to_add:
 			try:
@@ -145,6 +136,6 @@ class AutoRole_Commands(commands.Cog):
 
 async def setup(bot):
 	cog = AutoRole_Commands(bot)
-	async for config in autorole_collection.find():
-		await cog.load_guild_roles(int(config["guild_id"]))
+	configs = await autorole_collection.find().to_list(length=None)
+	await asyncio.gather(*(cog.load_guild_roles(int(c["guild_id"])) for c in configs))
 	await bot.add_cog(cog)
