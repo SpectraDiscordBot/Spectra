@@ -48,7 +48,7 @@ class Moderation(commands.Cog):
 		if messages_to_delete and len(messages_to_delete) <= 100:
 			await ctx.channel.delete_messages(messages_to_delete, reason=f"Purged by {ctx.author} | Reason: {reason if reason else 'No reason provided'}")
 		elif len(messages_to_delete) > 100:
-			await ctx.channel.purge(limit=len(messages_to_delete), check=lambda m: m in messages_to_delete, reason=f"Purged by {ctx.author} | Reason: {reason if reason else 'No reason provided'}")
+			await ctx.channel.purge(limit=len(messages_to_delete), bulk=True, check=lambda m: m in messages_to_delete, reason=f"Purged by {ctx.author} | Reason: {reason if reason else 'No reason provided'}")
 		deleted_count = len(messages_to_delete)
 		embed = discord.Embed(
 			title="Purge Summary",
@@ -60,9 +60,10 @@ class Moderation(commands.Cog):
 		if skipped:
 			skipped_preview = "\n".join([f"**{msg.author}**: {discord.utils.escape_markdown((msg.content[:50] + "...") if len(msg.content) > 50 else msg.content)}" for msg in skipped[:5] if msg.content])
 			embed.add_field(name="Skipped Messages (Older than 14 days)", value=skipped_preview or "No skipped messages.", inline=False)
+		embed.set_footer(text="This message will auto-delete in 10 seconds.")
 		self.bot.dispatch("modlog", ctx.guild.id, ctx.author.id, "Purge", f"Purged {deleted_count} messages in {ctx.channel.mention}\nReason: {reason}")
 		try:
-			await ctx.send(embed=embed, ephemeral=True, delete_after=5)
+			await ctx.send(embed=embed, ephemeral=True, delete_after=10)
 		except discord.HTTPException:
 			pass
 
