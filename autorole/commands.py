@@ -11,11 +11,13 @@ load_dotenv()
 class AutoRole_Commands(commands.Cog):
 	def __init__(self, bot):
 		self.bot = bot
-		self.cache = {} # {guild_id: [role_ids...]}
+		self.cache = {}
 
 	async def load_guild_roles(self, guild_id):
 		data = await autorole_collection.find({"guild_id": str(guild_id)}).to_list(length=None)
-		self.cache[str(guild_id)] = [int(d["role"]) for d in data]
+		self.cache[str(guild_id)] = [
+			{"role_id": int(d["role"]), "ignore_bots": d.get("ignore_bots", False)} for d in data
+		]
 
 	@commands.Cog.listener()
 	async def on_guild_role_delete(self, role):
@@ -41,8 +43,8 @@ class AutoRole_Commands(commands.Cog):
 	@autorole.command(name="add", description="Add an auto role.")
 	@commands.has_permissions(manage_roles=True)
 	@commands.cooldown(1, 5, commands.BucketType.user)
-	@app_commands.describe(auto_role="The role you want to set as auto role.")
-	async def autorole_add(self, ctx, auto_role: discord.Role):
+	@app_commands.describe(auto_role="The role you want to set as auto role.", ignore_bots="Whether to ignore bots when assigning this role.")
+	async def autorole_add(self, ctx, auto_role: discord.Role, ignore_bots: bool = False):
 		role_id = str(auto_role.id)
 		guild_id = str(ctx.guild.id)
 		existing_autorole = await autorole_collection.find_one(
@@ -61,14 +63,14 @@ class AutoRole_Commands(commands.Cog):
 			await ctx.send("That AutoRole has already been set.", delete_after=10, ephemeral=True)
 			return
 		else:
-			await autorole_collection.insert_one({"guild_id": guild_id, "role": role_id})
+			await autorole_collection.insert_one({"guild_id": guild_id, "role": role_id, "ignore_bots": ignore_bots})
 			await self.load_guild_roles(ctx.guild.id)
 			self.bot.dispatch(
 				"modlog",
 				ctx.guild.id,
 				ctx.author.id,
 				"Added an Auto-Role",
-				f"Added {auto_role.mention} as an Auto-Role.",
+				f"Added {auto_role.mention} as an Auto-Role.\nIgnore Bots: {ignore_bots}",
 			)
 			await ctx.send(
 				f"<:Checkmark:1326642406086410317> **{auto_role.name}** has been successfully added.", ephemeral=True
@@ -117,22 +119,29 @@ class AutoRole_Commands(commands.Cog):
 
 	@commands.Cog.listener()
 	async def on_member_join(self, member):
-		roles = self.cache.get(str(member.guild.id), [])
+		if member.bot:
+			roles_data = self.cache.get(str(member.guild.id), [])
+			roles_to_add = [
+				member.guild.get_role(r["role_id"])
+				for r in roles_data
+				if not r["ignore_bots"] and member.guild.get_role(r["role_id"]) is not None
+			]
+		else:
+			roles_data = self.cache.get(str(member.guild.id), [])
+			roles_to_add = [
+				member.guild.get_role(r["role_id"])
+				for r in roles_data
+				if member.guild.get_role(r["role_id"]) is not None
+			]
 
-		if roles:
-			for r_id in roles:
-				role_obj = member.guild.get_role(r_id)
-				if not role_obj:
-					print(f"Role ID {r_id} not found in guild {member.guild.id}")
-			roles_to_add = [member.guild.get_role(r) for r in roles if member.guild.get_role(r)]
-			if roles_to_add:
-				try:
-					await member.add_roles(*roles_to_add, reason="Spectra AutoRole")
-				except discord.Forbidden:
-					pass
-				except Exception as e:
-					print(f"Failed to add auto roles: {e}")
-					await member.send("❌ An error occurred while assigning your auto roles. Please contact the server admin.")
+		if roles_to_add:
+			try:
+				await member.add_roles(*roles_to_add, reason="Spectra AutoRole")
+			except discord.Forbidden:
+				pass
+			except Exception as e:
+				print(f"Failed to add auto roles: {e}")
+				await member.send("❌ An error occurred while assigning your auto roles. Please contact the server admin.")
 
 async def setup(bot):
 	cog = AutoRole_Commands(bot)
