@@ -3,7 +3,7 @@ import emoji as Emoji
 from discord.ext import commands
 from discord import app_commands
 from dotenv import load_dotenv
-from db import *
+from db import reaction_roles_collection, button_roles_collection, button_settings_collection
 
 load_dotenv()
 

@@ -8,7 +8,7 @@ from discord import app_commands, utils
 from dotenv import load_dotenv
 from pymongo import MongoClient
 from humanfriendly import parse_timespan, InvalidTimespan
-from db import *
+from db import report_collection
 
 load_dotenv()
 

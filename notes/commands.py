@@ -5,7 +5,7 @@ from discord.ext import commands
 from discord import app_commands
 from dotenv import load_dotenv
 from discord.ui import View
-from db import *
+from db import note_collection
 
 load_dotenv()
 

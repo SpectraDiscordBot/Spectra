@@ -5,7 +5,7 @@ from discord.ext import commands
 from discord import app_commands
 from dotenv import load_dotenv
 from pymongo import MongoClient
-from db import *
+from db import modlog_collection
 
 load_dotenv()
 

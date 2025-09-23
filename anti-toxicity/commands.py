@@ -1,14 +1,12 @@
 import asyncio
-import datetime
 import discord
 import os
-import motor.motor_asyncio
 from discord.ext import commands
 from discord import app_commands
 from dotenv import load_dotenv
 from discord.ui import View
 from googleapiclient import discovery
-from db import *
+from db import toxicity_collection
 
 load_dotenv()
 
