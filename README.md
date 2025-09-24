@@ -7,7 +7,7 @@
 
 ---
 
-### Last Updated: ![Last Commit](https://img.shields.io/github/last-commit/SpectraDiscordBot/Spectra?label=Last%20Updated)
+### ![Last Commit](https://img.shields.io/github/last-commit/SpectraDiscordBot/Spectra?label=Last%20Updated)
 
 Support Spectra by [voting on TopGG](https://top.gg/bot/1279512390756470836) ⭐  
 Or help development directly through our [donation packages](https://discord.com/discovery/applications/1279512390756470836/store) on Discord or [subscribing on patreon](https://patreon.com/Discord_Spectra) 💖
