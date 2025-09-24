@@ -7,7 +7,7 @@
 
 ---
 
-### Last Updated: August 27, 2025
+### Last Updated: September 24th, 2025
 
 Support Spectra by [voting on TopGG](https://top.gg/bot/1279512390756470836) ⭐  
 Or help development directly through our [donation packages](https://discord.com/discovery/applications/1279512390756470836/store) on Discord or [subscribing on patreon](https://patreon.com/Discord_Spectra) 💖
