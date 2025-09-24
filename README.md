@@ -2,7 +2,7 @@
 [![Python](https://img.shields.io/badge/Python-3.13+-blue?logo=python)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?logo=opensourceinitiative)](https://opensource.org/licenses/MIT)
 [![GitHub Stars](https://img.shields.io/github/stars/SpectraDiscordBot/Spectra?style=social)](https://github.com/SpectraDiscordBot/Spectra/stargazers)
-<img src="https://raw.githubusercontent.com/SpectraDiscordBot/Spectra/main/spectra.gif" width="100" align="right">
+<img src="https://raw.githubusercontent.com/SpectraDiscordBot/Spectra/main/spectra.gif" width="300" align="right">
 
 ---
 
