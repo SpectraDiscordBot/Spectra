@@ -1,5 +1,3 @@
-# ![Spectra](https://raw.githubusercontent.com/SpectraDiscordBot/Spectra/main/spectra.gif)
-
 
 
 [![TopGG](https://img.shields.io/badge/TopGG-Vote-brightgreen?logo=top.gg&logoColor=white)](https://top.gg/bot/1279512390756470836)
