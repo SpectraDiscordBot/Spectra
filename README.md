@@ -15,11 +15,6 @@
 ---
 
 
-
-
-### Last Updated: September 24th, 2025
-
-
 ### ![Last Commit](https://img.shields.io/github/last-commit/SpectraDiscordBot/Spectra?label=Last%20Updated)
 
 
