@@ -4,15 +4,10 @@ import asyncio
 import discord
 import datetime
 import os
-import topgg
 import itertools
 from discord.ext import commands
-from discord import Button, app_commands
-from discord.ui import View
-from datetime import time
+from discord import app_commands
 from dotenv import load_dotenv
-from googleapiclient import discovery
-from humanfriendly import parse_timespan
 from discord.ext import tasks
 from db import db, custom_prefix_collection
 
