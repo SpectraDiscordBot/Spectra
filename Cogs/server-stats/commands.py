@@ -57,7 +57,7 @@ class ServerStats(commands.Cog):
         except Exception as e:
             print(f"Failed to update counter channel name: {e}")
 
-    @tasks.loop(seconds=20)
+    @tasks.loop(seconds=60)
     async def periodic_update(self):
         for guild_id, config in self.cache.items():
             guild = self.bot.get_guild(int(guild_id))
