@@ -124,7 +124,7 @@ class Notes(commands.Cog):
 					title="List of Notes", description="", color=discord.Color.pink()
 				)
 				embed.set_footer(
-					text="Spectra", icon_url="https://i.ibb.co/cKqBfp1/spectra.gif"
+					text="Spectra", icon_url=self.bot.user.display_avatar.url
 				)
 				start = self.current_page * self.per_page
 				end = start + self.per_page

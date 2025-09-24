@@ -48,7 +48,7 @@ class ManageRoles(commands.Cog):
                 description=f"```{e}```\n\n[Get Support](https://discord.gg/fcPF66DubA)",
                 color=discord.Color.red()
             )
-            embed.set_footer(text="Spectra", icon_url="https://i.ibb.co/cKqBfp1/spectra.gif")
+            embed.set_footer(text="Spectra", icon_url=self.bot.user.display_avatar.url)
             embed.set_thumbnail(
                 url="https://media.discordapp.net/attachments/914579638792114190/1280203446825517239/error-icon-25239.png"
             )
@@ -76,7 +76,7 @@ class ManageRoles(commands.Cog):
                 description=f"```{e}```\n\n[Get Support](https://discord.gg/fcPF66DubA)",
                 color=discord.Color.red()
             )
-            embed.set_footer(text="Spectra", icon_url="https://i.ibb.co/cKqBfp1/spectra.gif")
+            embed.set_footer(text="Spectra", icon_url=self.bot.user.display_avatar.url)
             embed.set_thumbnail(
                 url="https://media.discordapp.net/attachments/914579638792114190/1280203446825517239/error-icon-25239.png"
             )
@@ -93,7 +93,7 @@ class ManageRoles(commands.Cog):
                 color=discord.Color.blue(),
             )
             embed.set_footer(
-                text="Spectra", icon_url="https://i.ibb.co/cKqBfp1/spectra.gif"
+                text="Spectra", icon_url=self.bot.user.display_avatar.url
             )
             embed.set_thumbnail(url=ctx.guild.icon.url)
             await ctx.send(embed=embed, ephemeral=True)
@@ -104,7 +104,7 @@ class ManageRoles(commands.Cog):
                 color=discord.Color.red(),
             )
             embed.set_footer(
-                text="Spectra", icon_url="https://i.ibb.co/cKqBfp1/spectra.gif"
+                text="Spectra", icon_url=self.bot.user.display_avatar.url
             )
             embed.set_thumbnail(
                 url="https://media.discordapp.net/attachments/914579638792114190/1280203446825517239/error-icon-25239.png?ex=66d739de&is=66d5e85e&hm=83a98b27d14a3a19f4795d3fec58d1cd7306f6a940c45e49cd2dfef6edcdc96e&=&format=webp&quality=lossless&width=640&height=640SS"
@@ -147,7 +147,7 @@ class ManageRoles(commands.Cog):
                 description=f"```{e}```\n\n[Get Support](https://discord.gg/fcPF66DubA)",
                 color=discord.Color.red()
             )
-            embed.set_footer(text="Spectra", icon_url="https://i.ibb.co/cKqBfp1/spectra.gif")
+            embed.set_footer(text="Spectra", icon_url=self.bot.user.display_avatar.url)
             embed.set_thumbnail(
                 url="https://media.discordapp.net/attachments/914579638792114190/1280203446825517239/error-icon-25239.png"
             )
@@ -171,7 +171,7 @@ class ManageRoles(commands.Cog):
             embed.add_field(name="Position", value=role.position, inline=True)
             embed.add_field(name="Members", value=len(role.members), inline=True)
             embed.add_field(name="Created At", value=discord.utils.format_dt(role.created_at, "F"), inline=True)
-            embed.set_footer(text="Spectra", icon_url="https://i.ibb.co/cKqBfp1/spectra.gif")
+            embed.set_footer(text="Spectra", icon_url=self.bot.user.display_avatar.url)
             embed.set_thumbnail(url=ctx.guild.icon.url)
             await ctx.send(embed=embed, ephemeral=True)
         except Exception as e:
@@ -180,7 +180,7 @@ class ManageRoles(commands.Cog):
                 description=f"```{e}```\n\n[Get Support](https://discord.gg/fcPF66DubA)",
                 color=discord.Color.red()
             )
-            embed.set_footer(text="Spectra", icon_url="https://i.ibb.co/cKqBfp1/spectra.gif")
+            embed.set_footer(text="Spectra", icon_url=self.bot.user.display_avatar.url)
             embed.set_thumbnail(
                 url="https://media.discordapp.net/attachments/914579638792114190/1280203446825517239/error-icon-25239.png"
             )
@@ -239,7 +239,7 @@ class ManageRoles(commands.Cog):
                 description=f"```{e}```\n\n[Get Support](https://discord.gg/fcPF66DubA)",
                 color=discord.Color.red()
             )
-            embed.set_footer(text="Spectra", icon_url="https://i.ibb.co/cKqBfp1/spectra.gif")
+            embed.set_footer(text="Spectra", icon_url=self.bot.user.display_avatar.url)
             embed.set_thumbnail(
                 url="https://media.discordapp.net/attachments/914579638792114190/1280203446825517239/error-icon-25239.png"
             )

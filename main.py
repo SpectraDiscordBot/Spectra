@@ -3,7 +3,6 @@
 import asyncio
 import discord
 import datetime
-import aiohttp
 import os
 import topgg
 import itertools
@@ -15,12 +14,7 @@ from dotenv import load_dotenv
 from googleapiclient import discovery
 from humanfriendly import parse_timespan
 from discord.ext import tasks
-from db import *
-
-import json
-import inspect
-import typing
-import enum
+from db import db, custom_prefix_collection
 
 # Load Dotenv
 
@@ -33,22 +27,7 @@ intents.guilds = True
 intents.message_content = True
 intents.members = True
 intents.reactions = True
-
-# Blacklists were removed
-"""
-async def blacklist_check(ctx):
-	user_blacklisted = await blacklist_collection.find_one({"_id": ctx.author.id})
-	server_blacklisted = await blacklist_collection.find_one(
-		{"_id": ctx.guild.id if ctx.guild else None}
-	)
-
-	if user_blacklisted:
-		return False
-	if server_blacklisted:
-		await ctx.send("This server is blacklisted from using this bot.")
-		return False
-	return True
-"""
+intents.presences = True
 
 
 async def get_prefix(client, message):
@@ -93,23 +72,23 @@ class Bot(commands.AutoShardedBot):
 			async for doc in custom_prefix_collection.find({}, {"guild_id": 1, "prefix": 1}):
 				self.prefix_cache[doc["guild_id"]] = doc["prefix"]
 			await self.load_extension("jishaku"); print("✅ | Loaded Jishaku")
-			await self.load_extension("core.commands"); print("✅ | Loaded Core Commands")
-			await self.load_extension("autorole.commands"); print("✅ | Loaded AutoRole Commands")
-			await self.load_extension("reaction-roles.commands"); print("✅ | Loaded Reaction Role Commands")
-			await self.load_extension("welcomemessage.commands"); print("✅ | Loaded Welcome Message Commands")
-			# await self.load_extension("ban-appeals.commands"); print("✅ | Loaded Ban Appeals Commands") | Later :)
-			await self.load_extension("manageroles.commands"); print("✅ | Loaded Manage Roles Commands")
-			await self.load_extension("moderation.commands"); print("✅ | Loaded Moderation Commands")
-			await self.load_extension("antispam.commands"); print("✅ | Loaded Anti-Spam Commands")
-			await self.load_extension("warning.commands"); print("✅ | Loaded Warning Commands")
-			await self.load_extension("notes.commands"); print("✅ | Loaded Notes Commands")
-			await self.load_extension("moderation-logs.commands"); print("✅ | Loaded Moderation Logs Commands")
-			await self.load_extension("anti-toxicity.commands"); print("✅ | Loaded Anti-Toxicity Commands")
-			await self.load_extension("reports.commands"); print("✅ | Loaded Reports Commands")
-			await self.load_extension("anti-ping.commands"); print("✅ | Loaded Anti-Ping Commands")
-			await self.load_extension("owner-stuff.commands"); print("✅ | Loaded Owner Commands")
-			await self.load_extension("TopGG.topgg"); print("✅ | Loaded TopGG Commands")
-			await self.load_extension("verification.commands"); print("✅ | Loaded Verification Commands")
+			await self.load_extension("Cogs.core.commands"); print("✅ | Loaded Core Commands")
+			await self.load_extension("Cogs.autorole.commands"); print("✅ | Loaded AutoRole Commands")
+			await self.load_extension("Cogs.reaction-roles.commands"); print("✅ | Loaded Reaction Role Commands")
+			await self.load_extension("Cogs.welcomemessage.commands"); print("✅ | Loaded Welcome Message Commands")
+			await self.load_extension("Cogs.server-stats.commands"); print("✅ | Loaded Server Stats Commands")
+			await self.load_extension("Cogs.manageroles.commands"); print("✅ | Loaded Manage Roles Commands")
+			await self.load_extension("Cogs.moderation.commands"); print("✅ | Loaded Moderation Commands")
+			await self.load_extension("Cogs.antispam.commands"); print("✅ | Loaded Anti-Spam Commands")
+			await self.load_extension("Cogs.warning.commands"); print("✅ | Loaded Warning Commands")
+			await self.load_extension("Cogs.notes.commands"); print("✅ | Loaded Notes Commands")
+			await self.load_extension("Cogs.moderation-logs.commands"); print("✅ | Loaded Moderation Logs Commands")
+			await self.load_extension("Cogs.anti-toxicity.commands"); print("✅ | Loaded Anti-Toxicity Commands")
+			await self.load_extension("Cogs.reports.commands"); print("✅ | Loaded Reports Commands")
+			await self.load_extension("Cogs.anti-ping.commands"); print("✅ | Loaded Anti-Ping Commands")
+			await self.load_extension("Cogs.owner-stuff.commands"); print("✅ | Loaded Owner Commands")
+			await self.load_extension("Cogs.TopGG.topgg"); print("✅ | Loaded TopGG Commands")
+			await self.load_extension("Cogs.verification.commands"); print("✅ | Loaded Verification Commands")
 			cycle_status.start(); print("✅ | Started Cycling Status")
 		except Exception as e:
 			print(e)
@@ -154,7 +133,7 @@ class Bot(commands.AutoShardedBot):
 				title="Error!", description="{}".format(error), color=0x2f3136
 			)
 			embed.set_footer(
-				text="Spectra", icon_url="https://i.ibb.co/cKqBfp1/spectra.gif"
+				text="Spectra", icon_url=self.user.display_avatar.url
 			)
 			embed.set_thumbnail(
 				url="https://media.discordapp.net/attachments/914579638792114190/1280203446825517239/error-icon-25239.png?ex=66d739de&is=66d5e85e&hm=83a98b27d14a3a19f4795d3fec58d1cd7306f6a940c45e49cd2dfef6edcdc96e&=&format=webp&quality=lossless&width=640&height=640SS"
