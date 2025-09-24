@@ -27,8 +27,6 @@ class TopGG(commands.Cog):
 
 	def cog_unload(self):
 		self.topggpy.stop_autoposter()
-		if self.topggpy.http_session:
-			self.bot.loop.create_task(self.topggpy.http_session.close())
 		self.webhooks.stop()
 
 	async def voted(self, vote: topgg.Vote):
