@@ -5,8 +5,8 @@
 
 ---
 
-| ![Last Commit](https://img.shields.io/github/last-commit/SpectraDiscordBot/Spectra?label=Last%20Updated) | ![Spectra](https://raw.githubusercontent.com/SpectraDiscordBot/Spectra/main/spectra.gif) |
-| -------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+![Last Commit](https://img.shields.io/github/last-commit/SpectraDiscordBot/Spectra?label=Last%20Updated) 
+
 
 
 Support Spectra by [voting on TopGG](https://top.gg/bot/1279512390756470836) ⭐  
