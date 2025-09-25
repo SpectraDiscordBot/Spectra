@@ -1,6 +1,7 @@
 import datetime
 import discord
 import time
+import psutil
 from discord.ext import commands
 from db import custom_prefix_collection, db
 
@@ -226,7 +227,7 @@ class Core(commands.Cog):
 
 
 	@commands.hybrid_command(name="ping", description="Check if the bot is online.")
-	@commands.cooldown(1, 5, commands.BucketType.user)
+	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def ping(self, ctx: commands.Context):
 		then = ctx.message.created_at
 		start = time.perf_counter()
@@ -241,10 +242,27 @@ class Core(commands.Cog):
 			db_latency = "Not operational"
 
 		bot_latency = round((time.perf_counter() - start) * 1000)
-
-		await ctx.send(
-			f"Pong! 🏓 \nDiscord: `{discord_latency}ms`\nBot latency: `{bot_latency}ms`\nDatabase: `{db_latency}ms`"
+		
+		embed = discord.Embed(
+			title="Pong! 🏓",
 		)
+		embed.add_field(name="Discord API Latency", value=f"{discord_latency}ms")
+		embed.add_field(name="Database Latency", value=f"{db_latency}ms")
+		embed.add_field(name="Bot Latency", value=f"{bot_latency}ms")
+		process = psutil.Process()
+		memory_info = process.memory_info()
+		memory_usage_mb = memory_info.rss / (1024 * 1024)
+		embed.add_field(name="Memory Usage", value=f"{memory_usage_mb:.2f} MB")
+		cpu_usage = psutil.cpu_percent(interval=1)
+		embed.add_field(name="CPU Usage", value=f"{cpu_usage}%")
+		embed.set_footer(
+			text=f"Developed by Brutiv", icon_url=self.bot.user.display_avatar.url
+		)
+		embed.set_author(
+			name=f"Requested by {ctx.author}", icon_url=ctx.author.display_avatar.url
+		)
+		embed.set_thumbnail(url=self.bot.user.display_avatar.url)
+		await ctx.send(embed=embed)
 
 
 	@commands.hybrid_command(name="invite", description="Invite Spectra to your server!")
