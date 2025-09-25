@@ -59,7 +59,7 @@ class ServerStats(commands.Cog):
 
     @tasks.loop(seconds=60)
     async def periodic_update(self):
-        if not self.ready:
+        if not self.bot.ready:
             return
         for guild_id, config in self.cache.items():
             guild = self.bot.get_guild(int(guild_id))
