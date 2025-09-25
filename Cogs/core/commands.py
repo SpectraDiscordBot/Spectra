@@ -228,32 +228,23 @@ class Core(commands.Cog):
 	@commands.hybrid_command(name="ping", description="Check if the bot is online.")
 	@commands.cooldown(1, 5, commands.BucketType.user)
 	async def ping(self, ctx: commands.Context):
-		then = ctx.message.created_at.utcnow()
-		msg = await ctx.send("Pinging...")
+		then = ctx.message.created_at
+		start = time.perf_counter()
 
-		await msg.edit(
-			content=f"Pong! 🏓 \nDiscord: `{round(ctx.bot.latency * 1000)}ms`"
-		)
-		
-		now = datetime.datetime.utcnow()
-		time_diff = (now - then).total_seconds() * 1000
+		discord_latency = round(ctx.bot.latency * 1000)
 
-		await msg.edit(
-			content=f"Pong! 🏓 \nDiscord: `{round(ctx.bot.latency * 1000)}ms`\nBot Latency: `{round(time_diff)}ms`"
-		)
-		
-		second_now = time.perf_counter()
 		try:
+			db_start = time.perf_counter()
 			await db.command("ping")
-			end = time.perf_counter()
-			db_latency_ms = (end - second_now) * 1000
-			await msg.edit(
-				content=f"Pong! 🏓 \nDiscord: `{round(ctx.bot.latency * 1000)}ms`\nBot latency: `{round(time_diff)}ms`\nDatabase: `{round(db_latency_ms)}ms`"
-			)
+			db_latency = round((time.perf_counter() - db_start) * 1000)
 		except Exception:
-			await msg.edit(
-				content=f"Pong! 🏓 \nDiscord: `{round(ctx.bot.latency * 1000)}ms`\nBot latency: `{round(time_diff)}ms`\nDatabase: `Not operational`"
-			)
+			db_latency = "Not operational"
+
+		bot_latency = round((time.perf_counter() - start) * 1000)
+
+		await ctx.send(
+			f"Pong! 🏓 \nDiscord: `{discord_latency}ms`\nBot latency: `{bot_latency}ms`\nDatabase: `{db_latency}ms`"
+		)
 
 
 	@commands.hybrid_command(name="invite", description="Invite Spectra to your server!")
