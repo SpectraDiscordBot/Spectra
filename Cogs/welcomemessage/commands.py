@@ -15,6 +15,11 @@ class WelcomeEmbedSetupModal(Modal, title="Setup Welcome Embed"):
 	color_input = TextInput(label="Color (hex, e.g. #2F3136)", max_length=7, required=False, placeholder="#2F3136")
 	image_url_input = TextInput(label="Image URL", max_length=2000, required=False)
 	thumbnail_url_input = TextInput(label="Thumbnail URL", max_length=2000, required=False)
+	footer_text_input = TextInput(label="Footer Text", max_length=2048, required=False)
+	footer_icon_url_input = TextInput(label="Footer Icon URL", max_length=2000, required=False)
+	author_name_input = TextInput(label="Author Name", max_length=256, required=False)
+	author_icon_url_input = TextInput(label="Author Icon URL", max_length=2000, required=False)
+	author_url_input = TextInput(label="Author URL", max_length=2000, required=False)
 
 	def __init__(self, bot, ctx):
 		super().__init__()
@@ -40,12 +45,17 @@ class WelcomeEmbedSetupModal(Modal, title="Setup Welcome Embed"):
 			"image": self.image_url_input.value.strip(),
 			"thumbnail": self.thumbnail_url_input.value.strip(),
 			"fields": [],
-			"footer": {},
-			"author": {"name": "", "icon_url": "", "url": ""}
+			"footer": {"text": self.footer_text_input.value.strip(), "icon_url": self.footer_icon_url_input.value.strip()},
+			"author": {"name": self.author_name_input.value.strip(), "icon_url": self.author_icon_url_input.value.strip(), "url": self.author_url_input.value.strip()},
 		}
 
 		guild_id = str(self.ctx.guild.id)
-		channel_id = str(self.ctx.channel.id)
+		existing = await welcome_messages_collection.find_one({"guild_id": guild_id})
+		channel_id = None
+		if existing:
+			channel_id = existing.get("channel")
+		else:
+			channel_id = str(self.ctx.channel.id)
 
 		await welcome_messages_collection.update_one(
 			{"guild_id": guild_id},
@@ -73,7 +83,7 @@ class WelcomeEmbedSetupButtonView(discord.ui.View):
 		self.bot = bot
 		self.ctx = ctx
 
-	@discord.ui.button(label="Setup Welcome Embed", style=discord.ButtonStyle.green)
+	@discord.ui.button(label="Setup Welcome Embed", style=discord.ButtonStyle.secondary)
 	async def setup_embed_button(self, interaction: discord.Interaction, button: discord.ui.Button):
 		modal = WelcomeEmbedSetupModal(self.bot, self.ctx)
 		await interaction.response.send_modal(modal)
@@ -115,7 +125,7 @@ class WelcomeMessage_Commands(commands.Cog):
 			)
 		footer = data.get("footer")
 		if footer and footer.get("text"):
-			embed.set_footer(text=replace_vars(footer["text"]))
+			embed.set_footer(text=replace_vars(footer["text"]), icon_url=footer.get("icon_url"))
 		thumbnail = data.get("thumbnail")
 		if thumbnail:
 			embed.set_thumbnail(url=thumbnail)
@@ -215,7 +225,6 @@ class WelcomeMessage_Commands(commands.Cog):
 				"**Example embed:**\n"
 				"Title: Welcome {username}!\n"
 				"Description: Glad to have you at {guild}.\n"
-				"Fields: Name: Member Count, Value: {membercount}\n"
 				"Footer: Enjoy your stay!"
 			),
 		)
@@ -269,7 +278,31 @@ class WelcomeMessage_Commands(commands.Cog):
 	@commands.cooldown(1, 30, commands.BucketType.user)
 	async def welcome_embed_setup(self, ctx: commands.Context):
 		view = WelcomeEmbedSetupButtonView(self.bot, ctx)
-		await ctx.send("Click the button below to setup the welcome embed message.", view=view, ephemeral=True)
+		embed = discord.Embed(
+			title="Welcome Embed Setup",
+			description="Click the button below to setup your welcome embed.",
+		)
+		embed.add_field(
+			name="Quick Help",
+			value=(
+				"Use the following variables in your welcome messages to personalize them:\n\n"
+				"`{user}` - Mentions the user\n"
+				"`{username}` - User's name\n"
+				"`{guild}` - Server name\n"
+				"`{membercount}` - Server member count\n"
+				"`{mention}` - Mentions the user\n"
+				"`{discriminator}` - User's discriminator (the 4-digit tag)\n\n"
+				"**Example embed:**\n"
+				"Title: Welcome {username}!\n"
+				"Description: Glad to have you at {guild}.\n"
+				"Footer: Enjoy your stay!"
+			),
+			inline=False,
+		)
+		embed.set_footer(
+			text="You have 3 minutes to click the button below to start setup."
+		)
+		await ctx.send(embed=embed, view=view, ephemeral=True)
 
 	@welcome.command(
 		name="dm-setup",
