@@ -15,11 +15,6 @@ class WelcomeEmbedSetupModal(Modal, title="Setup Welcome Embed"):
 	color_input = TextInput(label="Color (hex, e.g. #2F3136)", max_length=7, required=False, placeholder="#2F3136")
 	image_url_input = TextInput(label="Image URL", max_length=2000, required=False)
 	thumbnail_url_input = TextInput(label="Thumbnail URL", max_length=2000, required=False)
-	footer_text_input = TextInput(label="Footer Text", max_length=2048, required=False)
-	footer_icon_url_input = TextInput(label="Footer Icon URL", max_length=2000, required=False)
-	author_name_input = TextInput(label="Author Name", max_length=256, required=False)
-	author_icon_url_input = TextInput(label="Author Icon URL", max_length=2000, required=False)
-	author_url_input = TextInput(label="Author URL", max_length=2000, required=False)
 
 	def __init__(self, bot, ctx):
 		super().__init__()
@@ -45,8 +40,8 @@ class WelcomeEmbedSetupModal(Modal, title="Setup Welcome Embed"):
 			"image": self.image_url_input.value.strip(),
 			"thumbnail": self.thumbnail_url_input.value.strip(),
 			"fields": [],
-			"footer": {"text": self.footer_text_input.value.strip(), "icon_url": self.footer_icon_url_input.value.strip()},
-			"author": {"name": self.author_name_input.value.strip(), "icon_url": self.author_icon_url_input.value.strip(), "url": self.author_url_input.value.strip()},
+			"footer": {},
+			"author": {"name": "", "icon_url": "self.author_icon_url_input.value.strip(", "url": ""},
 		}
 
 		guild_id = str(self.ctx.guild.id)
@@ -76,7 +71,6 @@ class WelcomeEmbedSetupModal(Modal, title="Setup Welcome Embed"):
 		await interaction.response.send_message(
 			"<:switch_on:1326648555414224977> Welcome embed has been set successfully.", ephemeral=True
 		)
-
 class WelcomeEmbedSetupButtonView(discord.ui.View):
 	def __init__(self, bot, ctx):
 		super().__init__(timeout=180)
