@@ -1,7 +1,8 @@
 import datetime
 import discord
+import time
 from discord.ext import commands
-from db import custom_prefix_collection
+from db import custom_prefix_collection, db
 
 class CommandPaginator(discord.ui.View):
 	def __init__(self, bot, commands, per_page=10):
@@ -236,6 +237,19 @@ class Core(commands.Cog):
 		await msg.edit(
 			content=f"Pong! 🏓 \nDiscord: `{round(ctx.bot.latency * 1000)}ms`\nBot Latency: `{round(time_diff)}ms`"
 		)
+		
+		second_now = time.perf_counter()
+		try:
+			await db.command("ping")
+			end = time.perf_counter()
+			db_latency_ms = (end - second_now) * 1000
+			await msg.edit(
+				content=f"Pong! 🏓 \nDiscord: `{round(ctx.bot.latency * 1000)}ms`\nBot latency: `{round(time_diff)}ms`\nDatabase: `{round(db_latency_ms)}ms`"
+			)
+		except Exception:
+			await msg.edit(
+				content=f"Pong! 🏓 \nDiscord: `{round(ctx.bot.latency * 1000)}ms`\nBot latency: `{round(time_diff)}ms`\nDatabase: `Not operational`"
+			)
 
 
 	@commands.hybrid_command(name="invite", description="Invite Spectra to your server!")
