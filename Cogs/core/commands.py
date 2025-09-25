@@ -229,6 +229,7 @@ class Core(commands.Cog):
 	@commands.hybrid_command(name="ping", description="Check if the bot is online.")
 	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def ping(self, ctx: commands.Context):
+		msg = await ctx.send("Pinging...", ephemeral=True)
 		then = ctx.message.created_at
 		start = time.perf_counter()
 
@@ -255,14 +256,12 @@ class Core(commands.Cog):
 		embed.add_field(name="Memory Usage", value=f"{memory_usage_mb:.2f} MB")
 		cpu_usage = psutil.cpu_percent(interval=1)
 		embed.add_field(name="CPU Usage", value=f"{cpu_usage}%")
-		embed.set_footer(
-			text=f"Developed by Brutiv", icon_url=self.bot.user.display_avatar.url
-		)
+		embed.set_footer(text=f"Developed by Brutiv")
 		embed.set_author(
 			name=f"Requested by {ctx.author}", icon_url=ctx.author.display_avatar.url
 		)
 		embed.set_thumbnail(url=self.bot.user.display_avatar.url)
-		await ctx.send(embed=embed)
+		await msg.edit(content="", embed=embed)
 
 
 	@commands.hybrid_command(name="invite", description="Invite Spectra to your server!")
