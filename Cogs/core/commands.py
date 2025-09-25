@@ -230,6 +230,10 @@ class Core(commands.Cog):
 	async def ping(self, ctx: commands.Context):
 		then = ctx.message.created_at.utcnow()
 		msg = await ctx.send("Pinging...")
+
+		await msg.edit(
+			content=f"Pong! 🏓 \nDiscord: `{round(ctx.bot.latency * 1000)}ms`"
+		)
 		
 		now = datetime.datetime.utcnow()
 		time_diff = (now - then).total_seconds() * 1000
