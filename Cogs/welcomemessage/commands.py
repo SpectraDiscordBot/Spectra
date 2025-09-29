@@ -161,10 +161,14 @@ class WelcomeMessage_Commands(commands.Cog):
 						await channel.send(
 							content=msg_content, embeds=embeds
 						)
+						await asyncio.sleep(0.5)
 					else:
 						await channel.send(content=msg_content)
-				except:
+						await asyncio.sleep(0.5)
+				except discord.Forbidden:
 					pass
+				except discord.HTTPException:
+					await asyncio.sleep(1)
 		if data.get("dm_enabled", False):
 			dm_msg = data.get("dm_message") or ""
 			dm_msg = (
@@ -184,10 +188,14 @@ class WelcomeMessage_Commands(commands.Cog):
 					await member.send(
 						content=member.mention + " " + dm_msg, embeds=embeds
 					)
+					await asyncio.sleep(0.5)
 				else:
 					await member.send(content=dm_msg)
-			except:
+					await asyncio.sleep(0.5)
+			except discord.Forbidden:
 				pass
+			except discord.HTTPException:
+				await asyncio.sleep(1)
 
 	@commands.Cog.listener()
 	async def on_member_join(self, member):
