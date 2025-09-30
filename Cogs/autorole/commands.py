@@ -19,7 +19,6 @@ class AutoRole_Commands(commands.Cog):
 		if guild_id not in self._join_queues:
 			q = asyncio.Queue()
 			self._join_queues[guild_id] = q
-			# spawn worker task
 			self._join_workers[guild_id] = asyncio.create_task(self._join_worker(guild_id, q))
 
 	async def _join_worker(self, guild_id: str, queue: asyncio.Queue):
@@ -126,6 +125,9 @@ class AutoRole_Commands(commands.Cog):
 				delete_after=10,
 				ephemeral=True
 			)
+			return
+		if auto_role.managed:
+			await ctx.send("You cannot set a managed role as an auto role.", delete_after=10, ephemeral=True)
 			return
 		if existing_autorole:
 			await ctx.send("That AutoRole has already been set.", delete_after=10, ephemeral=True)
