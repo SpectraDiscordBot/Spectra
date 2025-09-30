@@ -45,7 +45,9 @@ class ModLog(commands.Cog):
 			embed.set_footer(text="Moderation Log")
 			webhook = self.webhook_cache.get(log_channel.id)
 			if webhook is None:
-				webhooks = await log_channel.webhooks()
+				try: webhooks = await log_channel.webhooks()
+				except discord.Forbidden:
+					webhooks = []
 				webhook = discord.utils.get(
 					[wh for wh in webhooks if wh.user.id == self.bot.user.id],
 					name="Spectra Moderation Logs"
@@ -63,7 +65,10 @@ class ModLog(commands.Cog):
 				if perms.manage_webhooks:
 					webhook = await log_channel.create_webhook(name="Spectra Moderation Logs")
 			try:
-				await webhook.send(embed=embed, username="Spectra", avatar_url=self.bot.user.display_avatar.url)
+				if webhook: await webhook.send(embed=embed, username="Spectra", avatar_url=self.bot.user.display_avatar.url)
+				else:
+					embed.add_field(name="Notice", value="Please give me `Manage Webhooks` permissions for modlogs.", inline=False)
+					await log_channel.send(embed=embed)
 			except discord.Forbidden:
 				embed.add_field(name="Notice", value="Please give me `Manage Webhooks` permissions for modlogs.", inline=False)
 				await log_channel.send(embed=embed)
