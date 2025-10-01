@@ -267,13 +267,25 @@ class Core(commands.Cog):
 	@commands.hybrid_command(name="invite", description="Invite Spectra to your server!")
 	@commands.cooldown(1, 5, commands.BucketType.user)
 	async def invite(self, ctx: commands.Context):
+		class InviteView(discord.ui.View):
+			def __init__(self):
+				super().__init__(timeout=None)
+				self.add_item(discord.ui.Button(label="Invite", url="https://discord.com/oauth2/authorize?client_id=1279512390756470836&permissions=939912256&integration_type=0&scope=bot+applications.commands"))
+				self.add_item(discord.ui.Button(label="Website", url="https://spectrabot.pages.dev"))
+				self.add_item(discord.ui.Button(label="Support Server", url="https://discord.gg/fcPF66DubA"))
+
 		embed = discord.Embed(
-			title="Invite Spectra to your server!",
-			description="[Click Me To Invite!](https://discord.com/oauth2/authorize?client_id=1279512390756470836&permissions=939912256&integration_type=0&scope=bot+applications.commands)",
-			color=discord.Colour.blue(),
+			title="Invite Spectra",
+			description="Powerful moderation, role management, and server stats all in one place. 100% free and open source."
 		)
-		embed.set_footer(text="Invite Spectra For Free!")
-		await ctx.send(embed=embed)
+		embed.add_field(
+			name="Why should I invite Spectra?",
+			value="• All-in-one server management: Powerful moderation, role management, and server stats in one place.\n\n• Complete moderation suite: warnings, bans, anti-spam, anti-toxicity, and anti-ping protection with moderation logs.\n\n• Advanced role management: auto-roles, reaction roles, and customizable role attributes.\n\n• Server stats: dynamic counters for members, bots, boosts, channels, roles, emojis, stickers, and threads.\n\n• Easy & flexible: designed to be simple to use even for large servers.\n\n• Free & open source - add to Discord or learn more by clicking below or [visiting our website](https://spectrabot.pages.dev).",
+			inline=False
+		)
+		embed.set_thumbnail(url=self.bot.user.display_avatar.url)
+		embed.set_footer(text="Spectra", icon_url=self.bot.user.display_avatar.url)
+		await ctx.send(embed=embed, view=InviteView(), ephemeral=True)
 
 
 	@commands.hybrid_command(name="support", description="Support server of the bot")
