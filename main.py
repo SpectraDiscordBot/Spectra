@@ -71,6 +71,7 @@ class Bot(commands.AutoShardedBot):
 			await self.load_extension("Cogs.reaction-roles.commands"); print("✅ | Loaded Reaction Role Commands")
 			await self.load_extension("Cogs.welcomemessage.commands"); print("✅ | Loaded Welcome Message Commands")
 			await self.load_extension("Cogs.server-stats.commands"); print("✅ | Loaded Server Stats Commands")
+			await self.load_extension("Cogs.bump-reminder.commands"); print("✅ | Loaded Bump Reminder Commands")
 			await self.load_extension("Cogs.manageroles.commands"); print("✅ | Loaded Manage Roles Commands")
 			await self.load_extension("Cogs.moderation.commands"); print("✅ | Loaded Moderation Commands")
 			await self.load_extension("Cogs.antispam.commands"); print("✅ | Loaded Anti-Spam Commands")
