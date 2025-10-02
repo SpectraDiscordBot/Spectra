@@ -131,7 +131,7 @@ class Bot(commands.AutoShardedBot):
 				f"Error: Missing required argument `{error.param.name}`.\nUsage: `{usage}`",
 				ephemeral=True,
 			)
-		elif isinstance(error, commands.BadArgument) or isinstance(error, commands.InvalidArgument):
+		elif isinstance(error, commands.BadArgument):
 			usage_parts = []
 			example_parts = []
 
