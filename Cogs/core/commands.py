@@ -217,13 +217,21 @@ class Core(commands.Cog):
 	@commands.hybrid_command(name="vote", description="Vote for Spectra!")
 	@commands.cooldown(1, 15, commands.BucketType.user)
 	async def vote(self, ctx: commands.Context):
+		class VoteView(discord.ui.View):
+			def __init__(self):
+				super().__init__(timeout=None)
+				self.add_item(discord.ui.Button(
+					label="Click Me To Vote!",
+					style=discord.ButtonStyle.link,
+					url="https://top.gg/bot/1279512390756470836/vote"
+				))
+
 		embed = discord.Embed(
-			title="Want to support Spectra by voting? Click below!",
-			description="[Click Me To Vote!](https://top.gg/bot/1279512390756470836/vote)",
-			color=discord.Colour.blue(),
+			title="Want to support Spectra by voting?",
+			description="Click the button below to vote for Spectra!",
+			color=discord.Color.pink(),
 		)
-		embed.set_footer(text="Support Spectra For Free!")
-		await ctx.send(embed=embed)
+		await ctx.send(embed=embed, view=VoteView())
 
 
 	@commands.hybrid_command(name="ping", description="Check if the bot is online.")
