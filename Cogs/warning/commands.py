@@ -42,7 +42,7 @@ class Warning_Commands(commands.Cog):
 		pass
 
 	@commands.hybrid_command(
-		name="warn", description="Issue a warning."
+		name="warn", description="Issue a warning.", aliases=["w"]
 	)
 	@commands.cooldown(1, 5, type=commands.BucketType.user)
 	@commands.has_permissions(moderate_members=True)
@@ -131,7 +131,7 @@ class Warning_Commands(commands.Cog):
 	@warnings.command(
 		name="revoke",
 		description="Revoke a warning from a user.",
-		aliases=["unwarn"],
+		aliases=["unwarn", "uw"],
 	)
 	@commands.cooldown(1, 5, type=commands.BucketType.user)
 	@commands.has_permissions(moderate_members=True)
