@@ -229,11 +229,11 @@ class Core(commands.Cog):
 	@commands.hybrid_command(name="ping", description="Check if the bot is online.")
 	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def ping(self, ctx: commands.Context):
-		msg = await ctx.send("Pinging...", ephemeral=True)
-		then = ctx.message.created_at
 		start = time.perf_counter()
+		msg = await ctx.send("Pinging...", ephemeral=True)
 
 		discord_latency = round(ctx.bot.latency * 1000)
+		bot_latency = round((time.perf_counter() - start) * 1000)
 
 		try:
 			db_start = time.perf_counter()
@@ -241,8 +241,6 @@ class Core(commands.Cog):
 			db_latency = round((time.perf_counter() - db_start) * 1000)
 		except Exception:
 			db_latency = "Not operational"
-
-		bot_latency = round((time.perf_counter() - start) * 1000)
 		
 		embed = discord.Embed(
 			title="Pong! 🏓",
