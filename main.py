@@ -68,12 +68,10 @@ class Bot(commands.AutoShardedBot):
 				self.prefix_cache[doc["guild_id"]] = doc["prefix"]
 			await self.load_extension("jishaku"); print("✅ | Loaded Jishaku")
 			await self.load_extension("Cogs.core.commands"); print("✅ | Loaded Core Commands")
-			#await self.load_extension("Cogs.autorole.commands"); print("✅ | Loaded AutoRole Commands")
+			await self.load_extension("Cogs.autorole.commands"); print("✅ | Loaded AutoRole Commands")
 			await self.load_extension("Cogs.reaction-roles.commands"); print("✅ | Loaded Reaction Role Commands")
 			await self.load_extension("Cogs.welcomemessage.commands"); print("✅ | Loaded Welcome Message Commands")
 			await self.load_extension("Cogs.server-stats.commands"); print("✅ | Loaded Server Stats Commands")
-			#await self.load_extension("Cogs.ban-appeals.commands"); print("✅ | Loaded Ban Appeal Commands")
-			#await self.load_extension("Cogs.fun.commands"); print("✅ | Loaded Fun Commands")
 			await self.load_extension("Cogs.bump-reminder.commands"); print("✅ | Loaded Bump Reminder Commands")
 			await self.load_extension("Cogs.manageroles.commands"); print("✅ | Loaded Manage Roles Commands")
 			await self.load_extension("Cogs.moderation.commands"); print("✅ | Loaded Moderation Commands")
@@ -85,7 +83,7 @@ class Bot(commands.AutoShardedBot):
 			await self.load_extension("Cogs.reports.commands"); print("✅ | Loaded Reports Commands")
 			await self.load_extension("Cogs.anti-ping.commands"); print("✅ | Loaded Anti-Ping Commands")
 			await self.load_extension("Cogs.owner-stuff.commands"); print("✅ | Loaded Owner Commands")
-			#await self.load_extension("Cogs.TopGG.topgg"); print("✅ | Loaded TopGG Commands")
+			await self.load_extension("Cogs.TopGG.topgg"); print("✅ | Loaded TopGG Commands")
 			await self.load_extension("Cogs.verification.commands"); print("✅ | Loaded Verification Commands")
 			cycle_status.start(); print("✅ | Started Cycling Status")
 		except Exception as e:
