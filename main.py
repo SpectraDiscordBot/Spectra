@@ -5,6 +5,7 @@ import discord
 import datetime
 import os
 import itertools
+import inspect
 from discord.ext import commands
 from discord import app_commands
 from dotenv import load_dotenv
@@ -67,10 +68,12 @@ class Bot(commands.AutoShardedBot):
 				self.prefix_cache[doc["guild_id"]] = doc["prefix"]
 			await self.load_extension("jishaku"); print("✅ | Loaded Jishaku")
 			await self.load_extension("Cogs.core.commands"); print("✅ | Loaded Core Commands")
-			await self.load_extension("Cogs.autorole.commands"); print("✅ | Loaded AutoRole Commands")
+			#await self.load_extension("Cogs.autorole.commands"); print("✅ | Loaded AutoRole Commands")
 			await self.load_extension("Cogs.reaction-roles.commands"); print("✅ | Loaded Reaction Role Commands")
 			await self.load_extension("Cogs.welcomemessage.commands"); print("✅ | Loaded Welcome Message Commands")
 			await self.load_extension("Cogs.server-stats.commands"); print("✅ | Loaded Server Stats Commands")
+			#await self.load_extension("Cogs.ban-appeals.commands"); print("✅ | Loaded Ban Appeal Commands")
+			#await self.load_extension("Cogs.fun.commands"); print("✅ | Loaded Fun Commands")
 			await self.load_extension("Cogs.bump-reminder.commands"); print("✅ | Loaded Bump Reminder Commands")
 			await self.load_extension("Cogs.manageroles.commands"); print("✅ | Loaded Manage Roles Commands")
 			await self.load_extension("Cogs.moderation.commands"); print("✅ | Loaded Moderation Commands")
@@ -82,7 +85,7 @@ class Bot(commands.AutoShardedBot):
 			await self.load_extension("Cogs.reports.commands"); print("✅ | Loaded Reports Commands")
 			await self.load_extension("Cogs.anti-ping.commands"); print("✅ | Loaded Anti-Ping Commands")
 			await self.load_extension("Cogs.owner-stuff.commands"); print("✅ | Loaded Owner Commands")
-			await self.load_extension("Cogs.TopGG.topgg"); print("✅ | Loaded TopGG Commands")
+			#await self.load_extension("Cogs.TopGG.topgg"); print("✅ | Loaded TopGG Commands")
 			await self.load_extension("Cogs.verification.commands"); print("✅ | Loaded Verification Commands")
 			cycle_status.start(); print("✅ | Started Cycling Status")
 		except Exception as e:
@@ -111,6 +114,11 @@ class Bot(commands.AutoShardedBot):
 				error.retry_after
 			)
 			await ctx.send(msg, ephemeral=True)
+		elif isinstance(error, commands.MissingPermissions):
+			msg = "You are missing the following permissions: {}".format(
+				", ".join(error.missing_permissions)
+			)
+			await ctx.send(msg, ephemeral=True)
 		elif isinstance(error, commands.MissingRequiredArgument):
 			required_params = [
 				param
@@ -118,10 +126,52 @@ class Bot(commands.AutoShardedBot):
 				if ctx.command.params[param].default == ctx.command.params[param].empty
 			]
 
-			usage = f"/{ctx.command} " + " ".join(f"<{param}>" for param in required_params)
+			usage = f">{ctx.command.qualified_name} " + " ".join(f"<{param}>" for param in required_params)
 			await ctx.send(
 				f"Error: Missing required argument `{error.param.name}`.\nUsage: `{usage}`",
 				ephemeral=True,
+			)
+		elif isinstance(error, commands.BadArgument) or isinstance(error, commands.InvalidArgument):
+			usage_parts = []
+			example_parts = []
+
+			for name, param in ctx.command.params.items():
+				if name in ("self", "ctx"):
+					continue
+
+				usage_parts.append(f"<{name}>")
+
+				param_type = param.annotation
+				if param_type is inspect._empty:
+					example_value = "example"
+				elif param_type == int:
+					example_value = "3"
+				elif param_type == float:
+					example_value = "3.14"
+				elif param_type == str:
+					example_value = "example"
+				elif param_type == discord.Member:
+					example_value = ctx.author.mention
+				elif param_type == discord.User:
+					example_value = ctx.author.mention
+				elif param_type == discord.Role:
+					example_value = "@role"
+				elif param_type == discord.TextChannel:
+					example_value = "#general"
+				elif param_type == bool:
+					example_value = "true"
+				else:
+					example_value = "example"
+
+				example_parts.append(example_value)
+
+			usage = f">{ctx.command.qualified_name} " + " ".join(usage_parts)
+			example = f">{ctx.command.qualified_name} " + " ".join(example_parts)
+
+			await ctx.send(
+				f"Error: Invalid argument `{getattr(error, 'argument', 'unknown')}`.\n"
+				f"Usage: `{usage}`\nExample: `{example}`",
+				ephemeral=True
 			)
 		else:
 			embed = discord.Embed(
