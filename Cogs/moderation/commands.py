@@ -23,10 +23,10 @@ class Moderation(commands.Cog):
 			dt = val
 		return f"<t:{int(dt.timestamp())}:{style}>"
 
-	@commands.hybrid_command(name="purge", description="Purges messages from the channel.")
+	@commands.hybrid_command(name="purge", description="Purges messages from the channel.", aliases=["clear"])
 	@commands.has_permissions(manage_messages=True)
 	@commands.bot_has_permissions(manage_messages=True)
-	@commands.cooldown(1, 5, commands.BucketType.user)
+	@commands.cooldown(1, 3, commands.BucketType.user)
 	@app_commands.describe(limit="Number of messages to purge (1-250)", reason="Reason for purging messages")
 	async def purge(self, ctx, limit: int = 5, *, reason: str = None):
 		await ctx.defer(ephemeral=True)
@@ -145,10 +145,10 @@ class Moderation(commands.Cog):
 		else:
 			await ctx.send(embed=discord.Embed(description="Case not found.", ephemeral=True))
 
-	@commands.hybrid_command(name="mute", description="Mute a user.", aliases=["timeout"])
+	@commands.hybrid_command(name="mute", description="Mute a user.", aliases=["timeout", "m", "tm"])
 	@commands.has_permissions(moderate_members=True)
 	@commands.bot_has_permissions(moderate_members=True)
-	@commands.cooldown(1, 5, commands.BucketType.user)
+	@commands.cooldown(1, 3, commands.BucketType.user)
 	@app_commands.describe(user="The user to mute", time="Duration of the mute (e.g., 10m, 1h, 1d)", reason="Reason for the mute")
 	async def mute(self, ctx, user: discord.Member, time: str, *, reason: str):
 		if user.id == ctx.author.id:
@@ -197,10 +197,10 @@ class Moderation(commands.Cog):
 			await ctx.send(embed=discord.Embed(description="I do not have permission to mute that user."), ephemeral=True)
 			print(e)
 
-	@commands.hybrid_command(name="unmute", description="Unmute a user.", aliases=["untimeout"])
+	@commands.hybrid_command(name="unmute", description="Unmute a user.", aliases=["untimeout", "um", "utm"])
 	@commands.has_permissions(moderate_members=True)
 	@commands.bot_has_permissions(moderate_members=True)
-	@commands.cooldown(1, 5, commands.BucketType.user)
+	@commands.cooldown(1, 3, commands.BucketType.user)
 	@app_commands.describe(user="The user to unmute")
 	async def unmute(self, ctx, user: discord.Member):
 		if user.id == ctx.author.id:
@@ -229,10 +229,10 @@ class Moderation(commands.Cog):
 			await ctx.send(embed=discord.Embed(description="I do not have permission to unmute that user."))
 			print(e)
 
-	@commands.hybrid_command(name="ban", description="Ban a user.")
+	@commands.hybrid_command(name="ban", description="Ban a user.", aliases=["b"])
 	@commands.has_permissions(ban_members=True)
 	@commands.bot_has_permissions(ban_members=True)
-	@commands.cooldown(1, 5, commands.BucketType.user)
+	@commands.cooldown(1, 3, commands.BucketType.user)
 	@app_commands.describe(user="The user to ban", delete_message_days="Number of days to delete messages", reason="Reason for the ban")
 	async def ban(self, ctx, user: discord.User, delete_message_days: int, *, reason: str = "No Reason Provided"):
 		if user.id == ctx.author.id:
@@ -275,11 +275,57 @@ class Moderation(commands.Cog):
 		except Exception as e:
 			await ctx.send(embed=discord.Embed(description="I do not have permission to ban that user."), ephemeral=True)
 			print(e)
+			
+	@commands.hybrid_command(name="softban", description="Softban a user.", aliases=["sb"])
+	@commands.has_permissions(ban_members=True)
+	@commands.bot_has_permissions(ban_members=True)
+	@commands.cooldown(1, 3, commands.BucketType.user)
+	@app_commands.describe(user="The user to softban", delete_message_days="The number of days to delete messages", reason="Reason for the softban")
+	async def softban(self, ctx, user: discord.User, delete_message_days: int, *, reason: str = "No Reason Provided"):
+		if user.id == ctx.author.id:
+			await ctx.send(embed=discord.Embed(description="You cannot softban yourself."), ephemeral=True)
+			return
+		if user.id == self.bot.user.id:
+			await ctx.send(embed=discord.Embed(description="I cannot softban myself."), ephemeral=True)
+			return
+		try:
+			if user.top_role.position >= ctx.author.top_role.position:
+				await ctx.send(embed=discord.Embed(description="You cannot softban this user."), ephemeral=True)
+				return
+			if user.top_role.position >= ctx.guild.me.top_role.position:
+				await ctx.send(embed=discord.Embed(description="I cannot softban this user."), ephemeral=True)
+				return
+		except:
+			pass
+		if delete_message_days > 7:
+			await ctx.send(embed=discord.Embed(description="Number of days to delete messages cannot be more than 7, or a week."), ephemeral=True)
+			return
+		if delete_message_days < 0:
+			delete_message_days = 0
+		try:
+			case_id = await self._get_next_case_id(ctx.guild.id)
+			await ctx.guild.ban(user, reason=f"[#{case_id}] [Softban] Moderator: {ctx.author.name}\nReason: {reason}", delete_message_days=delete_message_days)
+			await ctx.guild.unban(user, reason=f"[#{case_id}] [Softban] Moderator: {ctx.author.name}\nReason: {reason}")
+			case_obj = {
+				"case_id": case_id,
+				"type": "Softban",
+				"target": f"{user} [{user.id}]",
+				"moderator": f"{ctx.author} [{ctx.author.id}]",
+				"reason": reason,
+				"timestamp": datetime.datetime.utcnow().isoformat(),
+				"edit_history": []
+			}
+			await self._add_case(ctx.guild.id, case_obj)
+			await ctx.send(embed=discord.Embed(description=f"<:Checkmark:1326642406086410317> [#{case_id}] Softbanned {user.mention}."), ephemeral=True)
+			self.bot.dispatch("modlog", ctx.guild.id, ctx.author.id, "Softban", f"[#{case_id}]Softbanned {user.mention} with reason: {reason}")
+		except Exception as e:
+			await ctx.send(embed=discord.Embed(description="I do not have permission to ban that user."), ephemeral=True)
+			print(e)
 
-	@commands.hybrid_command(name="kick", description="Kick a user.")
+	@commands.hybrid_command(name="kick", description="Kick a user.", aliases=["k"])
 	@commands.has_permissions(kick_members=True)
 	@commands.bot_has_permissions(kick_members=True)
-	@commands.cooldown(1, 5, commands.BucketType.user)
+	@commands.cooldown(1, 3, commands.BucketType.user)
 	@app_commands.describe(user="The user to kick", reason="Reason for the kick")
 	async def kick(self, ctx, user: discord.Member, *, reason: str = "No Reason Provided"):
 		if user.id == ctx.author.id:
@@ -314,13 +360,13 @@ class Moderation(commands.Cog):
 			except:
 				pass
 		except Exception as e:
-			await ctx.send("I do not have permission to kick users.", ephemeral=True)
+			await ctx.send("I do not have permission to kick that user.", ephemeral=True)
 			print(e)
 
-	@commands.hybrid_command(name="unban", description="Unban a user.")
+	@commands.hybrid_command(name="unban", description="Unban a user.", aliases=["ub"])
 	@commands.has_permissions(ban_members=True)
 	@commands.bot_has_permissions(ban_members=True)
-	@commands.cooldown(1, 5, commands.BucketType.user)
+	@commands.cooldown(1, 3, commands.BucketType.user)
 	@app_commands.describe(user="The user to unban")
 	async def unban(self, ctx, user: discord.User):
 		try:
@@ -344,7 +390,7 @@ class Moderation(commands.Cog):
 	)
 	@commands.has_permissions(manage_channels=True)
 	@commands.bot_has_permissions(manage_channels=True)
-	@commands.cooldown(1, 5, commands.BucketType.user)
+	@commands.cooldown(1, 3, commands.BucketType.user)
 	@app_commands.describe(seconds="The slowmode delay in seconds", channel="The channel to set slowmode in (defaults to current channel)")
 	async def slowmode(self, ctx, seconds: int, channel: discord.TextChannel = None):
 		if not channel:
