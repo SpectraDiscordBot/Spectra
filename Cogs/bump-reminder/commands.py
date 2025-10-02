@@ -143,8 +143,6 @@ class BumpReminder(commands.Cog):
 		role_id = config.get("role_id")
 		if not channel_id:
 			return
-		if guild_id in self.reminder_tasks:
-			self.reminder_tasks[guild_id].cancel()
 		task = self.bot.loop.create_task(self.schedule_reminder(guild_id, channel_id, role_id))
 		self.reminder_tasks[guild_id] = task
 		in_2_hours = datetime.now() + self.interval_hours
