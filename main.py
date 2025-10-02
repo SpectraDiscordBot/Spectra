@@ -38,6 +38,11 @@ async def get_prefix(client, message):
 	client.prefix_cache[gid] = prefix
 	return prefix
 
+async def cleanup_guild(guild_id):
+    collections = await db.list_collection_names()
+    for name in collections:
+        await db[name].delete_many({"guild_id": guild_id})
+
 
 # Bot
 
@@ -94,9 +99,6 @@ class Bot(commands.AutoShardedBot):
 		if not self.ready:
 			print(f"✅ | {self.user} Is Ready.")
 			print(f"✅ | Bot ID: {self.user.id}")
-			
-			try: await self.tree.sync()
-			except Exception as e: return print(e)
 
 			self.tree.on_error = self.on_tree_error
 			
@@ -299,12 +301,7 @@ class Bot(commands.AutoShardedBot):
 				print(e)
 
 	async def on_guild_remove(self, guild):
-		guild_id = guild.id
-		collections = await db.list_collection_names()
-		for collection_name in collections:
-			collection = db[collection_name]
-			await collection.delete_many({"guild_id": guild_id})
-
+		asyncio.create_task(cleanup_guild(guild.id))
 
 	async def on_message(self, message):
 		if isinstance(message.channel, discord.channel.DMChannel):
