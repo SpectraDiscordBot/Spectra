@@ -324,7 +324,7 @@ class Warning_Commands(commands.Cog):
 		guild_id = str(ctx.guild.id)
 		data = await warning_collection.find_one({"guild_id": str(ctx.guild.id), "logs_channel": {"$exists": True}})
 		if data:
-			await ctx.send(embed=discord.Embed(description="Warnings have already been setup.", ephemeral=True))
+			await ctx.send(embed=discord.Embed(description="Warnings have already been setup."), ephemeral=True)
 			return
 		else:
 			await warning_collection.insert_one(
@@ -362,7 +362,7 @@ class Warning_Commands(commands.Cog):
 		guild_id = str(ctx.guild.id)
 		data = await warning_collection.find_one({"guild_id": str(ctx.guild.id), "logs_channel": {"$exists": True}})
 		if not data:
-			await ctx.send(embed=discord.Embed(description="No warning system has been set up.", ephemeral=True))
+			await ctx.send(embed=discord.Embed(description="No warning system has been set up."), ephemeral=True)
 			return
 		await warning_collection.delete_many({"guild_id": guild_id})
 		await ctx.send(
