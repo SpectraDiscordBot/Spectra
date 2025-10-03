@@ -90,6 +90,7 @@ class Bot(commands.AutoShardedBot):
 			await self.load_extension("Cogs.owner-stuff.commands"); print("✅ | Loaded Owner Commands")
 			await self.load_extension("Cogs.TopGG.topgg"); print("✅ | Loaded TopGG Commands")
 			await self.load_extension("Cogs.verification.commands"); print("✅ | Loaded Verification Commands")
+			await self.load_extension("Cogs.github.commands"); print("✅ | Loaded GitHub Commands")
 			cycle_status.start(); print("✅ | Started Cycling Status")
 		except Exception as e:
 			print(e)
