@@ -7,69 +7,109 @@ from db import autorole_collection
 
 load_dotenv()
 
+class AutoRoleQueue:
+	def __init__(self, bot, per_guild_delay: float = 1.0, batch_size: int = 10, hybrid_threshold: int = 2):
+		self.bot = bot
+		self.per_guild_delay = per_guild_delay
+		self.batch_size = batch_size
+		self.hybrid_threshold = hybrid_threshold
+		self._queues: dict[int, asyncio.Queue] = {}
+		self._workers: dict[int, asyncio.Task] = {}
+		self._processing: dict[int, set[int]] = {}
+
+	async def ensure_queue(self, guild_id: int):
+		if guild_id not in self._queues:
+			self._queues[guild_id] = asyncio.Queue()
+			self._processing[guild_id] = set()
+			self._workers[guild_id] = asyncio.create_task(self._worker(guild_id))
+
+	async def enqueue_member(self, member: discord.Member):
+		guild_id = member.guild.id
+		await self.ensure_queue(guild_id)
+
+		if member.id in self._processing[guild_id] or any(m.id == member.id for m in self._queues[guild_id]._queue):
+			return
+
+		queue = self._queues[guild_id]
+		if queue.qsize() < self.hybrid_threshold:
+			await self._process_member(member)
+		else:
+			await queue.put(member)
+
+	async def _worker(self, guild_id: int):
+		queue = self._queues[guild_id]
+		while True:
+			batch = []
+			try:
+				member = await queue.get()
+				batch.append(member)
+
+				while len(batch) < self.batch_size:
+					try:
+						member = await asyncio.wait_for(queue.get(), timeout=self.per_guild_delay)
+						batch.append(member)
+					except asyncio.TimeoutError:
+						break
+			except asyncio.CancelledError:
+				return
+
+			if batch:
+				await self._process_batch(guild_id, batch)
+				for _ in batch:
+					queue.task_done()
+
+	async def _process_batch(self, guild_id: int, members: list[discord.Member]):
+		tasks = [self._process_member(member) for member in members]
+		await asyncio.gather(*tasks)
+
+	async def _process_member(self, member: discord.Member):
+		guild_id = member.guild.id
+		self._processing[guild_id].add(member.id)
+		try:
+			roles_data = self.bot.get_cog("AutoRole_Commands").cache.get(str(guild_id))
+			if roles_data is None:
+				await self.bot.get_cog("AutoRole_Commands").load_guild_roles(guild_id)
+				roles_data = self.bot.get_cog("AutoRole_Commands").cache.get(str(guild_id), [])
+
+			roles_to_add = []
+			for r in roles_data:
+				if r.get("ignore_bots", False) and member.bot:
+					continue
+				role = member.guild.get_role(r["role_id"])
+				if role:
+					roles_to_add.append(role)
+
+			if roles_to_add:
+				await self._safe_add_roles(member, roles_to_add)
+
+		finally:
+			self._processing[guild_id].discard(member.id)
+
+	async def _safe_add_roles(self, member: discord.Member, roles: list[discord.Role]):
+		backoff = 1.0
+		for attempt in range(5):
+			try:
+				await member.add_roles(*roles, reason="Spectra AutoRole")
+				return
+			except discord.Forbidden:
+				return 
+			except discord.HTTPException:
+				await asyncio.sleep(backoff)
+				backoff = min(backoff * 2, 60)
+			except Exception as e:
+				print(f"Error adding roles to {member.id}: {e}")
+		print(f"Failed to add roles to member {member.id} after multiple attempts.")
+
+	async def shutdown(self):
+		for task in self._workers.values():
+			task.cancel()
+		await asyncio.gather(*self._workers.values(), return_exceptions=True)
+
 class AutoRole_Commands(commands.Cog):
 	def __init__(self, bot):
 		self.bot = bot
 		self.cache = {}
-		self._join_queues: dict[str, asyncio.Queue] = {}
-		self._join_workers: dict[str, asyncio.Task] = {}
-		self.per_guild_delay = 1.0
-
-	async def _ensure_join_queue(self, guild_id: str):
-		if guild_id not in self._join_queues:
-			q = asyncio.Queue()
-			self._join_queues[guild_id] = q
-			self._join_workers[guild_id] = asyncio.create_task(self._join_worker(guild_id, q))
-
-	async def _join_worker(self, guild_id: str, queue: asyncio.Queue):
-		backoff = 1.0
-		while True:
-			try:
-				member = await queue.get()
-			except asyncio.CancelledError:
-				return
-
-			if not member:
-				queue.task_done()
-				await asyncio.sleep(self.per_guild_delay)
-				continue
-
-			guild = member.guild
-			try:
-				roles_data = self.cache.get(str(guild.id))
-				if roles_data is None:
-					await self.load_guild_roles(guild.id)
-					roles_data = self.cache.get(str(guild.id), [])
-				roles_to_add = []
-				for r in roles_data:
-					if r.get("ignore_bots", False) and member.bot:
-						continue
-					role = guild.get_role(r["role_id"])
-					if role:
-						roles_to_add.append(role)
-
-				if roles_to_add:
-					try:
-						await member.add_roles(*roles_to_add, reason="Spectra AutoRole")
-						backoff = 1.0
-					except discord.Forbidden:
-						pass
-					except discord.HTTPException as e:
-						await asyncio.sleep(backoff)
-						try:
-							await member.add_roles(*roles_to_add, reason="Spectra AutoRole")
-							backoff = 1.0
-						except Exception:
-							backoff = min(backoff * 2, 60)
-					except Exception:
-						print(f"Unhandled error when adding roles to {member.id}: ", exc_info=True)
-
-				await asyncio.sleep(self.per_guild_delay)
-
-			except Exception:
-				await asyncio.sleep(1)
-			finally:
-				queue.task_done()
+		self.queue = AutoRoleQueue(bot)
 
 	async def load_guild_roles(self, guild_id):
 		data = await autorole_collection.find({"guild_id": str(guild_id)}).to_list(length=None)
@@ -78,8 +118,7 @@ class AutoRole_Commands(commands.Cog):
 		]
 
 	async def cog_unload(self):
-		for guild_id, task in list(self._join_workers.items()):
-			task.cancel()
+		await self.queue.shutdown()
 
 	@commands.Cog.listener()
 	async def on_guild_role_delete(self, role):
@@ -211,12 +250,7 @@ class AutoRole_Commands(commands.Cog):
 
 	@commands.Cog.listener()
 	async def on_member_join(self, member: discord.Member):
-		guild_id = str(member.guild.id)
-		await self._ensure_join_queue(guild_id)
-		q = self._join_queues[guild_id]
-		if any(getattr(item, "id", None) == member.id for item in q._queue):
-			return
-		await q.put(member)
+		await self.queue.enqueue_member(member)
 
 async def setup(bot):
 	await bot.add_cog(AutoRole_Commands(bot))
