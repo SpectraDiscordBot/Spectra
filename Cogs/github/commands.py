@@ -50,6 +50,7 @@ class GitHub(commands.Cog):
 			)
 
 			clean_body = body.replace('\r\n', '\n').strip()
+			clean_body = clean_body.replace('##', '')
 			if len(clean_body) > 4000:
 				clean_body = clean_body[:3997] + "..."
 
