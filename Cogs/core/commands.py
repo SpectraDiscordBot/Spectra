@@ -26,33 +26,28 @@ class CommandPaginator(discord.ui.View):
 		)
 		start = self.current_page * self.per_page
 		end = start + self.per_page
-		for command in self.commands[start:end]:
-			if command.hidden:
-				continue
-			if command.name == "help":
-				continue
-			if command.name == "refresh":
-				continue
-			if command.name == "verify":
-				continue
-			if command.name == "status":
-				continue
-			if command.name == "blacklist":
-				continue
-			if command.name == "unblacklist":
-				continue
-			if command.name == "jishaku":
-				continue
-			if command.name == "restart":
-				continue
+		def iter_commands(commands_list):
+			for cmd in commands_list:
+				if cmd.hidden:
+					continue
+				if cmd.name in ["help", "refresh", "verify", "status", "blacklist", "unblacklist", "jishaku", "restart"]:
+					continue
 
+				if isinstance(cmd, discord.ext.commands.Group):
+					yield from iter_commands(cmd.commands)
+				else:
+					yield cmd
+
+		all_commands = list(iter_commands(self.commands))
+
+		for command in all_commands[start:end]:
 			aliases = (
 				", ".join(command.aliases)
 				if hasattr(command, "aliases") and command.aliases
 				else "None"
 			)
 			embed.add_field(
-				name=f"/{command.name}",
+				name=f">{command.qualified_name}",
 				value=command.description + f"\nAliases: {aliases}",
 				inline=False,
 			)
