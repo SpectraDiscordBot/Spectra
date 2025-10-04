@@ -256,7 +256,7 @@ class Core(commands.Cog):
 		memory_info = process.memory_info()
 		memory_usage_mb = memory_info.rss / (1024 * 1024)
 		embed.add_field(name="Memory Usage", value=f"{memory_usage_mb:.2f} MB")
-		cpu_usage = psutil.cpu_percent(interval=1)
+		cpu_usage = psutil.cpu_percent(interval=0.0)
 		embed.add_field(name="CPU Usage", value=f"{cpu_usage}%")
 		embed.set_footer(text=f"Developed by Brutiv")
 		embed.set_author(
