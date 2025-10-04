@@ -27,6 +27,7 @@ class CommandPaginator(discord.ui.View):
 		start = self.current_page * self.per_page
 		end = start + self.per_page
 		def iter_commands(commands_list):
+			commands_list = sorted(commands_list, key=lambda c: c.name.lower())
 			for cmd in commands_list:
 				if cmd.hidden:
 					continue
