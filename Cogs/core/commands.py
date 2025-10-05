@@ -42,14 +42,26 @@ class CommandPaginator(discord.ui.View):
 		all_commands = list(iter_commands(self.commands))
 
 		for command in all_commands[start:end]:
-			aliases = (
-				", ".join(command.aliases)
-				if hasattr(command, "aliases") and command.aliases
-				else "None"
-			)
+			parts = []
+
+			if getattr(command, "aliases", None):
+				parts.append(f"Aliases: {', '.join(command.aliases)}")
+
+			if command.clean_params:
+				args = []
+				for name, param in command.clean_params.items():
+					if param.default is param.empty:
+						args.append(f"<{name}>")
+					else:
+						args.append(f"[{name}={param.default}]")
+				parts.append(f"Arguments: {' '.join(args)}")
+
+			desc = command.description or "No description"
+			value = desc + ("\n" + "\n".join(parts) if parts else "")
+
 			embed.add_field(
 				name=f">{command.qualified_name}",
-				value=command.description + f"\nAliases: {aliases}",
+				value=value,
 				inline=False,
 			)
 		return embed
