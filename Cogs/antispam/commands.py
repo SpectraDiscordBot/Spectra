@@ -33,7 +33,7 @@ class AntiSpam(commands.Cog):
             return
         if message.author.top_role.position >= message.guild.me.top_role.position:
             return
-        if message.author.id == message.guild.owner.id:
+        if message.author.id == message.guild.owner_id:
             return
         bucket = self.anti_spam.get_bucket(message)
         retry_after = bucket.update_rate_limit()
