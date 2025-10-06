@@ -8,6 +8,9 @@ class ServerStats(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.cache = {}
+
+    async def cog_unload(self):
+        self.periodic_update.stop()
     
     async def load_guild_config(self, guild_id):
         config = await server_stats_collection.find_one({"guild_id": str(guild_id)})
