@@ -145,7 +145,7 @@ class Moderation(commands.Cog):
 		else:
 			await ctx.send(embed=discord.Embed(description="Case not found.", ephemeral=True))
 
-	@commands.hybrid_command(name="mute", description="Mute a user.", aliases=["timeout", "m", "tm"])
+	@commands.hybrid_command(name="mute", description="Mute a user.", aliases=["timeout", "m", "tm", "silence"])
 	@commands.has_permissions(moderate_members=True)
 	@commands.bot_has_permissions(moderate_members=True)
 	@commands.cooldown(1, 3, commands.BucketType.user)
@@ -197,7 +197,7 @@ class Moderation(commands.Cog):
 			await ctx.send(embed=discord.Embed(description="I do not have permission to mute that user."), ephemeral=True)
 			print(e)
 
-	@commands.hybrid_command(name="unmute", description="Unmute a user.", aliases=["untimeout", "um", "utm"])
+	@commands.hybrid_command(name="unmute", description="Unmute a user.", aliases=["untimeout", "um", "utm", "unsilence"])
 	@commands.has_permissions(moderate_members=True)
 	@commands.bot_has_permissions(moderate_members=True)
 	@commands.cooldown(1, 3, commands.BucketType.user)
