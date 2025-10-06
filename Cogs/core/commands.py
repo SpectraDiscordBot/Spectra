@@ -121,7 +121,8 @@ class HelpButtons(discord.ui.View):
 				"blacklist",
 				"unblacklist",
 				"servers",
-				"sync"
+				"sync",
+				"botteds"
 			]
 		]
 		paginator = CommandPaginator(self.bot, commands)
@@ -308,6 +309,35 @@ class Core(commands.Cog):
 		embed.set_thumbnail(url=self.bot.user.display_avatar.url)
 		embed.set_footer(text="Spectra", icon_url=self.bot.user.display_avatar.url)
 		await ctx.send(embed=embed, view=InviteView(), ephemeral=True)
+
+
+	@commands.hybrid_command(name="botteds", description="Check newest joined guild for botting.")
+	@commands.is_owner()
+	async def botteds(self, ctx: commands.Context):
+		if not self.bot.guilds:
+			await ctx.send("The bot is not in any guilds.", ephemeral=True)
+			return
+
+		g = max(self.bot.guilds, key=lambda g: g.me.joined_at)
+		member_count = len(g.members)
+		bot_count = sum(1 for m in g.members if m.bot)
+		human_count = member_count - bot_count
+		bot_ratio = (bot_count / member_count) if member_count else 0
+		is_bot_farm = bot_ratio > 0.5
+
+		status = "⚠️ Likely a bot farm" if is_bot_farm else "✅ Normal server"
+		joined_at = g.me.joined_at
+		embed = discord.Embed(color=discord.Color.pink())
+		embed.title = "Newest Guild Bot-Ratio Check"
+		embed.description = (
+			f"Newest guild: {g.name} ({g.id})\n"
+			f"Joined at: {joined_at}\n"
+			f"Members: {member_count}\n"
+			f"Humans: {human_count}, Bots: {bot_count}\n"
+			f"Bot ratio: {bot_ratio:.2%}\n\n"
+			f"{status}"
+		)
+		await ctx.send(embed=embed, ephemeral=True)
 
 
 	@commands.hybrid_command(name="support", description="Support server of the bot")
