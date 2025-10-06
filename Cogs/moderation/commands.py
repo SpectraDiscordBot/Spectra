@@ -109,18 +109,15 @@ class Moderation(commands.Cog):
 			await ctx.send(embed=discord.Embed(description="No cases found."), ephemeral=True)
 			return
 
+		cases = doc["cases"]
+
 		if case_id is None:
-			case = max(doc["cases"], key=lambda c: c["case_id"])
+			case = max(cases, key=lambda c: c["case_id"])
 		else:
-			case = next((c for c in doc["cases"] if c["case_id"] == case_id), None)
+			case = next((c for c in cases if c["case_id"] == case_id), None)
 			if not case:
 				await ctx.send(embed=discord.Embed(description="Case not found."), ephemeral=True)
 				return
-
-		case = next((c for c in doc["cases"] if c["case_id"] == case_id), None)
-		if not case:
-			await ctx.send(embed=discord.Embed(description="Case not found."), ephemeral=True)
-			return
 
 		embed = discord.Embed(title=f"Case #{case['case_id']}")
 		embed.add_field(name="Type", value=case["type"], inline=True)
