@@ -36,34 +36,36 @@ class Moderation(commands.Cog):
 		if limit < 1:
 			await ctx.send(embed=discord.Embed(description="Please specify a number between 1 and 250."), ephemeral=True)
 			return
-		try:
-			await ctx.message.delete()
-		except discord.HTTPException:
-			pass
 
-		messages = [msg async for msg in ctx.channel.history(limit=limit)]
-		messages_to_delete = [m for m in messages if m.created_at > discord.utils.utcnow() - datetime.timedelta(days=14)]
+		messages = None
+		if ctx.interaction:
+			messages = [msg async for msg in ctx.channel.history(limit=limit)]
+		else:
+			messages = [msg async for msg in ctx.channel.history(limit=limit, before=ctx.message)]
+		messages_to_delete = [m for m in messages if m.created_at > discord.utils.utcnow() - datetime.timedelta(days=14) and m.id != ctx.message.id]
 		skipped = [m for m in messages if m.created_at <= discord.utils.utcnow() - datetime.timedelta(days=14)]
 
 		if messages_to_delete and len(messages_to_delete) <= 100:
 			await ctx.channel.delete_messages(messages_to_delete, reason=f"Purged by {ctx.author} | Reason: {reason if reason else 'No reason provided'}")
 		elif len(messages_to_delete) > 100:
 			await ctx.channel.purge(limit=len(messages_to_delete), bulk=True, check=lambda m: m in messages_to_delete, reason=f"Purged by {ctx.author} | Reason: {reason if reason else 'No reason provided'}")
+
 		deleted_count = len(messages_to_delete)
-		embed = discord.Embed(
-			title="Purge Summary",
-			description=f"Purged {deleted_count} messages from {ctx.channel.mention}",
-			timestamp=datetime.datetime.utcnow(),
-		)
-		embed.add_field(name="Purged by", value=ctx.author.mention, inline=True)
-		embed.add_field(name="Reason", value=reason or "No reason provided.", inline=False)
-		if skipped:
-			skipped_preview = "\n".join([f"**{msg.author}**: {discord.utils.escape_markdown((msg.content[:50] + "...") if len(msg.content) > 50 else msg.content)}" for msg in skipped[:5] if msg.content])
-			embed.add_field(name="Skipped Messages (Older than 14 days)", value=skipped_preview or "No skipped messages.", inline=False)
-		embed.set_footer(text="This message will auto-delete in 10 seconds.")
 		self.bot.dispatch("modlog", ctx.guild.id, ctx.author.id, "Purge", f"Purged {deleted_count} messages in {ctx.channel.mention}\nReason: {reason}")
 		try:
-			await ctx.send(embed=embed, ephemeral=True, delete_after=10)
+			if not ctx.interaction: await ctx.message.add_reaction("<:Checkmark:1326642406086410317>")
+			else:
+				embed = discord.Embed(
+					title="Purge Summary",
+					description=f"Purged {deleted_count} messages from {ctx.channel.mention}",
+					timestamp=datetime.datetime.utcnow(),
+				)
+				embed.add_field(name="Purged by", value=ctx.author.mention, inline=True)
+				embed.add_field(name="Reason", value=reason or "No reason provided.", inline=False)
+				if skipped:
+					skipped_preview = "\n".join([f"**{msg.author}**: {discord.utils.escape_markdown((msg.content[:50] + "...") if len(msg.content) > 50 else msg.content)}" for msg in skipped[:5] if msg.content])
+					embed.add_field(name="Skipped Messages (Older than 14 days)", value=skipped_preview or "No skipped messages.", inline=False)
+				await ctx.send(embed=embed, ephemeral=True)
 		except discord.HTTPException:
 			pass
 
@@ -101,8 +103,15 @@ class Moderation(commands.Cog):
 	@commands.hybrid_command(name="case", description="View a moderation case.")
 	@commands.has_permissions(moderate_members=True)
 	@app_commands.describe(case_id="The ID of the case to view")
-	async def case(self, ctx, case_id: int):
-		doc = await cases_collection.find_one({"guild_id": str(ctx.guild.id)})
+	async def case(self, ctx, case_id: int = None):
+		if not case_id:
+			last_case = await cases_collection.find_one({"guild_id": str(ctx.guild.id)}, sort=[("last_case_id", -1)])
+			if not last_case or not last_case.get("cases"):
+				await ctx.send(embed=discord.Embed(description="No cases found."), ephemeral=True)
+				return
+			case_id = last_case["cases"][0]["case_id"]
+		else:
+			doc = await cases_collection.find_one({"guild_id": str(ctx.guild.id)})
 		if not doc or not doc.get("cases"):
 			await ctx.send(embed=discord.Embed(description="No cases found."), ephemeral=True)
 			return
@@ -188,7 +197,8 @@ class Moderation(commands.Cog):
 			}
 			await self._add_case(ctx.guild.id, case_obj)
 			self.bot.dispatch("modlog", ctx.guild.id, ctx.author.id, "Mute", f"[#{case_id}] Muted {user.mention} with reason: {reason}")
-			await ctx.send(embed=discord.Embed(description=f"<:Checkmark:1326642406086410317> [#{case_id}] Muted {user.mention} for `{time}`."), ephemeral=True)
+			if not ctx.interaction: await ctx.message.add_reaction("<:Checkmark:1326642406086410317>")
+			else: await ctx.send(embed=discord.Embed(description=f"<:Checkmark:1326642406086410317> [#{case_id}] Muted {user.mention} for `{time}`."), ephemeral=True)
 			try:
 				await user.send(embed=discord.Embed(description=f"[#{case_id}] You have been muted in **{ctx.guild.name}** for: `{reason}`.", color=discord.Color.red()))
 			except:
@@ -224,7 +234,8 @@ class Moderation(commands.Cog):
 		try:
 			await user.timeout(None)
 			self.bot.dispatch("modlog", ctx.guild.id, ctx.author.id, "Unmute", f"Unmuted {user.mention}")
-			await ctx.send(embed=discord.Embed(description=f"<:Checkmark:1326642406086410317> Unmuted {user.mention}."), ephemeral=True)
+			if not ctx.interaction: await ctx.message.add_reaction("<:Checkmark:1326642406086410317>")
+			else: await ctx.send(embed=discord.Embed(description=f"<:Checkmark:1326642406086410317> Unmuted {user.mention}."), ephemeral=True)
 		except Exception as e:
 			await ctx.send(embed=discord.Embed(description="I do not have permission to unmute that user."))
 			print(e)
@@ -267,7 +278,8 @@ class Moderation(commands.Cog):
 			}
 			await self._add_case(ctx.guild.id, case_obj)
 			self.bot.dispatch("modlog", ctx.guild.id, ctx.author.id, "Ban", f"[#{case_id}]Banned {user.mention} with reason: {reason}")
-			await ctx.send(embed=discord.Embed(description=f"<:Checkmark:1326642406086410317> [#{case_id}] Banned {user.mention}."), ephemeral=True)
+			if not ctx.interaction: await ctx.message.add_reaction("<:Checkmark:1326642406086410317>")
+			else: await ctx.send(embed=discord.Embed(description=f"<:Checkmark:1326642406086410317> [#{case_id}] Banned {user.mention}."), ephemeral=True)
 			try:
 				await user.send(embed=discord.Embed(description=f"[#{case_id}] You have been banned from **{ctx.guild.name}** for: `{reason}`.", color=discord.Color.red()))
 			except:
@@ -316,7 +328,8 @@ class Moderation(commands.Cog):
 				"edit_history": []
 			}
 			await self._add_case(ctx.guild.id, case_obj)
-			await ctx.send(embed=discord.Embed(description=f"<:Checkmark:1326642406086410317> [#{case_id}] Softbanned {user.mention}."), ephemeral=True)
+			if not ctx.interaction: await ctx.message.add_reaction("<:Checkmark:1326642406086410317>")
+			else: await ctx.send(embed=discord.Embed(description=f"<:Checkmark:1326642406086410317> [#{case_id}] Softbanned {user.mention}."), ephemeral=True)
 			self.bot.dispatch("modlog", ctx.guild.id, ctx.author.id, "Softban", f"[#{case_id}]Softbanned {user.mention} with reason: {reason}")
 		except Exception as e:
 			await ctx.send(embed=discord.Embed(description="I do not have permission to ban that user."), ephemeral=True)
@@ -354,7 +367,8 @@ class Moderation(commands.Cog):
 			}
 			await self._add_case(ctx.guild.id, case_obj)
 			self.bot.dispatch("modlog", ctx.guild.id, ctx.author.id, "Kick", f"[#{case_id}] Kicked {user.mention} with reason: {reason}")
-			await ctx.send(embed=discord.Embed(description=f"<:Checkmark:1326642406086410317> [#{case_id}] Kicked {user.mention}."), ephemeral=True)
+			if not ctx.interaction: await ctx.message.add_reaction("<:Checkmark:1326642406086410317>")
+			else: await ctx.send(embed=discord.Embed(description=f"<:Checkmark:1326642406086410317> [#{case_id}] Kicked {user.mention}."), ephemeral=True)
 			try:
 				await user.send(embed=discord.Embed(description=f"[#{case_id}] You have been kicked from **{ctx.guild.name}** for: `{reason}`.", color=discord.Color.red()))
 			except:
@@ -380,7 +394,8 @@ class Moderation(commands.Cog):
 				"Unban",
 				f"Unbanned `{user.name} [{user.id}]`",
 			)
-			await ctx.send(embed=discord.Embed(description=f"<:Checkmark:1326642406086410317> Unbanned user `{user.name}`."), ephemeral=True)
+			if not ctx.interaction: await ctx.message.add_reaction("<:Checkmark:1326642406086410317>")
+			else: await ctx.send(embed=discord.Embed(description=f"<:Checkmark:1326642406086410317> Unbanned user `{user.name}`."), ephemeral=True)
 		except Exception as e:
 			await ctx.send(embed=discord.Embed(description="I do not have permission to unban users."), ephemeral=True)
 			print(e)
@@ -397,7 +412,8 @@ class Moderation(commands.Cog):
 			channel = ctx.channel
 		try:
 			await channel.edit(slowmode_delay=seconds)
-			await ctx.send(embed=discord.Embed(description=f"<:Checkmark:1326642406086410317> Set slowmode in {channel.mention} to {seconds} seconds."), ephemeral=True)
+			if not ctx.interaction: await ctx.message.add_reaction("<:Checkmark:1326642406086410317>")
+			else: await ctx.send(embed=discord.Embed(description=f"<:Checkmark:1326642406086410317> Set slowmode in {channel.mention} to {seconds} seconds."), ephemeral=True)
 			self.bot.dispatch(
 				"modlog",
 				ctx.guild.id,

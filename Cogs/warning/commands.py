@@ -57,7 +57,7 @@ class Warning_Commands(commands.Cog):
 			await ctx.send(embed=discord.Embed(description="You cannot warn yourself or the bot."))
 			return
 
-		msg = await ctx.send(embed=discord.Embed(description="Loading, please wait..."), ephemeral=True)
+		if ctx.intreaction: msg = await ctx.send(embed=discord.Embed(description="Loading, please wait..."), ephemeral=True)
 
 		member = discord.utils.get(ctx.guild.members, id=user.id)
 		if not member or member.top_role >= ctx.author.top_role:
@@ -111,9 +111,11 @@ class Warning_Commands(commands.Cog):
 		except:
 			pass
 		warn_log.set_footer(text="Warning System")
-		await msg.edit(
-			embed=discord.Embed(description=f"<:Checkmark:1326642406086410317> `[CASE #{case_id}]` Warning issued to {user.mention} for `{reason}`.")
-		)
+		if msg: 
+			await msg.edit(
+				embed=discord.Embed(description=f"<:Checkmark:1326642406086410317> `[CASE #{case_id}]` Warning issued to {user.mention} for `{reason}`.")
+			)
+		else: await ctx.message.add_reaction("<:Checkmark:1326642406086410317>")
 		try:
 			await logs_channel.send(embed=warn_log)
 		except:
@@ -203,9 +205,11 @@ class Warning_Commands(commands.Cog):
 			pass
 
 		warn_log.set_footer(text="Warning System")
-		await ctx.send(
-			embed=discord.Embed(description=f"<:Checkmark:1326642406086410317> `[CASE #{case_number}]` Warning revoked from {user.mention}."), ephemeral=True
-		)
+		if not ctx.interaction: await ctx.message.add_reaction("<:Checkmark:1326642406086410317>")
+		else:
+			await ctx.send(
+				embed=discord.Embed(description=f"<:Checkmark:1326642406086410317> `[CASE #{case_number}]` Warning revoked from {user.mention}."), ephemeral=True
+			)
 		try:
 			await ctx.guild.get_channel(int(data["logs_channel"])).send(embed=warn_log)
 		except:
@@ -307,9 +311,11 @@ class Warning_Commands(commands.Cog):
 			pass
 
 		warn_log.set_footer(text="Warning System")
-		await ctx.send(
-			embed=discord.Embed(description=f"<:Checkmark:1326642406086410317> Warnings of {user.mention} have been cleared."), ephemeral=True
-		)
+		if not ctx.interaction: await ctx.message.add_reaction("<:Checkmark:1326642406086410317>")
+		else:
+			await ctx.send(
+				embed=discord.Embed(description=f"<:Checkmark:1326642406086410317> Warnings of {user.mention} have been cleared."), ephemeral=True
+			)
 		try:
 			await ctx.guild.get_channel(int(data["logs_channel"])).send(embed=warn_log)
 		except:
