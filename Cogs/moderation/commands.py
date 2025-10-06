@@ -23,7 +23,7 @@ class Moderation(commands.Cog):
 			dt = val
 		return f"<t:{int(dt.timestamp())}:{style}>"
 
-	@commands.hybrid_command(name="purge", description="Purges messages from the channel.", aliases=["clear"])
+	@commands.hybrid_command(name="purge", description="Purges messages from the channel.", aliases=["clear", "p", "pr", "clean"])
 	@commands.has_permissions(manage_messages=True)
 	@commands.bot_has_permissions(manage_messages=True)
 	@commands.cooldown(1, 3, commands.BucketType.user)
@@ -229,7 +229,7 @@ class Moderation(commands.Cog):
 			await ctx.send(embed=discord.Embed(description="I do not have permission to unmute that user."))
 			print(e)
 
-	@commands.hybrid_command(name="ban", description="Ban a user.", aliases=["b"])
+	@commands.hybrid_command(name="ban", description="Ban a user.", aliases=["b", "permaban"])
 	@commands.has_permissions(ban_members=True)
 	@commands.bot_has_permissions(ban_members=True)
 	@commands.cooldown(1, 3, commands.BucketType.user)
@@ -276,7 +276,7 @@ class Moderation(commands.Cog):
 			await ctx.send(embed=discord.Embed(description="I do not have permission to ban that user."), ephemeral=True)
 			print(e)
 			
-	@commands.hybrid_command(name="softban", description="Softban a user.", aliases=["sb"])
+	@commands.hybrid_command(name="softban", description="Softban a user.", aliases=["sb", "sban"])
 	@commands.has_permissions(ban_members=True)
 	@commands.bot_has_permissions(ban_members=True)
 	@commands.cooldown(1, 3, commands.BucketType.user)
@@ -322,7 +322,7 @@ class Moderation(commands.Cog):
 			await ctx.send(embed=discord.Embed(description="I do not have permission to ban that user."), ephemeral=True)
 			print(e)
 
-	@commands.hybrid_command(name="kick", description="Kick a user.", aliases=["k"])
+	@commands.hybrid_command(name="kick", description="Kick a user.", aliases=["k", "boot"])
 	@commands.has_permissions(kick_members=True)
 	@commands.bot_has_permissions(kick_members=True)
 	@commands.cooldown(1, 3, commands.BucketType.user)
@@ -363,7 +363,7 @@ class Moderation(commands.Cog):
 			await ctx.send("I do not have permission to kick that user.", ephemeral=True)
 			print(e)
 
-	@commands.hybrid_command(name="unban", description="Unban a user.", aliases=["ub"])
+	@commands.hybrid_command(name="unban", description="Unban a user.", aliases=["ub", "pardon"])
 	@commands.has_permissions(ban_members=True)
 	@commands.bot_has_permissions(ban_members=True)
 	@commands.cooldown(1, 3, commands.BucketType.user)
