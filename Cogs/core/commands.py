@@ -82,7 +82,7 @@ class CommandPaginator(discord.ui.View):
 			
 
 class HelpButtons(discord.ui.View):
-	def __init__(self, bot,	 *, timeout=120):
+	def __init__(self, bot,	 *, timeout=300):
 		super().__init__(timeout=timeout)
 		self.bot = bot
 		self.add_item(discord.ui.Button(
@@ -95,6 +95,12 @@ class HelpButtons(discord.ui.View):
 			style=discord.ButtonStyle.link,
 			url="https://www.notion.so/spectra-docs/Introduction-17f36833aca1806bbd11cd5faa438fef"
 		))
+		
+	async def on_timeout(self):
+		for child in self.children:
+			if isinstance(child, discord.ui.Button) and child.style != discord.ButtonStyle.link:
+				child.disabled = True
+		await self.message.edit(view=self)
 
 	@discord.ui.button(label="List of Commands", style=discord.ButtonStyle.primary)
 	async def first_page(
@@ -185,7 +191,9 @@ class Core(commands.Cog):
 		embed.add_field(
 			name="Prefix", value=f"`{prefix}`\n`/`", inline=False
 		)
-		await ctx.send(embed=embed, view=HelpButtons(self.bot), ephemeral=True)
+		view = HelpButtons(self.bot)
+		msg = await ctx.send(embed=embed, view=view, ephemeral=True)
+		view.message = msg
 
 
 	@commands.hybrid_command(
