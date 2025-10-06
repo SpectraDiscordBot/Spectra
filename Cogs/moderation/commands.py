@@ -104,17 +104,18 @@ class Moderation(commands.Cog):
 	@commands.has_permissions(moderate_members=True)
 	@app_commands.describe(case_id="The ID of the case to view")
 	async def case(self, ctx, case_id: int = None):
-		if not case_id:
-			last_case = await cases_collection.find_one({"guild_id": str(ctx.guild.id)}, sort=[("last_case_id", -1)])
-			if not last_case or not last_case.get("cases"):
-				await ctx.send(embed=discord.Embed(description="No cases found."), ephemeral=True)
-				return
-			case_id = last_case["cases"][0]["case_id"]
-		else:
-			doc = await cases_collection.find_one({"guild_id": str(ctx.guild.id)})
+		doc = await cases_collection.find_one({"guild_id": str(ctx.guild.id)})
 		if not doc or not doc.get("cases"):
 			await ctx.send(embed=discord.Embed(description="No cases found."), ephemeral=True)
 			return
+
+		if case_id is None:
+			case = max(doc["cases"], key=lambda c: c["case_id"])
+		else:
+			case = next((c for c in doc["cases"] if c["case_id"] == case_id), None)
+			if not case:
+				await ctx.send(embed=discord.Embed(description="Case not found."), ephemeral=True)
+				return
 
 		case = next((c for c in doc["cases"] if c["case_id"] == case_id), None)
 		if not case:
