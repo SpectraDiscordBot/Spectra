@@ -61,13 +61,15 @@ class Warning_Commands(commands.Cog):
 		if ctx.interaction: msg = await ctx.send(embed=discord.Embed(description="Loading, please wait..."), ephemeral=True)
 
 		member = discord.utils.get(ctx.guild.members, id=user.id)
-		if not member or member.top_role >= ctx.author.top_role:
-			await msg.edit(embed=discord.Embed(description="You cannot warn this user."))
+		if not member or member.top_role.position >= ctx.author.top_role.position:
+			if msg: await msg.edit(embed=discord.Embed(description="You cannot warn this user."))
+			else: await ctx.send(embed=discord.Embed(description="You cannot warn this user."))
 			return
 
 		data = await warning_collection.find_one({"guild_id": str(ctx.guild.id), "logs_channel": {"$exists": True}})
 		if not data:
-			await msg.edit(embed=discord.Embed(description="No warning system has been set up."))
+			if msg: await msg.edit(embed=discord.Embed(description="No warning system has been set up."))
+			else: await ctx.send(embed=discord.Embed(description="No warning system has been set up."))
 			return
 
 		case_id = await self._get_next_case_id(ctx.guild.id)
@@ -165,7 +167,7 @@ class Warning_Commands(commands.Cog):
 		if not member:
 			await ctx.send(embed=discord.Embed(description="Couldn't find the user in the warning."), ephemeral=True)
 			return
-		if member.top_role >= ctx.author.top_role:
+		if member.top_role.position >= ctx.author.top_role.position:
 			await ctx.send(embed=discord.Embed(description="You cannot unwarn this user."), ephemeral=True)
 			return
 
@@ -280,7 +282,7 @@ class Warning_Commands(commands.Cog):
 		if not member:
 			await ctx.send(embed=discord.Embed(description="Couldn't find the user in the warning."), ephemeral=True)
 			return
-		if member.top_role >= ctx.author.top_role:
+		if member.top_role.position >= ctx.author.top_role.position:
 			await ctx.send(embed=discord.Embed(description="You cannot warn this user."), ephemeral=True)
 			return
 		
