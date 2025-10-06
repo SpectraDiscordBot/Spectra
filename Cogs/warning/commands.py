@@ -57,6 +57,7 @@ class Warning_Commands(commands.Cog):
 			await ctx.send(embed=discord.Embed(description="You cannot warn yourself or the bot."))
 			return
 
+		msg = None
 		if ctx.interaction: msg = await ctx.send(embed=discord.Embed(description="Loading, please wait..."), ephemeral=True)
 
 		member = discord.utils.get(ctx.guild.members, id=user.id)
