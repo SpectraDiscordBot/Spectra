@@ -295,6 +295,7 @@ class ManageRoles(commands.Cog):
 	@commands.cooldown(1, 120, commands.BucketType.guild)
 	@commands.has_permissions(manage_roles=True)
 	@commands.bot_has_permissions(manage_roles=True)
+    @app_commands.describe(role="The role to assign.")
 	async def roleall(self, ctx: commands.Context, role: discord.Role):
 		if ctx.guild.id in active_jobs:
 			await ctx.send(embed=discord.Embed(description="A mass role assignment is already being processed in the server, please wait for that to finish."), ephemeral=True)
