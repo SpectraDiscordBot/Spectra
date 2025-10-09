@@ -183,7 +183,7 @@ class Core(commands.Cog):
 	@commands.hybrid_command(name="help", description="Get help with the bot.")
 	@commands.cooldown(1, 5, commands.BucketType.user)
 	@app_commands.describe(command="The specific command you need help with.")
-	async def help(self, ctx: commands.Context, command: str = None):
+	async def help(self, ctx: commands.Context, *, command: str = None):
 		if command is not None:
 			command_obj = self.bot.get_command(command)
 			if command_obj is None or command_obj.name in ["refresh", "verify", "load", "unload", "biggest_server", "shutdown", "blacklist", "unblacklist", "servers", "sync", "botteds"]:
