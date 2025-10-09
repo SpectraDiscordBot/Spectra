@@ -1,17 +1,21 @@
+import asyncio
 import datetime
+import inspect
 import discord
 import time
 import psutil
 from discord.ext import commands
+from discord import app_commands
 from db import custom_prefix_collection, db
 
 class CommandPaginator(discord.ui.View):
-	def __init__(self, bot, commands, per_page=10):
+	def __init__(self, bot, commands, prefix, per_page=10):
 		super().__init__(timeout=120)
 		self.bot = bot
 		self.commands = commands
 		self.per_page = per_page
 		self.current_page = 0
+		self.prefix = prefix or ">"
 		
 	def update_buttons(self):
 		self.previous_page.disabled = self.current_page == 0
@@ -60,7 +64,7 @@ class CommandPaginator(discord.ui.View):
 			value = desc + ("\n" + "\n".join(parts) if parts else "")
 
 			embed.add_field(
-				name=f">{command.qualified_name}",
+				name=f"{self.prefix}{command.qualified_name}",
 				value=value,
 				inline=False,
 			)
@@ -125,7 +129,9 @@ class HelpButtons(discord.ui.View):
 				"botteds"
 			]
 		]
-		paginator = CommandPaginator(self.bot, commands)
+		core_cog = self.bot.get_cog("Core")
+		prefix = await core_cog.get_prefix(self.bot, interaction.message)
+		paginator = CommandPaginator(self.bot, commands, prefix)
 		await interaction.response.send_message(
 			embed=paginator.get_embed(), view=paginator, ephemeral=True
 		)
@@ -175,8 +181,40 @@ class Core(commands.Cog):
 			self.bot.start_time = datetime.datetime.now(datetime.timezone.utc)
 
 	@commands.hybrid_command(name="help", description="Get help with the bot.")
-	@commands.cooldown(1, 15, commands.BucketType.user)
-	async def help(self, ctx: commands.Context):
+	@commands.cooldown(1, 5, commands.BucketType.user)
+	@app_commands.describe(command="The specific command you need help with.")
+	async def help(self, ctx: commands.Context, command: str = None):
+		if command is not None:
+			command_obj = self.bot.get_command(command)
+			if command_obj is None:
+				return await ctx.send("That command does not exist.", ephemeral=True)
+			if command_obj is None:
+				return await ctx.send("That command does not exist.", ephemeral=True)
+			command_help_embed = discord.Embed(
+				title=command_obj.name, description=command_obj.description, color=discord.Color.pink()
+			)
+			command_help_embed.set_author(
+				name=f"Requested by {ctx.author}", icon_url=ctx.author.display_avatar.url
+			)
+			command_help_embed.set_footer(
+				text="Made with ❤ by brutiv & tyler.hers",
+				icon_url=self.bot.user.display_avatar.url,
+			)
+			command_help_embed.add_field(name="Command Usage", value=f"`{ctx.prefix}{command_obj.qualified_name} {command_obj.signature}`", inline=False)
+			def humanize_permission(name: str) -> str:
+				return " ".join(word.capitalize() for word in name.split("_"))
+			can_run_text = ""
+			try:
+				await command_obj.can_run(ctx)
+				can_run_text = "<:Checkmark:1326642406086410317> You can run this command."
+			except commands.MissingPermissions as e:
+				better_permission_name = [humanize_permission(p) for p in e.missing_permissions]
+				can_run_text = "You cannot run this command. You are missing the following permissions: {}".format(", ".join(better_permission_name))
+
+			command_help_embed.add_field(name="Can Run", value=can_run_text, inline=False)
+
+			await ctx.send(embed=command_help_embed, ephemeral=True)
+			return
 		embed = discord.Embed(
 			title="Help Menu", description="Get assistance or information about Spectra.\n\n> List of Commands - View All of Spectra's Commands and Features.\n> Uptime - See How Long Spectra Has Been Up For.\n> Support Server - Spectra's Support Server If You Need Help\n> Documentation - View All of Spectra's Features and Uses", color=discord.Color.pink(), timestamp=datetime.datetime.now(datetime.timezone.utc)
 		)
