@@ -186,9 +186,7 @@ class Core(commands.Cog):
 	async def help(self, ctx: commands.Context, command: str = None):
 		if command is not None:
 			command_obj = self.bot.get_command(command)
-			if command_obj is None:
-				return await ctx.send("That command does not exist.", ephemeral=True)
-			if command_obj is None:
+			if command_obj is None or command_obj.name in ["refresh", "verify", "load", "unload", "biggest_server", "shutdown", "blacklist", "unblacklist", "servers", "sync", "botteds"]:
 				return await ctx.send("That command does not exist.", ephemeral=True)
 			command_help_embed = discord.Embed(
 				title=command_obj.name, description=command_obj.description, color=discord.Color.pink()
