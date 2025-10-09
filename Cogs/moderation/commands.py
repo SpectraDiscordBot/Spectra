@@ -1,11 +1,9 @@
-import asyncio
 import datetime
 import discord
-import os
+import shlex
 from discord.ext import commands
 from discord import app_commands, utils
 from dotenv import load_dotenv
-from motor.motor_asyncio import AsyncIOMotorClient
 from humanfriendly import parse_timespan, InvalidTimespan
 from db import cases_collection
 
@@ -156,7 +154,7 @@ class Moderation(commands.Cog):
 	@commands.has_permissions(moderate_members=True)
 	@commands.bot_has_permissions(moderate_members=True)
 	@commands.cooldown(1, 3, commands.BucketType.user)
-	@app_commands.describe(user="The user to mute", time="Duration of the mute (e.g., 10m, 1h, 1d)", reason="Reason for the mute")
+	@app_commands.describe(user="The user to mute", time="Duration of the mute (e.g., 10m, 1h, 1d)", reason="Reason for the mute, pass --silent to not send a DM to the user")
 	async def mute(self, ctx, user: discord.Member, time: str, *, reason: str):
 		if user.id == ctx.author.id:
 			await ctx.send(embed=discord.Embed(description="You cannot mute yourself."), ephemeral=True)
@@ -182,6 +180,12 @@ class Moderation(commands.Cog):
 			await ctx.send(embed=discord.Embed(description=f"{user.mention} is already muted."), ephemeral=True)
 			return
 		try:
+			reason_args = shlex.split(reason)
+			silent = False
+			if "--silent" in reason_args:
+				silent = True
+				reason_args.remove("--silent")
+				reason = " ".join(reason_args)
 			case_id = await self._get_next_case_id(ctx.guild.id)
 			await user.timeout(utils.utcnow() + datetime.timedelta(seconds=duration), reason=f"[#{case_id}] Moderator: {ctx.author.name}\nReason: {reason}")
 			case_obj = {
@@ -197,10 +201,11 @@ class Moderation(commands.Cog):
 			self.bot.dispatch("modlog", ctx.guild.id, ctx.author.id, "Mute", f"[#{case_id}] Muted {user.mention} with reason: {reason}")
 			if not ctx.interaction: await ctx.message.add_reaction("<:Checkmark:1326642406086410317>")
 			else: await ctx.send(embed=discord.Embed(description=f"<:Checkmark:1326642406086410317> [#{case_id}] Muted {user.mention} for `{time}`."), ephemeral=True)
-			try:
-				await user.send(embed=discord.Embed(description=f"[#{case_id}] You have been muted in **{ctx.guild.name}** for: `{reason}`.", color=discord.Color.red()))
-			except:
-				pass
+			if silent == False:
+				try:
+					await user.send(embed=discord.Embed(description=f"[#{case_id}] You have been muted in **{ctx.guild.name}** for: `{reason}`."))
+				except:
+					pass
 		except Exception as e:
 			await ctx.send(embed=discord.Embed(description="I do not have permission to mute that user."), ephemeral=True)
 			print(e)
@@ -242,8 +247,12 @@ class Moderation(commands.Cog):
 	@commands.has_permissions(ban_members=True)
 	@commands.bot_has_permissions(ban_members=True)
 	@commands.cooldown(1, 3, commands.BucketType.user)
-	@app_commands.describe(user="The user to ban", delete_message_days="Number of days to delete messages", reason="Reason for the ban")
+	@app_commands.describe(user="The user to ban", delete_message_days="Number of days to delete messages", reason="Reason for the ban, pass --silent to not send a DM to the user")
 	async def ban(self, ctx, user: discord.User, delete_message_days: int, *, reason: str = "No Reason Provided"):
+		user_in_guild = False
+		member = discord.utils.get(ctx.guild.members, id=user.id)
+		if member:
+			user_in_guild = True
 		if user.id == ctx.author.id:
 			await ctx.send(embed=discord.Embed(description="You cannot ban yourself."), ephemeral=True)
 			return
@@ -263,6 +272,14 @@ class Moderation(commands.Cog):
 			await ctx.send(embed=discord.Embed(description="Number of days to delete messages cannot be more than 7, or a week."), ephemeral=True)
 			return
 		try:
+			reason_args = shlex.split(reason)
+			silent = False
+			if user_in_guild == False:
+				silent = True
+			elif "--silent" in reason_args:
+				silent = True
+				reason_args.remove("--silent")
+				reason = " ".join(reason_args)
 			case_id = await self._get_next_case_id(ctx.guild.id)
 			await ctx.guild.ban(user, reason=f"[#{case_id}]Moderator: {ctx.author.name}\nReason: {reason}", delete_message_days=delete_message_days)
 			case_obj = {
@@ -278,10 +295,11 @@ class Moderation(commands.Cog):
 			self.bot.dispatch("modlog", ctx.guild.id, ctx.author.id, "Ban", f"[#{case_id}]Banned {user.mention} with reason: {reason}")
 			if not ctx.interaction: await ctx.message.add_reaction("<:Checkmark:1326642406086410317>")
 			else: await ctx.send(embed=discord.Embed(description=f"<:Checkmark:1326642406086410317> [#{case_id}] Banned {user.mention}."), ephemeral=True)
-			try:
-				await user.send(embed=discord.Embed(description=f"[#{case_id}] You have been banned from **{ctx.guild.name}** for: `{reason}`.", color=discord.Color.red()))
-			except:
-				pass
+			if silent == False:
+				try:
+					await user.send(embed=discord.Embed(description=f"[#{case_id}] You have been banned from **{ctx.guild.name}** for: `{reason}`."))
+				except:
+					pass
 		except Exception as e:
 			await ctx.send(embed=discord.Embed(description="I do not have permission to ban that user."), ephemeral=True)
 			print(e)
@@ -290,8 +308,12 @@ class Moderation(commands.Cog):
 	@commands.has_permissions(ban_members=True)
 	@commands.bot_has_permissions(ban_members=True)
 	@commands.cooldown(1, 3, commands.BucketType.user)
-	@app_commands.describe(user="The user to softban", delete_message_days="The number of days to delete messages", reason="Reason for the softban")
+	@app_commands.describe(user="The user to softban", delete_message_days="The number of days to delete messages", reason="Reason for the softban, pass --silent to not send a DM to the user")
 	async def softban(self, ctx, user: discord.User, delete_message_days: int, *, reason: str = "No Reason Provided"):
+		user_in_guild = False
+		member = discord.utils.get(ctx.guild.members, id=user.id)
+		if member:
+			user_in_guild = True
 		if user.id == ctx.author.id:
 			await ctx.send(embed=discord.Embed(description="You cannot softban yourself."), ephemeral=True)
 			return
@@ -313,6 +335,14 @@ class Moderation(commands.Cog):
 		if delete_message_days < 0:
 			delete_message_days = 0
 		try:
+			reason_args = shlex.split(reason)
+			silent = False
+			if user_in_guild == False:
+				silent = True
+			elif "--silent" in reason_args:
+				silent = True
+				reason_args.remove("--silent")
+				reason = " ".join(reason_args)
 			case_id = await self._get_next_case_id(ctx.guild.id)
 			await ctx.guild.ban(user, reason=f"[#{case_id}] [Softban] Moderator: {ctx.author.name}\nReason: {reason}", delete_message_days=delete_message_days)
 			await ctx.guild.unban(user, reason=f"[#{case_id}] [Softban] Moderator: {ctx.author.name}\nReason: {reason}")
@@ -328,6 +358,11 @@ class Moderation(commands.Cog):
 			await self._add_case(ctx.guild.id, case_obj)
 			if not ctx.interaction: await ctx.message.add_reaction("<:Checkmark:1326642406086410317>")
 			else: await ctx.send(embed=discord.Embed(description=f"<:Checkmark:1326642406086410317> [#{case_id}] Softbanned {user.mention}."), ephemeral=True)
+			if silent == False:
+				try:
+					await user.send(embed=discord.Embed(description=f"[#{case_id}] You have been softbanned from **{ctx.guild.name}** for: `{reason}`."))
+				except:
+					pass
 			self.bot.dispatch("modlog", ctx.guild.id, ctx.author.id, "Softban", f"[#{case_id}]Softbanned {user.mention} with reason: {reason}")
 		except Exception as e:
 			await ctx.send(embed=discord.Embed(description="I do not have permission to ban that user."), ephemeral=True)
@@ -337,7 +372,7 @@ class Moderation(commands.Cog):
 	@commands.has_permissions(kick_members=True)
 	@commands.bot_has_permissions(kick_members=True)
 	@commands.cooldown(1, 3, commands.BucketType.user)
-	@app_commands.describe(user="The user to kick", reason="Reason for the kick")
+	@app_commands.describe(user="The user to kick", reason="Reason for the kick, pass --silent to not send a DM to the user")
 	async def kick(self, ctx, user: discord.Member, *, reason: str = "No Reason Provided"):
 		if user.id == ctx.author.id:
 			await ctx.send(embed=discord.Embed(description="You cannot kick yourself."), ephemeral=True)
@@ -352,6 +387,12 @@ class Moderation(commands.Cog):
 			await ctx.send(embed=discord.Embed(description="I cannot kick this user."), ephemeral=True)
 			return
 		try:
+			reason_args = shlex.split(reason)
+			silent = False
+			if "--silent" in reason_args:
+				silent = True
+				reason_args.remove("--silent")
+				reason = " ".join(reason_args)
 			case_id = await self._get_next_case_id(ctx.guild.id)
 			await user.kick(reason=f"[#{case_id}] Moderator: {ctx.author.name}\nReason: {reason}")
 			case_obj = {
@@ -367,10 +408,11 @@ class Moderation(commands.Cog):
 			self.bot.dispatch("modlog", ctx.guild.id, ctx.author.id, "Kick", f"[#{case_id}] Kicked {user.mention} with reason: {reason}")
 			if not ctx.interaction: await ctx.message.add_reaction("<:Checkmark:1326642406086410317>")
 			else: await ctx.send(embed=discord.Embed(description=f"<:Checkmark:1326642406086410317> [#{case_id}] Kicked {user.mention}."), ephemeral=True)
-			try:
-				await user.send(embed=discord.Embed(description=f"[#{case_id}] You have been kicked from **{ctx.guild.name}** for: `{reason}`.", color=discord.Color.red()))
-			except:
-				pass
+			if silent == False:
+				try:
+					await user.send(embed=discord.Embed(description=f"[#{case_id}] You have been kicked from **{ctx.guild.name}** for: `{reason}`."))
+				except:
+					pass
 		except Exception as e:
 			await ctx.send("I do not have permission to kick that user.", ephemeral=True)
 			print(e)
