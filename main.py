@@ -268,6 +268,7 @@ class Bot(commands.AutoShardedBot):
 				description=f"Hello! I'm Spectra, a multipurpose bot with moderation, auto-role, welcome messages, reaction roles, and much more!\n\nYou were the one who invited me to **{guild.name}**. If you need any help, feel free to join my [Support Server](https://discord.gg/fcPF66DubA) or check out my website at [spectrabot.pages.dev](https://spectrabot.pages.dev)!",
 				color=discord.Color.pink(),
 			)
+			embed.add_field(name="How to get started", value="Type `/help` (or `/help <command>` to get help with a command) to get started! Or view our [documentation](https://www.notion.so/spectra-docs/Introduction-17f36833aca1806bbd11cd5faa438fef)")
 			embed.set_thumbnail(url=self.user.display_avatar.url)
 			embed.set_footer(
 				text="Made with ❤ by brutiv & tyler.hers",
