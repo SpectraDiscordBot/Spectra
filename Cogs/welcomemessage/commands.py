@@ -245,6 +245,9 @@ class WelcomeMessage_Commands(commands.Cog):
 		channel="The channel you want to send the message to.",
 	)
 	async def welcome_setup(self, ctx, message: str, channel: discord.TextChannel):
+		if not ctx.interaction:
+			await ctx.send("Due to security reasons, this command cannot be used via prefix.")
+			return
 		guild_id = str(ctx.guild.id)
 		if await welcome_messages_collection.find_one({"guild_id": guild_id}):
 			await ctx.send(
@@ -279,6 +282,9 @@ class WelcomeMessage_Commands(commands.Cog):
 	@commands.has_permissions(manage_guild=True)
 	@commands.cooldown(1, 30, commands.BucketType.user)
 	async def welcome_embed_setup(self, ctx: commands.Context):
+		if not ctx.interaction:
+			await ctx.send("Due to security reasons, this command cannot be used via prefix.")
+			return
 		view = WelcomeEmbedSetupButtonView(self.bot, ctx)
 		embed = discord.Embed(
 			title="Welcome Embed Setup",
@@ -314,6 +320,9 @@ class WelcomeMessage_Commands(commands.Cog):
 	@commands.cooldown(1, 5, commands.BucketType.user)
 	@app_commands.describe(message="The message to send in their DMs")
 	async def welcome_dm_setup(self, ctx: commands.Context, message: str):
+		if not ctx.interaction:
+			await ctx.send("Due to security reasons, this command cannot be used via prefix.")
+			return
 		guild_id = str(ctx.guild.id)
 		await welcome_messages_collection.update_one(
 			{"guild_id": guild_id},
@@ -344,6 +353,9 @@ class WelcomeMessage_Commands(commands.Cog):
 	@commands.has_permissions(manage_guild=True)
 	@commands.cooldown(1, 5, commands.BucketType.user)
 	async def welcome_dm_remove(self, ctx):
+		if not ctx.interaction:
+			await ctx.send("Due to security reasons, this command cannot be used via prefix.")
+			return
 		guild_id = str(ctx.guild.id)
 		data = await welcome_messages_collection.find_one(
 			{"guild_id": guild_id, "dm_enabled": True}
@@ -384,6 +396,9 @@ class WelcomeMessage_Commands(commands.Cog):
 	@commands.has_permissions(manage_guild=True)
 	@commands.cooldown(1, 5, commands.BucketType.user)
 	async def welcome_remove(self, ctx):
+		if not ctx.interaction:
+			await ctx.send("Due to security reasons, this command cannot be used via prefix.")
+			return
 		guild_id = str(ctx.guild.id)
 		if await welcome_messages_collection.find_one({"guild_id": guild_id}):
 			query = {"guild_id": str(ctx.guild.id)}
