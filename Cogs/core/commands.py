@@ -57,7 +57,7 @@ class CommandPaginator(discord.ui.View):
 					if param.default is param.empty:
 						args.append(f"<{name}>")
 					else:
-						args.append(f"[{name}={param.default}]")
+						args.append(f"<{name}>(default is {param.default})")
 				parts.append(f"Arguments: {' '.join(args)}")
 
 			desc = command.description or "No description"
