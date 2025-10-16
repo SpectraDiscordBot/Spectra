@@ -118,6 +118,7 @@ class ServerStats(commands.Cog):
             await ctx.send(embed=discord.Embed(description=f"A counter category already exists."), ephemeral=True)
             return
         category = await ctx.guild.create_category("Server Stats", reason="Creating counter category for server stats", position=0)
+        await category.edit(position=0)
         await server_stats_collection.insert_one({"guild_id": guild_id, "category_id": category.id, "counters": []})
         await self.load_guild_config(guild_id)
         await ctx.send(embed=discord.Embed(description=f"<:Checkmark:1326642406086410317> Counter category created successfully."), ephemeral=True)
