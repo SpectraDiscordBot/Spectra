@@ -1,12 +1,18 @@
-import asyncio
+import logging
 import datetime
-import inspect
 import discord
 import time
 import psutil
 from discord.ext import commands
 from discord import app_commands
 from db import custom_prefix_collection, db
+
+
+logging.basicConfig(
+	filename='bot_usage.log',
+	level=logging.INFO,
+	format='%(asctime)s - %(levelname)s - %(message)s'
+)
 
 class CommandPaginator(discord.ui.View):
 	def __init__(self, bot, commands, prefix, per_page=10):
@@ -179,6 +185,19 @@ class Core(commands.Cog):
 	async def on_ready(self):
 		if not hasattr(self.bot, "start_time"):
 			self.bot.start_time = datetime.datetime.now(datetime.timezone.utc)
+	
+	@commands.Cog.listener()
+	async def on_command(self, ctx: commands.Context):
+		logging.info(f"Command: {ctx.command} | User: {ctx.author} ({ctx.author.id}) | "
+					f"Guild: {ctx.guild} ({ctx.guild.id}) | Channel: {ctx.channel.id}")
+
+	@commands.Cog.listener()
+	async def on_interaction(self, interaction: discord.Interaction):
+		if interaction.type == discord.InteractionType.application_command:
+			logging.info(f"Slash Command: {interaction.command.name} | "
+						f"User: {interaction.user} ({interaction.user.id}) | "
+						f"Guild: {interaction.guild} ({interaction.guild.id}) | "
+						f"Channel: {interaction.channel.id}")
 
 	@commands.hybrid_command(name="help", description="Get help with the bot.")
 	@commands.cooldown(1, 5, commands.BucketType.user)

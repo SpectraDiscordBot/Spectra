@@ -201,6 +201,7 @@ class Moderation(commands.Cog):
 			async def on_timeout(self):
 				for child in self.children:
 					child.disabled = True
+				await self.message.edit(view=self)
 
 			async def interaction_check(self, interaction: discord.Interaction) -> bool:
 				return interaction.user.id == self.author_id
@@ -295,6 +296,7 @@ class Moderation(commands.Cog):
 			async def on_timeout(self):
 				for child in self.children:
 					child.disabled = True
+				await self.message.edit(view=self)
 
 			async def interaction_check(self, interaction: discord.Interaction) -> bool:
 				return interaction.user.id == self.author_id
