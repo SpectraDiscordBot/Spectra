@@ -3,11 +3,13 @@ from discord import app_commands
 from discord.ext import commands, tasks
 from db import server_stats_collection
 import asyncio
+import datetime
 
 class ServerStats(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.cache = {}
+        self.channel_update_cache = {}
 
     async def cog_unload(self):
         self.periodic_update.stop()
@@ -56,27 +58,53 @@ class ServerStats(commands.Cog):
             count = len([t for t in guild.threads])
 
         display_name = self.get_counter_display_name(counter_type, custom_name)
-        try: await channel.edit(name=f"{display_name}: {count}", reason="Updating server stats counter")
+        new_name = f"{display_name}: {count}"
+
+        now = datetime.datetime.utcnow()
+        cache_entry = self.channel_update_cache.get(channel.id)
+
+        try:
+            current_name = channel.name
+        except Exception:
+            current_name = None
+
+        if current_name == new_name:
+            return
+
+        if cache_entry:
+            last_name = cache_entry.get("name")
+            last_update = cache_entry.get("last_update")
+            if last_name == new_name and last_update and (now - last_update).total_seconds() < 15:
+                return
+
+        try:
+            await channel.edit(name=new_name, reason="Updating server stats counter")
+            self.channel_update_cache[channel.id] = {"name": new_name, "last_update": now}
         except Exception as e:
             print(f"Failed to update counter channel name: {e}")
+            self.channel_update_cache.setdefault(channel.id, {})["last_update"] = now
 
     @tasks.loop(seconds=60)
     async def periodic_update(self):
         if not self.bot.ready:
             return
-        for guild_id, config in self.cache.items():
+        for guild_id, config in list(self.cache.items()):
             guild = self.bot.get_guild(int(guild_id))
             if not guild:
                 continue
             counters = config.get("counters", [])
             for counter in counters:
-                await asyncio.sleep(1)
-                await self.update_counter(
-                    guild, 
-                    counter["type"], 
-                    counter["channel_id"],
-                    counter.get("custom_name")
-                )
+                await asyncio.sleep(0.5)
+                try:
+                    await self.update_counter(
+                        guild,
+                        counter["type"],
+                        counter["channel_id"],
+                        counter.get("custom_name")
+                    )
+                except Exception as e:
+                    print(f"Error updating server stat for guild {guild_id}, counter {counter}: {e}")
+            await asyncio.sleep(0.2)
 
     @commands.hybrid_group(name="serverstats")
     async def serverstats(self, ctx):
