@@ -150,6 +150,198 @@ class Moderation(commands.Cog):
 		else:
 			await ctx.send(embed=discord.Embed(description="Case not found.", ephemeral=True))
 
+	@commands.hybrid_group(name="mod", description="Mod logs and mod stats commands.")
+	async def mod_(self, ctx):
+		pass
+
+	@mod_.command(name="logs", description="Get a list of a user's moderation logs.")
+	@commands.has_permissions(moderate_members=True)
+	@app_commands.describe(user="The user to get logs for")
+	async def mod_logs(self, ctx, user: discord.User):
+		await ctx.defer(ephemeral=True)
+		doc = await cases_collection.find_one({"guild_id": str(ctx.guild.id)})
+		if not doc or not doc.get("cases"):
+			await ctx.send(embed=discord.Embed(description="No cases found."), ephemeral=True)
+			return
+		cases = doc.get("cases", [])
+		user_cases = [c for c in cases if f"[{user.id}]" in str(c.get("target", ""))]
+		if not user_cases:
+			await ctx.send(embed=discord.Embed(description="No cases found for that user."), ephemeral=True)
+			return
+		user_cases.sort(key=lambda c: c.get("case_id", 0), reverse=True)
+		per_page = 5
+		total = len(user_cases)
+		pages = (total + per_page - 1) // per_page
+		current = 0
+
+		def make_embed(page_idx: int):
+			start = page_idx * per_page
+			end = start + per_page
+			chunk = user_cases[start:end]
+			embed = discord.Embed(title=f"Mod Logs for {user} ({user.id})", description=f"Showing cases {start+1}-{min(end,total)} of {total}", timestamp=datetime.datetime.utcnow())
+			for c in chunk:
+				case_id = c.get("case_id")
+				type_ = c.get("type", "Unknown")
+				target = c.get("target", "Unknown")
+				moderator = c.get("moderator", "Unknown")
+				reason = c.get("reason", "No reason provided")
+				time = self.discord_timestamp(c.get("timestamp"), style="F") if c.get("timestamp") else "Unknown"
+				value = f"Type: {type_}\nTarget: {target}\nModerator: {moderator}\nReason: {reason}\nTime: {time}"
+				embed.add_field(name=f"Case #{case_id}", value=value, inline=False)
+			embed.set_footer(text=f"Page {page_idx+1}/{pages}")
+			embed.set_author(name=f"Requested by {ctx.author.display_name}", icon_url=ctx.author.display_avatar.url)
+			return embed
+
+		class Pager(discord.ui.View):
+			def __init__(self, author_id: int):
+				super().__init__(timeout=120)
+				self.author_id = author_id
+				self.current = 0
+
+			async def on_timeout(self):
+				for child in self.children:
+					child.disabled = True
+
+			async def interaction_check(self, interaction: discord.Interaction) -> bool:
+				return interaction.user.id == self.author_id
+
+			@discord.ui.button(label="Previous", style=discord.ButtonStyle.secondary)
+			async def previous(self, interaction: discord.Interaction, button: discord.ui.Button):
+				if self.current <= 0:
+					return
+				self.current -= 1
+				embed = make_embed(self.current)
+				for child in self.children:
+					if getattr(child, 'label', None) == 'Previous':
+						child.disabled = (self.current == 0)
+					if getattr(child, 'label', None) == 'Next':
+						child.disabled = (self.current >= pages - 1)
+				await interaction.response.edit_message(embed=embed, view=self)
+
+			@discord.ui.button(label="Next", style=discord.ButtonStyle.secondary)
+			async def next(self, interaction: discord.Interaction, button: discord.ui.Button):
+				if self.current >= pages - 1:
+					return
+				self.current += 1
+				embed = make_embed(self.current)
+				for child in self.children:
+					if getattr(child, 'label', None) == 'Previous':
+						child.disabled = (self.current == 0)
+					if getattr(child, 'label', None) == 'Next':
+						child.disabled = (self.current >= pages - 1)
+				await interaction.response.edit_message(embed=embed, view=self)
+
+			@discord.ui.button(label="Close", style=discord.ButtonStyle.danger)
+			async def close(self, interaction: discord.Interaction, button: discord.ui.Button):
+				self.stop()
+				try:
+					await interaction.response.edit_message(content="Closed.", view=None)
+				except Exception:
+					pass
+
+		view = Pager(ctx.author.id)
+		for child in view.children:
+			if getattr(child, "label", None) == "Previous":
+				child.disabled = True
+			if getattr(child, "label", None) == "Next":
+				child.disabled = (pages <= 1)
+		embed = make_embed(0)
+		await ctx.send(embed=embed, view=view, ephemeral=True)
+
+	@mod_.command(name="stats", description="Get a list of moderation actions by a moderator")
+	@commands.has_permissions(moderate_members=True)
+	@app_commands.describe(user="The user to get stats for")
+	async def mod_stats(self, ctx, user: discord.User):
+		await ctx.defer(ephemeral=True)
+		doc = await cases_collection.find_one({"guild_id": str(ctx.guild.id)})
+		if not doc or not doc.get("cases"):
+			await ctx.send(embed=discord.Embed(description="No cases found."), ephemeral=True)
+			return
+		cases = doc.get("cases", [])
+		user_cases = [c for c in cases if f"[{user.id}]" in str(c.get("moderator", ""))]
+		if not user_cases:
+			await ctx.send(embed=discord.Embed(description="No cases found for that user."), ephemeral=True)
+			return
+		user_cases.sort(key=lambda c: c.get("case_id", 0), reverse=True)
+		per_page = 5
+		total = len(user_cases)
+		pages = (total + per_page - 1) // per_page
+		current = 0
+
+		def make_embed(page_idx: int):
+			start = page_idx * per_page
+			end = start + per_page
+			chunk = user_cases[start:end]
+			embed = discord.Embed(title=f"Mod Stats for {user} ({user.id})", description=f"Showing cases {start+1}-{min(end,total)} of {total}", timestamp=datetime.datetime.utcnow())
+			for c in chunk:
+				case_id = c.get("case_id")
+				type_ = c.get("type", "Unknown")
+				target = c.get("target", "Unknown")
+				moderator = c.get("moderator", "Unknown")
+				reason = c.get("reason", "No reason provided")
+				time = self.discord_timestamp(c.get("timestamp"), style="F") if c.get("timestamp") else "Unknown"
+				value = f"Type: {type_}\nTarget: {target}\nModerator: {moderator}\nReason: {reason}\nTime: {time}"
+				embed.add_field(name=f"Case #{case_id}", value=value, inline=False)
+			embed.set_footer(text=f"Page {page_idx+1}/{pages}")
+			embed.set_author(name=f"Requested by {ctx.author.display_name}", icon_url=ctx.author.display_avatar.url)
+			return embed
+
+		class Pager(discord.ui.View):
+			def __init__(self, author_id: int):		
+				super().__init__(timeout=120)
+				self.author_id = author_id
+				self.current = 0
+
+			async def on_timeout(self):
+				for child in self.children:
+					child.disabled = True
+
+			async def interaction_check(self, interaction: discord.Interaction) -> bool:
+				return interaction.user.id == self.author_id
+
+			@discord.ui.button(label="Previous", style=discord.ButtonStyle.secondary)
+			async def previous(self, interaction: discord.Interaction, button: discord.ui.Button):
+				if self.current <= 0:
+					return
+				self.current -= 1
+				embed = make_embed(self.current)
+				for child in self.children:
+					if getattr(child, 'label', None) == 'Previous':
+						child.disabled = (self.current == 0)
+					if getattr(child, 'label', None) == 'Next':
+						child.disabled = (self.current >= pages - 1)
+				await interaction.response.edit_message(embed=embed, view=self)
+
+			@discord.ui.button(label="Next", style=discord.ButtonStyle.secondary)
+			async def next(self, interaction: discord.Interaction, button: discord.ui.Button):
+				if self.current >= pages - 1:
+					return
+				self.current += 1
+				embed = make_embed(self.current)
+				for child in self.children:
+					if getattr(child, 'label', None) == 'Previous':
+						child.disabled = (self.current == 0)
+					if getattr(child, 'label', None) == 'Next':
+						child.disabled = (self.current >= pages - 1)
+				await interaction.response.edit_message(embed=embed, view=self)
+
+			@discord.ui.button(label="Close", style=discord.ButtonStyle.danger)
+			async def close(self, interaction: discord.Interaction, button: discord.ui.Button):
+				self.stop()
+				try:
+					await interaction.response.edit_message(content="Closed.", view=None)
+				except Exception:
+					pass
+
+		view = Pager(ctx.author.id)
+		for child in view.children:
+			if getattr(child, 'label', None) == 'Previous':
+				child.disabled = True
+			if getattr(child, 'label', None) == 'Next':
+				child.disabled = (pages <= 1)
+		embed = make_embed(0)
+		await ctx.send(embed=embed, view=view, ephemeral=True)
+
 	@commands.hybrid_command(name="mute", description="Mute a user.", aliases=["timeout", "m", "tm", "silence"])
 	@commands.has_permissions(moderate_members=True)
 	@commands.bot_has_permissions(moderate_members=True)
