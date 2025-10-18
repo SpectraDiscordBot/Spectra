@@ -142,7 +142,8 @@ class ModLog(commands.Cog):
 				title="Moderation Logs",
 				description=f"Moderation logs have been disabled by {ctx.author.mention}.",
 			)
-			await channel.send(embed=embed)
+			try: await channel.send(embed=embed)
+			except: pass
 			await modlog_collection.delete_one({"guild_id": guild_id})
 			await ctx.send(
 				f"<:switch_off:1326648782393180282> Moderation logs have been disabled.",
