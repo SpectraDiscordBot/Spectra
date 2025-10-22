@@ -27,7 +27,7 @@ class ReactionRoleCommands(commands.Cog):
 			default.update(data)
 		return default
 
-	@commands.hybrid_group(name="reaction-role")
+	@commands.hybrid_group(name="reaction-role", description="Commands for managing reaction and button roles")
 	async def reaction_role(self, ctx):
 		pass
 

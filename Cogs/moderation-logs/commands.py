@@ -80,7 +80,7 @@ class ModLog(commands.Cog):
 	async def on_modlog(self, guild_id, action_taker, action, message):
 		await self.send_modlog(guild_id, action_taker, action, message)
 
-	@commands.hybrid_group(name="modlogs")
+	@commands.hybrid_group(name="modlogs", description="Commands for managing modlogs")
 	async def modlogs(self, ctx):
 		pass
 

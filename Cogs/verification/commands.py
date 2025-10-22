@@ -56,7 +56,7 @@ class Verification(commands.Cog):
             print(f"Failed to verify member: {e}")
             await interaction.response.send_message("❌ An error occurred during verification.", ephemeral=True)
 
-    @commands.hybrid_group(name="verification")
+    @commands.hybrid_group(name="verification", description="Manage the verification system")
     async def verification(self, ctx):
         pass
 

@@ -201,7 +201,7 @@ class WelcomeMessage_Commands(commands.Cog):
 	async def on_member_join(self, member):
 		await self.send_welcome(member)
 		
-	@commands.hybrid_group(name="welcome")
+	@commands.hybrid_group(name="welcome", description="Commands for managing welcome messages")
 	async def welcome(self, ctx):
 		pass
 

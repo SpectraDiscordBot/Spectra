@@ -16,7 +16,8 @@ class Notes(commands.Cog):
 		self.bot = bot
 
 	@commands.hybrid_group(
-		name="notes"
+		name="notes",
+		description="Commands for managing user notes",
 	)
 	async def note_group(self, ctx: commands.Context):
 		pass

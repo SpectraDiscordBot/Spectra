@@ -55,7 +55,7 @@ class ManageRoles(commands.Cog):
 	async def cog_load(self):
 		self.bot.loop.create_task(worker())
 
-	@commands.hybrid_group(name="role")
+	@commands.hybrid_group(name="role", description="Commands for managing roles.")
 	async def manage_roles(self, ctx):
 		pass
 

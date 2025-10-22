@@ -106,7 +106,7 @@ class ServerStats(commands.Cog):
                     print(f"Error updating server stat for guild {guild_id}, counter {counter}: {e}")
             await asyncio.sleep(0.2)
 
-    @commands.hybrid_group(name="serverstats")
+    @commands.hybrid_group(name="serverstats", description="Commands for managing server statistics counters")
     async def serverstats(self, ctx):
         pass
 
