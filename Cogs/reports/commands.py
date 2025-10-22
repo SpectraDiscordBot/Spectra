@@ -7,7 +7,7 @@ class Report_Commands(commands.Cog):
 	def __init__(self, bot):
 		self.bot = bot
 
-	@commands.hybrid_group(name="reports")
+	@commands.hybrid_group(name="reports", description="Commands for managing user reports")
 	async def reports(self, ctx):
 		pass
 
