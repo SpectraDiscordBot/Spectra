@@ -109,7 +109,7 @@ class AntiToxicity(commands.Cog):
 
     # Commands
 
-    @commands.hybrid_group(name="anti-toxicity")
+    @commands.hybrid_group(name="anti-toxicity", description="Commands for managing anti-toxicity")
     async def anti_toxicity(self, ctx):
         pass
 

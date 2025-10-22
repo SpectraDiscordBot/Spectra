@@ -142,7 +142,7 @@ class AntiPing(commands.Cog):
 				)
 				break
 			
-	@commands.hybrid_group(name="anti-ping")
+	@commands.hybrid_group(name="anti-ping", description="Commands for managing anti-ping")
 	async def anti_ping(self, ctx):
 		pass
 	

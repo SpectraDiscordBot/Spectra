@@ -297,7 +297,7 @@ class AntiSpam(commands.Cog):
                 except Exception as e:
                     print(e)
 
-    @commands.hybrid_group(name="anti-spam")
+    @commands.hybrid_group(name="anti-spam", description="Commands for managing anti-spam")
     async def antispam(self, ctx):
         pass
 
