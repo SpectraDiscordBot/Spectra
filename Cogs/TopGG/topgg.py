@@ -36,7 +36,7 @@ class TopGG(commands.Cog):
 			description="Thank you for voting! ♥\nYou can [vote again in 12 hours!](https://top.gg/bot/1279512390756470836/vote)",
 			color=discord.Colour.pink()
 		)
-		embed.add_field(name="Why vote?", value="Voting helps get Spectra out there and shows support for the bot! It also helps us get more features and improvements!\n\nYou can also join our [Support Server](https://discord.gg/fcPF66DubA) to stay updated with the latest news and updates!")
+		embed.add_field(name="Why vote?", value="Voting helps get Spectra out there and shows support for the bot! It also helps us improve the bot and add more features!\n\nYou can also join our [Support Server](https://discord.gg/fcPF66DubA) to stay updated with the latest news and updates!")
 		embed.set_footer(text="Spectra", icon_url=self.bot.user.display_avatar.url)
 		button = discord.ui.Button(label="Vote Here!", url="https://top.gg/bot/1279512390756470836/vote")
 		view = discord.ui.View()
