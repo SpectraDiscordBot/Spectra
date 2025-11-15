@@ -34,6 +34,9 @@ class Moderation(commands.Cog):
 		if limit < 1:
 			await ctx.send(embed=discord.Embed(description="Please specify a number between 1 and 250."), ephemeral=True)
 			return
+		
+		if not ctx.interaction:
+			await ctx.message.add_reaction("<a:loading:1439292873756512288>")
 
 		messages = None
 		if ctx.interaction:
@@ -51,7 +54,10 @@ class Moderation(commands.Cog):
 		deleted_count = len(messages_to_delete)
 		self.bot.dispatch("modlog", ctx.guild.id, ctx.author.id, "Purge", f"Purged {deleted_count} messages in {ctx.channel.mention}\nReason: {reason}")
 		try:
-			if not ctx.interaction: await ctx.message.add_reaction("<:Checkmark:1326642406086410317>")
+			if not ctx.interaction: 
+				try: await ctx.message.clear_reactions()
+				except: pass
+				await ctx.message.add_reaction("<:Checkmark:1326642406086410317>")
 			else:
 				embed = discord.Embed(
 					title="Purge Summary",
