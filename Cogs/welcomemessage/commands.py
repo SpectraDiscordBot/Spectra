@@ -36,12 +36,12 @@ class WelcomeEmbedSetupModal(Modal, title="Setup Welcome Embed"):
 		embed_data = {
 			"title": self.title_input.value.strip(),
 			"description": self.description_input.value.strip(),
-			"color": f"0x{color_str.upper()}",
+			"color": color_str.upper(),
 			"image": self.image_url_input.value.strip(),
 			"thumbnail": self.thumbnail_url_input.value.strip(),
 			"fields": [],
 			"footer": {},
-			"author": {"name": "", "icon_url": "self.author_icon_url_input.value.strip(", "url": ""},
+			"author": {},
 		}
 
 		guild_id = str(self.ctx.guild.id)
@@ -103,9 +103,18 @@ class WelcomeMessage_Commands(commands.Cog):
 				.replace("{discriminator}", member.discriminator)
 			)
 
-		color = (
-			int(data.get("color", "0x2F3136"), 16) if data.get("color") else 0x2F3136
-		)
+		color = 0x2F3136
+		raw_color = data.get("color")
+		if raw_color:
+			cs = str(raw_color).strip()
+			if cs.startswith("0x") or cs.startswith("0X"):
+				cs = cs[2:]
+			if cs.startswith("#"):
+				cs = cs[1:]
+			try:
+				color = int(cs, 16)
+			except Exception:
+				color = 0x2F3136
 		embed = discord.Embed(
 			title=replace_vars(data.get("title", "")),
 			description=replace_vars(data.get("description", "")),
@@ -155,7 +164,10 @@ class WelcomeMessage_Commands(commands.Cog):
 				embed_data = data.get("embed")
 				embeds = []
 				if embed_data:
-					embeds.append(self.build_embed(embed_data, member))
+					try:
+						embeds.append(self.build_embed(embed_data, member))
+					except Exception as e:
+						print(f"Failed to build welcome embed for guild {guild_id}: {e}")
 				try:
 					if embeds:
 						await channel.send(
@@ -182,7 +194,10 @@ class WelcomeMessage_Commands(commands.Cog):
 			dm_embed_data = data.get("dm_embed")
 			embeds = []
 			if dm_embed_data:
-				embeds.append(self.build_embed(dm_embed_data, member))
+				try:
+					embeds.append(self.build_embed(dm_embed_data, member))
+				except Exception as e:
+					print(f"Failed to build DM welcome embed for guild {guild_id}: {e}")
 			try:
 				if embeds:
 					await member.send(
@@ -423,6 +438,4 @@ class WelcomeMessage_Commands(commands.Cog):
 
 async def setup(bot):
 	cog = WelcomeMessage_Commands(bot)
-	configs = await welcome_messages_collection.find().to_list(length=None)
-	await asyncio.gather(*[cog.load_guild_welcome(int(c["guild_id"])) for c in configs])
 	await bot.add_cog(cog)
