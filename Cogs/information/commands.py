@@ -12,6 +12,8 @@ class Information(commands.Cog):
         pass
 
     @info.command(name="user", description="Get information about a user")
+    @app_commands.describe(user="The user to get information about")
+    @commands.cooldown(1, 5, commands.BucketType.user)
     async def info_user(self, ctx: commands.Context, user: discord.Member = None):
         await ctx.defer(ephemeral=True)
         if user == None:
@@ -34,6 +36,7 @@ class Information(commands.Cog):
         await ctx.send(embed=embed)
 
     @info.command(name="server", description="Get information about the server")
+    @commands.cooldown(1, 5, commands.BucketType.user)
     async def info_server(self, ctx):
         await ctx.defer(ephemeral=True)
         embed = discord.Embed()
@@ -46,6 +49,8 @@ class Information(commands.Cog):
         await ctx.send(embed=embed)
 
     @info.command(name="avatar", description="Get the avatar of a user")
+    @app_commands.describe(user="The user to get the avatar of")
+    @commands.cooldown(1, 5, commands.BucketType.user)
     async def info_avatar(self, ctx: commands.Context, user: discord.User = None):
         await ctx.defer(ephemeral=True)
         if user == None:
@@ -56,6 +61,7 @@ class Information(commands.Cog):
         await ctx.send(embed=embed)
 
     @info.command(name="icon", description="Get the icon of the server")
+    @commands.cooldown(1, 5, commands.BucketType.user)
     async def info_icon(self, ctx: commands.Context):
         await ctx.defer(ephemeral=True)
         if not ctx.guild.icon:
@@ -67,6 +73,7 @@ class Information(commands.Cog):
         await ctx.send(embed=embed)
 
     @info.command(name="banner", description="Get the banner of the server")
+    @commands.cooldown(1, 5, commands.BucketType.user)
     async def info_banner(self, ctx: commands.Context):
         await ctx.defer(ephemeral=True)
         if not ctx.guild.banner:
