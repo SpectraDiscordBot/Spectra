@@ -39,9 +39,32 @@ async def get_prefix(client, message):
 	return prefix
 
 async def cleanup_guild(guild_id):
-    collections = await db.list_collection_names()
-    for name in collections:
-        await db[name].delete_many({"guild_id": guild_id})
+	# prepare both string and int forms
+	gid_str = str(guild_id)
+	try:
+		gid_int = int(guild_id)
+	except Exception:
+		gid_int = None
+
+	collections = await db.list_collection_names()
+	keys_to_check = ["guild_id", "guild", "guildId", "server_id"]
+
+	for name in collections:
+		coll = db[name]
+		or_clauses = []
+		for k in keys_to_check:
+			or_clauses.append({k: gid_str})
+			if gid_int is not None:
+				or_clauses.append({k: gid_int})
+
+		if not or_clauses:
+			continue
+
+		query = {"$or": or_clauses}
+		try:
+			await coll.delete_many(query)
+		except Exception:
+			continue
 
 
 # Bot
@@ -73,6 +96,7 @@ class Bot(commands.AutoShardedBot):
 				self.prefix_cache[doc["guild_id"]] = doc["prefix"]
 			await self.load_extension("jishaku"); print("✅ | Loaded Jishaku")
 			await self.load_extension("Cogs.core.commands"); print("✅ | Loaded Core Commands")
+			await self.load_extension("Cogs.anti-raid.commands"); print("✅ | Loaded Anti-Raid Commands")
 			await self.load_extension("Cogs.autorole.commands"); print("✅ | Loaded AutoRole Commands")
 			await self.load_extension("Cogs.reaction-roles.commands"); print("✅ | Loaded Reaction Role Commands")
 			await self.load_extension("Cogs.welcomemessage.commands"); print("✅ | Loaded Welcome Message Commands")
@@ -116,9 +140,9 @@ class Bot(commands.AutoShardedBot):
 			)
 			await ctx.send(msg, ephemeral=True)
 		elif isinstance(error, commands.MissingPermissions):
-			msg = "You are missing the following permissions: {}".format(
-				", ".join(error.missing_permissions)
-			)
+			formatted_perms = ", ".join(error.missing_permissions)
+            formatted_perms = formatted_perms.replace("_", " ").replace("guild", "server").title()
+			msg = f"You are missing the following permissions: {formatted_perms}"
 			await ctx.send(msg, ephemeral=True)
 		elif isinstance(error, commands.MissingRequiredArgument):
 			required_params = [
@@ -211,9 +235,9 @@ class Bot(commands.AutoShardedBot):
 					interaction.user.mention, msg, delete_after=5
 				)
 		elif isinstance(error, app_commands.MissingPermissions):
-			msg = "You are missing the following permissions: {}".format(
-				", ".join(error.missing_permissions)
-			)
+			formatted_perms = ", ".join(error.missing_permissions)
+            formatted_perms = formatted_perms.replace("_", " ").replace("guild", "server").title()
+			msg = f"You are missing the following permissions: {formatted_perms}"
 			try:
 				await interaction.response.send_message(msg, ephemeral=True)
 			except:
@@ -221,9 +245,9 @@ class Bot(commands.AutoShardedBot):
 					interaction.user.mention, msg, delete_after=5
 				)
 		elif isinstance(error, commands.MissingPermissions):
-			msg = "You are missing the following permissions: {}".format(
-				", ".join(error.missing_permissions)
-			)
+			formatted_perms = ", ".join(error.missing_permissions)
+            formatted_perms = formatted_perms.replace("_", " ").replace("guild", "server").title()
+			msg = f"You are missing the following permissions: {formatted_perms}"
 			try:
 				await interaction.response.send_message(msg, ephemeral=True)
 			except:
