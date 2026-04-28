@@ -12,7 +12,7 @@
 
 ### ![Last Commit](https://img.shields.io/github/last-commit/SpectraDiscordBot/Spectra?label=Last%20Updated)
 
-
+> Warning: The bot's code is mostly legacy. I'll see if I can do a rewrite soon, DM me (@brutiv on Discord) if you want to help.
 
 Support Spectra by [voting on TopGG](https://top.gg/bot/1279512390756470836) ⭐  
 

@@ -67,7 +67,11 @@ class Moderation(commands.Cog):
 				embed.add_field(name="Purged by", value=ctx.author.mention, inline=True)
 				embed.add_field(name="Reason", value=reason or "No reason provided.", inline=False)
 				if skipped:
-					skipped_preview = "\n".join([f"**{msg.author}**: {discord.utils.escape_markdown((msg.content[:50] + "...") if len(msg.content) > 50 else msg.content)}" for msg in skipped[:5] if msg.content])
+					skipped_preview = "\n".join([
+                        f"**{msg.author}**: {discord.utils.escape_markdown((msg.content[:50] + '...') if len(msg.content) > 50 else msg.content)}"
+                        for msg in skipped[:5]
+                        if msg.content
+                    ])
 					embed.add_field(name="Skipped Messages (Older than 14 days)", value=skipped_preview or "No skipped messages.", inline=False)
 				await ctx.send(embed=embed, ephemeral=True)
 		except discord.HTTPException:

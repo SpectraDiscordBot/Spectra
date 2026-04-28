@@ -3,9 +3,11 @@ python-dotenv
 humanfriendly
 emoji
 google-api-python-client
-git+https://github.com/null8626/python-sdk.git@v0-public
+topggpy
 motor
 pillow
 googletrans==4.0.0-rc1
 chat-exporter
 jishaku
+psutil
+uvloop
